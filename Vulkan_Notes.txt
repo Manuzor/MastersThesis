@@ -1,0 +1,21 @@
+Vulkan Notes
+
+Difference between Barriers and Fences:
+  http://gpuopen.com/performance-tweets-series-barriers-fences-synchronization/
+
+Vulkan tips:
+  http://xlgames-inc.github.io/posts/vulkantips/
+
+TODO Vulkan tutorial:
+  http://av.dfki.de/~jhenriques/development.html
+
+Porting Source 2 to Vulkan:
+  https://youtu.be/EX1RKhlOYmY?t=1h14m31s
+
+Layers vs. Extensions:
+  https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers/blob/sdk-1.0.3/loader/LoaderAndLayerInterface.md
+
+Multi-GPU support
+  Not in Vulkan 1.0 but planned for the future.
+  GPUs would need to be treated separately.
+  Memory between GPUs would have to use host memory for staging.
