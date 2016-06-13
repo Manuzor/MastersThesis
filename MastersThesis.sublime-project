@@ -1,0 +1,15 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+		}
+	],
+  "settings":
+  {
+    "TEXroot": "Source/Main.tex",
+    "builder_settings": {
+      "program": "xelatex"
+    }
+  }
+}

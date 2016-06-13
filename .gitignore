@@ -5,3 +5,5 @@
 *.fls
 *.log
 *.pdf
+*.synctex
+*.synctex.gz
