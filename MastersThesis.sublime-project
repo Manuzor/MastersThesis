@@ -26,7 +26,9 @@
   "settings":
   {
     "TEXroot": "Source/Main.tex",
-    "builder_settings": {
+    "builder": "basic",
+    "builder_settings":
+    {
       "program": "xelatex"
     }
   }
