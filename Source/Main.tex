@@ -1,4 +1,14 @@
-\documentclass{article}
+\documentclass[draft,12pt]{report}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\graphicspath{ {Images/} }
+\usepackage[toc,page]{appendix}
+\usepackage[english]{babel}
+\usepackage[babel]{csquotes}
+
+\usepackage[backend=biber,style=alphabetic]{biblatex}
+\addbibresource{Bibliography.bib}
 
 
 \title{Evaluating the Resource Management Possibilites of the Vulkan Graphics API}
@@ -7,10 +17,58 @@
 
 
 \begin{document}
-
+  % 
+  % Title Page
+  % 
+  \pagenumbering{gobble}
   \maketitle
   \newpage
 
-  Hello World!  
+
+  % 
+  % Blank page for physical notes, name entries, etc.
+  % 
+  \null
+  \newpage
+
+  % 
+  % Abstract and acknoledgements.
+  % 
+  \pagenumbering{gobble}
+  \input{Abstract}
+  \input{Acknowledgements}
+
+
+  % 
+  % Table of Contents
+  % 
+  \pagenumbering{Roman}
+  \tableofcontents
+  \newpage
+
+
+  % 
+  % Chapters
+  % 
+  \pagenumbering{arabic}
+  \input{Chapter1}
+  \input{Chapter2}
+  \input{Chapter3}
+  \input{Chapter4}
+  \input{Chapter5}
+
+
+  % 
+  % Bibliography
+  % 
+  \pagenumbering{Roman}
+  \newpage
+  \printbibliography[heading=bibintoc,title=Bibliography]
+
+  % 
+  % Appendix
+  % 
+  \pagenumbering{Roman}
+  \input{Appendix}
 
 \end{document}

@@ -5,5 +5,13 @@
 *.fls
 *.log
 *.pdf
+*.lof
+*.lot
+*.blg
+*.bbl
+*-blx.bib
+*.bcf
+*.run.xml
+*.toc
 *.synctex
 *.synctex.gz
