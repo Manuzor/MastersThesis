@@ -25,7 +25,6 @@
 	],
   "settings":
   {
-    "TEXroot": "Source/Main.tex",
     "builder": "basic",
     "builder_settings":
     {

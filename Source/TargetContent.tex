@@ -1,0 +1,115 @@
+\documentclass[draft,12pt]{report}
+
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks,
+  final,
+  citecolor=black,
+  filecolor=black,
+  linkcolor=black,
+  urlcolor=black
+}
+
+
+\title{Evaluating the Resource Management Possibilites of the Vulkan Graphics API}
+\date{\today}
+\author{Manuel Maier}
+
+
+\begin{document}
+  % 
+  % Title Page
+  % 
+  \pagenumbering{gobble}
+  \maketitle
+  \newpage
+
+  % 
+  % Table of Contents
+  % 
+  \pagenumbering{Roman}
+  \tableofcontents
+  \newpage
+
+
+  % 
+  % Chapters
+  % 
+  \pagenumbering{arabic}
+
+
+  \chapter{Introduction}
+    General introduction to computer graphics. One of the biggest problems: Performance. Especially with virtual reality.
+
+    Maybe mention the author's (that's me!) bias towards game development.
+
+    \section{High Level Graphics Workflow}
+      General overview of the stages resources have to go through
+
+    \section{Motivation for a new Graphics API}
+      Basically write why Vulkan is needed.
+
+    \section{The Vulkan Graphics System}
+      What does it do. Where does it come from. What are people expecting from it. Cross-platform nature (in comparison maybe to PS4's libGNM made specifically for PS4 hardware).
+
+      \subsection{Vulkan Competitors}
+        OpenGL, Direct3D11, Direct3D12, libGNM (PS4)
+
+    \section{Document Structure}
+      The structure and content of this document.
+
+  \chapter{Vulkan API Overview/Workflow}
+    Vulkan workflow, object creation, patterns (vkCreate/vkDestroy, vkAllocate/vkDeallocate), synchronization.
+
+    Note that when talking about a "device", a logical device is meant. When referring to the actual hardware component the term `physical device' will be used.
+
+    \section{Layers and Extensions}
+      Layers are instance-only, extensions are both on the isntance-level as well as the device-level.
+
+    \section{Memory Management}
+      Allocate memory separately and then binding it to resources. Decoupled on purpose for custom management.
+
+    \section{Shader Language: SPIR-V}
+      SPIR = "Standard Portable Intermediate Representation".
+
+    \section{Synchronisation Primitives}
+      Describe what Vulkan offers and discuss the individual use-cases as well as their performance impact.
+
+    \section{Interaction with the Operating System}
+      Windowing system, specific Vulkan extensions per OS.
+
+
+  \chapter{GPU Resources}
+    Different kinds of resources for different kinds of operations.
+
+    Possible pattern per section:
+    \begin{itemize}
+      \item What is the resource used for
+      \item How is it allocated
+      \item Discuss synchronisation issues.
+    \end{itemize}
+
+    \section{Images and Buffers}
+      Difference and why it matters.
+
+    \section{Command Buffers}
+      Record commands into buffers that are uploaded to the gpu to be replayed there.
+
+    \section{Shaders and Pipelines}
+      Data flow between CPU and GPU. Data flow within the GPU through shaders.
+
+      Descriptor pool/layout/set/set-layout
+
+
+  \chapter{Resource Management Techniques}
+    Discuss what to do in certain situations, e.g. when uploading image data using a staging buffer.
+
+
+  \chapter{Evaluation}
+    Present and discuss preformance measurement results.
+
+
+  \chapter{Conclusion}
+    API quality. Explain and discuss why the API is called "modern", "highly efficient", and "explicit".
+
+\end{document}

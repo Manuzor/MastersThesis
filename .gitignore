@@ -1,5 +1,6 @@
 *.sublime-workspace
 
+*.out
 *.aux
 *.fdb_latexmk
 *.fls
