@@ -44,7 +44,7 @@
     Maybe mention the author's (that's me!) bias towards game development.
 
     \section{High Level Graphics Workflow}
-      General overview of the stages resources have to go through
+      General overview of the stages several resources (vertices, textures, etc.) have to go through
 
     \section{Motivation for a new Graphics API}
       Basically write why Vulkan is needed.
@@ -61,7 +61,9 @@
   \chapter{Vulkan API Overview/Workflow}
     Vulkan workflow, object creation, patterns (vkCreate/vkDestroy, vkAllocate/vkDeallocate), synchronization.
 
-    Note that when talking about a "device", a logical device is meant. When referring to the actual hardware component the term `physical device' will be used.
+    Listing and short explanation of Vulkan components such as buffers, images, command buffers.
+
+    Note that when talking about a "device", a logical device is meant. When referring to the actual hardware component the term "physical device" will be used.
 
     \section{Layers and Extensions}
       Layers are instance-only, extensions are both on the isntance-level as well as the device-level.
@@ -80,7 +82,7 @@
 
 
   \chapter{GPU Resources}
-    Different kinds of resources for different kinds of operations.
+    Different kinds of resources for different kinds of operations. These have been introduced in the previous chapter already and will now be explained in more detail.
 
     Possible pattern per section:
     \begin{itemize}

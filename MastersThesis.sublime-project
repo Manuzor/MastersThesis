@@ -28,7 +28,9 @@
     "builder": "basic",
     "builder_settings":
     {
-      "program": "xelatex"
-    }
+      "program": "xelatex",
+      "options": "--shell-escape"
+    },
+    "word_wrap": true
   }
 }

@@ -16,3 +16,8 @@
 *.toc
 *.synctex
 *.synctex.gz
+*.acn
+*.glo
+*.ist
+
+[tT]humbs.[dD][bB]

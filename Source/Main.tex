@@ -1,74 +1,151 @@
-\documentclass[draft,12pt]{report}
+\documentclass{scrreprt}
+\usepackage{scrhack}
+\KOMAoptions
+{
+  draft,
+  DIV=calc, % this will calculate correct margins
+  fontsize=12pt,
+  listof=numbered,
+}
 
-\usepackage{amsmath}
-\usepackage{graphicx}
-\graphicspath{ {Images/} }
-\usepackage[toc,page]{appendix}
 \usepackage[english]{babel}
-\usepackage[babel]{csquotes}
+
+\usepackage[autostyle]{csquotes}
 
 \usepackage[backend=biber,style=alphabetic]{biblatex}
 \addbibresource{Bibliography.bib}
+
+% Alternative to `Helvetica': TeX Gyre Heros
+% Alternative to `Bookman Old Style': TeX Gyre Bonum
+\usepackage{fontspec}
+\setromanfont{TeX Gyre Bonum} % Enhanced version of `Bookman Old Style'.
+\setmonofont{Consolas}
+% \setsansfont{TeX Gyre Heros} % Replacement for Helvetica.
+
+% Choose default font family.
+%
+% Options:
+%   \rmdefault   Use the serif font family as default.
+%   \sfdefault   Use the sans-serif font family as default.
+%   \ttdefault   Use the monospace font family as default.
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage{ifdraft}
+\usepackage{amsmath}
+
+\PassOptionsToPackage{draft}{graphicx}
+\usepackage{graphicx}
+
+\usepackage[toc,page]{appendix}
+
+\usepackage{todonotes}
+
+\usepackage[acronym]{glossaries}
+\input{Main/Glossary}
+
+\usepackage{xcolor}
+\definecolor{CodeComment}{gray}{0.4}
+\definecolor{CodeKeyword}{rgb}{0.0,0.0,0.8}
+\definecolor{CodeString}{rgb}{0.0,0.3,0.0}
+
+\usepackage{listings}
+\lstdefinestyle{MyCpp}
+{
+  language=[11]C++,
+  % backgroundcolor=\color{backcolour},
+  commentstyle=\color{CodeComment},
+  keywordstyle=\color{CodeKeyword},
+  numberstyle=\ttfamily\color{CodeComment},
+  stringstyle=\color{CodeString},
+  basicstyle=\ttfamily,
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+  numbers=left,
+  numbersep=5pt,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=2
+}
+\lstset{style=MyCpp}
+
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks,
+  final,
+  bookmarksnumbered,
+  citecolor=black,
+  filecolor=black,
+  linkcolor=black,
+  urlcolor=black
+}
+
+\usepackage[nopar]{lipsum}
+\setlipsumdefault{1}
 
 
 \title{Evaluating the Resource Management Possibilites of the Vulkan Graphics API}
 \date{\today}
 \author{Manuel Maier}
 
-
 \begin{document}
-  % 
+  %
   % Title Page
-  % 
+  %
   \pagenumbering{gobble}
   \maketitle
-  \newpage
 
 
-  % 
+  %
   % Blank page for physical notes, name entries, etc.
-  % 
-  \null
+  %
   \newpage
-
-  % 
-  % Abstract and acknoledgements.
-  % 
+  \null
   \pagenumbering{gobble}
-  \input{Abstract}
-  \input{Acknowledgements}
+
+  %
+  % Abstract and acknoledgements.
+  %
+  \input{Main/Abstract}
+  \input{Main/Acknowledgements}
 
 
-  % 
+  %
   % Table of Contents
-  % 
-  \pagenumbering{Roman}
+  %
+  \newpage
+  \pagenumbering{roman}
   \tableofcontents
   \newpage
 
 
-  % 
+  %
   % Chapters
-  % 
+  %
   \pagenumbering{arabic}
-  \input{Chapter1}
-  \input{Chapter2}
-  \input{Chapter3}
-  \input{Chapter4}
-  \input{Chapter5}
+  \input{Main/1_Introduction}
+  \input{Main/2_VulkanOverview}
+  \input{Main/3_GpuResources}
+  \input{Main/4_ResourceManagementTechniques}
+  \input{Main/5_Evaluation}
+  \input{Main/6_Conclusion}
 
-
-  % 
-  % Bibliography
-  % 
+  \newpage
   \pagenumbering{Roman}
+
+
+  %
+  % Bibliography
+  %
   \newpage
   \printbibliography[heading=bibintoc,title=Bibliography]
+  \nocite{*} % Make sure to print all bibliography entries.
 
-  % 
+  %
   % Appendix
-  % 
-  \pagenumbering{Roman}
-  \input{Appendix}
+  %
+  \input{Main/Appendix}
 
 \end{document}

@@ -1,0 +1,39 @@
+%!TEX root = ../Main.tex
+
+\chapter{Vulkan API Overview/Workflow}
+\label{cha:VulkanOverview}
+  \todo[inline]
+  {
+    The Vulkan Graphics \acrfull{api} workflow, object creation, patterns (vkCreate/vkDestroy, vkAllocate/vkDeallocate), synchronization.
+
+    Listing and short explanation of Vulkan components such as buffers, images, command buffers.
+
+    Note that when talking about a "device", a logical device is meant. When referring to the actual hardware component the term "physical device" will be used.
+  }
+
+  \lipsum
+
+  \section{Layers and Extensions}
+    \todo[inline]{Layers are instance-only, extensions are both on the isntance-level as well as the device-level.}
+
+    \lipsum
+
+  \section{Memory Management}
+    \todo[inline]{Allocate memory separately and then binding it to resources. Decoupled on purpose for custom management.}
+
+    \lipsum
+
+  \section{Shader Language: SPIR-V}
+    \todo[inline]{\acrfull{spirv}}
+
+    \lipsum
+
+  \section{Synchronisation Primitives}
+    \todo[inline]{Describe what Vulkan offers and discuss the individual use-cases as well as their performance impact.}
+
+    \lipsum
+
+  \section{Interaction with the Operating System}
+    \todo[inline]{Windowing system, specific Vulkan extensions per OS.}
+
+    \lipsum
