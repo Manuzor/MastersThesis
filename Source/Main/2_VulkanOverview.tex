@@ -10,21 +10,43 @@
 
     Note that when talking about a ``device'', a logical device is meant. When referring to the actual hardware component the term ``physical device'' will be used.
   }
+  \todo[inline]{Refer to Vulkan spec.}
 
-  \todo[inline]{Object/handle based with state-machines only for command buffers.}
+  This chapter provides an overview of the Vulkan API and explains some concepts in more detail. In some places an abbreviated form is used when referring to several Vulkan commands at once, e.g. \lstinline{vkPlaceholder*} would refer to all Vulkan commands that begin with the character string ``vkPlaceholder'', e.g. \lstinline{vkPlaceholderCommand}. The asterisk is used as a wildcard character.
 
-  \lipsum
+  Vulkan uses the terms ``host'' and ``device'' to refer to the CPU and GPU, respectively, when describing data flow or memory visibility. These terms will be used in this chapter as well with the same meaning.
 
   \section{Workflow and Patterns}
   \label{sec:WorkflowAndPatterns}
-    \lipsum
+    The Vulkan API was designed to be consistent and explicit. Many patterns can be found in the Vulkan code style that make it easier for the developer to use the API effectively. This section is a walkthrough of the basic steps that need to be taken to set up a Vulkan graphics pipeline to present an image to a display.
+
+    Vulkan makes use of handle types to allow the developer to track objects created with the API. The first object that has to be created is a Vulkan instance. The Vulkan instance can be used to query available physical devices that provide Vulkan support. These physical devices can be queried for certain capabilities, such as supported image formats and hardware features, to aid in deciding which physical device to use for the application. A physical device can subsequently be used to create a logical device, or just device. The number of devices created from a physical device is not limited. When a device is create, all queues associated with it are created as well. This is why there is no \lstinline{vkCreateQueue} but rather \lstinline{vkGetQueue} command. Among other things, devices are used to allocate Vulkan objects or GPU memory. Changes made on Vulkan objects do not have global side-effect observable with the regular Vulkan API. However, drivers and Vulkan layers or extensions are free to modify their own state across Vulkan object boundaries.\todo{Redundant sentence? This should be a given.}
+
+    \todo[inline]{Describe/mention GPU queues in the introduction chapter.}
+
+    Once a device handle has been acquired the developer can create a swapchain to establish a connection between a specific queue on the device and a platform specific presentation engine. A swapchain contains a number of ``presentation images'' the contents of which are produced by the graphics pipeline. These ``presentation images'' are regular Vulkan image objects in a specific format.
+
+    In order to produce images for the presentation engine to consume via the swapchain, a graphics pipeline needs to be created. This graphics pipeline consists of one or more render pass objects that hold information about how to complete a rendering step. Examples of the render pass state that has to be set is the used pipeline stages, such as vertex or fragment shader stages or compute shader stages, as well as setting framebuffer attachments. Render passes can be organized into subpasses which can be set up to depend on other subpasses, e.g. for post-processing.
+
+    With a graphics pipeline in place, command buffers can be used to record rendering commands such as copying device memory to another location or issueing drawing commands. In order to record command, the command buffer needs to set into recording mode. For more information about command buffers, refer to chapter~\ref{cha:GpuResources}.
+
+    \todo[inline]{Put the following into a subsection?}
+
+    Creating Vulkan objects is done by calls to \lstinline{vkCreate*} commands which take a pointer to \lstinline{Vk*CreateInfo} structures and return a handle to the created object. These info structures contain parameters used by the creation command to create the requested type of Vulkan object. The contents of such info structures are specific to each creation command and require the developer to consult the Vulkan specification in order to provide correct input data. Destroying Vulkan objects is done by passing an object handle to those \lstinline{vkDestroy*} commands that exactly correspond to the \lstinline{vkCreate*} command that created the object in the first place. The commands \lstinline{vkCreateBuffer} and \lstinline{vkDestroyBuffer} are examples for this.
+
+    When Vulkan objects are allocated from memory pools, or directly from device memory, calls to \lstinline{vkAllocate*} commands have to be made. These commands are accompanied by \lstinline{vkFree*} commands that return resources to their origin where they originally were acquired from. The general rule is that all objects allocated from pools are released as soon as the pool itself is released. Using Vulkan objects that are released results in undefined behavior, similar to using deallocated memory in C/C++.
+
+    Unlike other APIs, Vulkan does not do any object tracking or reference counting to manage object life times. It is the responsibility of the developer to destroy or free Vulkan objects at the appropriate times, i.e. when they are no longer in use and will not be used in the future by either the host or the device.
+
+    Vulkan objects are not designed to be thread-safe. This means that accessing or modifying a Vulkan object from more than one thread at once can lead to race conditions or other undesirable behavior. It is the responsibility of the developer to employ proper synchronisation mechanisms on the host to ensure Vulkan objects are never accessed concurrently.
 
   \section{Layers and Extensions}
+  \label{sec:LayersAndExtensions}
     \todo[inline]{Layers are instance-only, extensions are both on the isntance-level as well as the device-level.}
 
     Vulkan is designed to be extensible by thirdparty developers. The two mechanisms provided are called layers and extensions.
 
-    A layer in Vulkan can be thought of as an observer to the API calls done by the developer. It does not add new types or functions the developer can use directly.\todo{Illustration of Vulkan with some layers between it and the user}\todo{Elaborate more to make it crystal clear. Make sure to mention no layers are needed.}
+    A layer in Vulkan can be thought of as an observer to the API calls done by the developer. It does not add new types or commands the developer can use directly.\todo{Illustration of Vulkan with some layers between it and the user}\todo{Elaborate more to make it crystal clear. Make sure to mention no layers are needed.}
 
     The LunarG SDK, for example, comes with a set of layers to validate usage of the Vulkan API. This is extremely useful during development as it allows the developer to focus on their code rather than the perfect use of the Vulkan API. It should also be noted that bare Vulkan, without any validation layers enabled, does not do any error checking. When the developer passes an invalid combination of flags to some Vulkan function, it is undefined behavior and has to be corrected by the developer.
 
@@ -32,13 +54,14 @@
 
     \todo[inline]{Pull out neutral descriptions of layers/extensions and put the examples in their own paragraph.}
 
-    As opposed to layers, extensions are able to provide new or add to existing functionality. The motivation for extensions is to keep the Vulkan core functionality small and provide specific functionality via such extensions. In fact, the Khronos Group itself provides built-in extensions for both common and platform specific functionality. An example of an extension that adds platform independent functionality is the \lstinline{VK_KHR_swapchain} extension. It adds several types and functions to create and interact with a swapchain. The concept of a swapchain itself is independent of the platform but it requires the help of platform specific functionality in order to work. On Windows platforms, for example, the developer needs to enable the \lstinline{VK_KHR_win32_surface} extension in order link a swapchain to a Win32 window. From a developer's perspective, they do not have to care about distinguish between platforms when creating a swapchain but they do have to when creating and connecting the swapchain to a surface.
+    As opposed to layers, extensions are able to provide new or add to existing functionality. The motivation for extensions is to keep the Vulkan core functionality small and provide specific functionality via such extensions. In fact, the Khronos Group itself provides built-in extensions for both common and platform specific functionality. An example of an extension that adds platform independent functionality is the \lstinline{VK_KHR_swapchain} extension. It adds several types and commands to create and interact with a swapchain. The concept of a swapchain itself is independent of the platform but it requires the help of platform specific functionality in order to work. On Windows platforms, for example, the developer needs to enable the \lstinline{VK_KHR_win32_surface} extension in order link a swapchain to a Win32 window. From a developer's perspective, they do not have to care about distinguish between platforms when creating a swapchain but they do have to when creating and connecting the swapchain to a surface.
 
     Extensions can be enabled on both instance-level and device-level. Instance-level extensions provide functionality that is generally independent of the hardware.
 
     An example for an instance-level extension is \lstinline{VK_EXT_debug_report}. It enables the developer to provide a callback function that is used by Vulkan layers or extensions to communicate with the developer. If validation layers are enabled, this is how they would tell the developer about any validation concerns or violations. An example for a device-level extension is the aforementioned \lstinline{VK_KHR_swapchain} extension. Not all physical devices have to be capable of rendering graphics images. In the end it is up the extension author on which level they provide their extension.
 
   \section{Memory Management}
+  \label{sec:MemoryManagement}
     \todo[inline]{Allocate memory separately and then binding it to resources. Decoupled on purpose for custom management.}
 
     Memory management is an important topic in Vulkan.
