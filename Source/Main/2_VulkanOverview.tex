@@ -8,18 +8,40 @@
 
     Listing and short explanation of Vulkan components such as buffers, images, command buffers.
 
-    Note that when talking about a "device", a logical device is meant. When referring to the actual hardware component the term "physical device" will be used.
+    Note that when talking about a ``device'', a logical device is meant. When referring to the actual hardware component the term ``physical device'' will be used.
   }
 
+  \todo[inline]{Object/handle based with state-machines only for command buffers.}
+
   \lipsum
+
+  \section{Workflow and Patterns}
+  \label{sec:WorkflowAndPatterns}
+    \lipsum
 
   \section{Layers and Extensions}
     \todo[inline]{Layers are instance-only, extensions are both on the isntance-level as well as the device-level.}
 
-    \lipsum
+    Vulkan is designed to be extensible by thirdparty developers. The two mechanisms provided are called layers and extensions.
+
+    A layer in Vulkan can be thought of as an observer to the API calls done by the developer. It does not add new types or functions the developer can use directly.\todo{Illustration of Vulkan with some layers between it and the user}\todo{Elaborate more to make it crystal clear. Make sure to mention no layers are needed.}
+
+    The LunarG SDK, for example, comes with a set of layers to validate usage of the Vulkan API. This is extremely useful during development as it allows the developer to focus on their code rather than the perfect use of the Vulkan API. It should also be noted that bare Vulkan, without any validation layers enabled, does not do any error checking. When the developer passes an invalid combination of flags to some Vulkan function, it is undefined behavior and has to be corrected by the developer.
+
+    Layers can only be created on the instance-level. Until version x.x.x.x \todo{Find out the exact version.}, the developer was able to create device-level layers, but these are deprecated in Vulkan version x.x.xx.x by now.
+
+    \todo[inline]{Pull out neutral descriptions of layers/extensions and put the examples in their own paragraph.}
+
+    As opposed to layers, extensions are able to provide new or add to existing functionality. The motivation for extensions is to keep the Vulkan core functionality small and provide specific functionality via such extensions. In fact, the Khronos Group itself provides built-in extensions for both common and platform specific functionality. An example of an extension that adds platform independent functionality is the \lstinline{VK_KHR_swapchain} extension. It adds several types and functions to create and interact with a swapchain. The concept of a swapchain itself is independent of the platform but it requires the help of platform specific functionality in order to work. On Windows platforms, for example, the developer needs to enable the \lstinline{VK_KHR_win32_surface} extension in order link a swapchain to a Win32 window. From a developer's perspective, they do not have to care about distinguish between platforms when creating a swapchain but they do have to when creating and connecting the swapchain to a surface.
+
+    Extensions can be enabled on both instance-level and device-level. Instance-level extensions provide functionality that is generally independent of the hardware.
+
+    An example for an instance-level extension is \lstinline{VK_EXT_debug_report}. It enables the developer to provide a callback function that is used by Vulkan layers or extensions to communicate with the developer. If validation layers are enabled, this is how they would tell the developer about any validation concerns or violations. An example for a device-level extension is the aforementioned \lstinline{VK_KHR_swapchain} extension. Not all physical devices have to be capable of rendering graphics images. In the end it is up the extension author on which level they provide their extension.
 
   \section{Memory Management}
     \todo[inline]{Allocate memory separately and then binding it to resources. Decoupled on purpose for custom management.}
+
+    Memory management is an important topic in Vulkan.
 
     \lipsum
 
