@@ -69,9 +69,16 @@
     \lipsum
 
   \section{Shader Language: SPIR-V}
-    \todo[inline]{\acrfull{spirv}}
+    \todo[inline]{\acrfull{spir-v}}
 
-    \lipsum
+    Shader programs are supplied to Vulkan in \acrfull{spir-v} format. \acrshort{spir-v} is a high-level graphics and parallel compute programming language provided in a binary format. It is entirely specified by the Khronos Group.
+
+    \todo[inline]{Mention tools for SPIR-V.}
+
+    \todo[inline]{Par below needs expanding. Goal is to describe why SPIR-V is a good thing and how people benefit from it.}
+    One might wonder why the Khronos Group chose to only support an intermediate representation for shader programs instead of using something like the \acrfull{glsl} that is already in wide-spread use. \todo{Mention OpenGL supports SPIR-V now as well?}
+
+    This kind of format is beneficial to developers that face the challenge of supporting multiple platforms, including those that do not support Vulkan. On a Microsoft Xbox One platform, for example, the only supported graphics API is Direct3D.\todo{}
 
   \section{Synchronisation Primitives}
     \todo[inline]{Describe what Vulkan offers and discuss the individual use-cases as well as their performance impact.}
