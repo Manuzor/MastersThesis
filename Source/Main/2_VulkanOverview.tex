@@ -9,6 +9,8 @@
     Listing and short explanation of Vulkan components such as buffers, images, command buffers.
 
     Note that when talking about a ``device'', a logical device is meant. When referring to the actual hardware component the term ``physical device'' will be used.
+
+    Mention queues and queue families somewhere before the Synchronization section.
   }
   \todo[inline]{Refer to Vulkan spec.}
 
@@ -38,7 +40,7 @@
 
     Unlike other APIs, Vulkan does not do any object tracking or reference counting to manage object life times. It is the responsibility of the developer to destroy or free Vulkan objects at the appropriate times, i.e. when they are no longer in use and will not be used in the future by either the host or the device.
 
-    Vulkan objects are not designed to be thread-safe. This means that accessing or modifying a Vulkan object from more than one thread at once can lead to race conditions or other undesirable behavior. It is the responsibility of the developer to employ proper synchronisation mechanisms on the host to ensure Vulkan objects are never accessed concurrently.
+    Vulkan objects are not designed to be thread-safe. This means that accessing or modifying a Vulkan object from more than one thread at once can lead to race conditions or other undesirable behavior. It is the responsibility of the developer to employ proper synchronization mechanisms on the host to ensure Vulkan objects are never accessed concurrently.
 
   \section{Layers and Extensions}
   \label{sec:LayersAndExtensions}
@@ -60,13 +62,22 @@
 
     An example for an instance-level extension is \lstinline{VK_EXT_debug_report}. It enables the developer to provide a callback function that is used by Vulkan layers or extensions to communicate with the developer. If validation layers are enabled, this is how they would tell the developer about any validation concerns or violations. An example for a device-level extension is the aforementioned \lstinline{VK_KHR_swapchain} extension. Not all physical devices have to be capable of rendering graphics images. In the end it is up the extension author on which level they provide their extension.
 
-  \section{Memory Management}
+  \section{Memory Management and Resources}
   \label{sec:MemoryManagement}
-    \todo[inline]{Allocate memory separately and then binding it to resources. Decoupled on purpose for custom management and reuse.}
+    \todo[inline]{
+      Allocate memory separately and then binding it to resources. Decoupled on purpose for custom management and reuse.
+
+      Introduce buffers, images, global memory and command buffers.
+
+
+      Command buffers have their own state. Used with vkCmd commands. Are submitted to a queue. Submissions can be executed out of order.
+
+      Investigate: execute commands out of order within the same submission? If no barrier is present, of course.
+    }
 
     Memory management is an important topic in Vulkan.
 
-    \lipsum
+    \tbd
 
   \section{Pipelines and Render Passes}
   \label{sec:RenderPasses}
@@ -78,15 +89,7 @@
 
       Pipeline Cache and optimization by storing it on disk.
     }
-    \lipsum
-
-  \section{Command Buffers}
-  \label{sec:CommandBuffers}
-    \todo[inline]
-    {
-      Have their own state. Used with vkCmd commands. Are submitted to a queue. Can be executed out of order.
-    }
-    \lipsum
+    \tbd
 
   \section{Shader Language: SPIR-V}
     \todo[inline]{\acrfull{spir-v}}
@@ -102,7 +105,7 @@
     \todo[inline]{Describe what Vulkan offers and discuss the individual use-cases as well as their performance impact.}
 
     \todo[inline]{Maybe reduce the use of `Vulkan was designed to' throughout the document?}
-    Vulkan was designed to run concurrently. Synchronisation is the responsibility of the application (mainly). in order to do so, Vulkan provides four types of synchronization primitives: fences, semaphores, events, and barriers. These synchronization primitives can be used to insert execution and memory dependencies in various circumstances.
+    Vulkan was designed to run concurrently. Synchronization is the responsibility of the application (mainly). in order to do so, Vulkan provides four types of synchronization primitives: fences, semaphores, events, and barriers. These synchronization primitives can be used to insert execution and memory dependencies in various circumstances.
 
     \todo[inline]{Explain execution and memory dependencies here?}
 
@@ -114,19 +117,55 @@
 
     \subsection{Semaphores}
     \label{sub:Semaphores}
-      A semaphore is similar to a fence, as discussed above in \ref{sub:Fences}, except that it's status is only visible to the device. It can be used to synchronize operations within and between device queues.
+      A semaphore is similar to a fence, as discussed above in \ref{sub:Fences}\todo{Should I omit this?}, except that its status is only visible to the device. It can be used to synchronize operations within the same and between different device queues.
 
-      The most common use case for Vulkan semaphores in a graphics application is when presenting swapchain images to the presentation engine. First, the commands to create the final image have to be recorded to a command buffer. This command buffer then needs to be submitted to a queue in order to be executed. When submitting to the queue, a semaphore can be provided that will be signaled once the queue has finished executing all submitted commands. The same semaphore can be provided to the call of the swapchain presentation command that will wait until the semaphore was signaled before actually presenting the final image.\todo{Better formulation?}
+      The most common use case for Vulkan semaphores in a graphics application is when presenting swapchain images to the presentation engine. First, the commands to create the final image have to be recorded to a command buffer. This command buffer then needs to be submitted to a queue in order to be executed. When submitting to the queue, a semaphore can be provided that will be signaled once the queue has finished executing all submitted commands. The same semaphore can be used when issuing the swapchain presentation command. When everything is set up like this, the presentation engine will effectively wait for the commands to produce the final image and then present it as fast as possible.
 
-      Note that a fence can be used to achieve the same results except that it would require the host to actively wait for the queue to finish executing, stalling any other CPU operation that could have been executed in that time. Using the semaphore in this case will result in better performance.
+      Note that a fence can be used to achieve the same results except that it would require the host to actively wait for the queue to finish executing, stalling any other CPU operations that could have been executed in that time. Using the semaphore in this case will result in better performance.
 
     \subsection{Events}
     \label{sub:Events}
-      \lipsum
+      Events are used to synchronize from host to device or from device to device in a bidirectional manner. Like semaphores and fences, events are in either a signaled or in a not-signaled state. Events are inserted into command buffers in order to allow the device to signal them. This allows for more fine-grained synchronization between commands and to signal command completion the host. Unlike a fence, an event can be inserted at any point in the command buffer stream and thus can be used to query for synchronization without requiring that all commands in the submitted command buffer have completed execution.
+
+      The way events work could be taken advantage of in a batch resource transformation scenario. Imagine there are an arbitrary number of images in an application that need to be transformed in some way that is expensive to compute. These transformations could be issued into a single command buffer, inserting a completion event between transformation commands. After submitting this command buffer to the queue, the application can periodically query for completion of the individual transformation commands without the need to wait for the entire submission to finish by using fences or semaphores.
+
+      It must be noted that events are only allowed to be insterted into command buffers that are all submitted to the same queue. This makes them unuseful if cross-queue synchronization is requried.
 
     \subsection{Barriers}
     \label{sub:Barriers}
-      \lipsum
+      Barriers are used exclusively with commands recorded to command buffers. There are two kinds of barriers in Vulkan. The first kind is called an execution barrier which are used to create explicit dependencies on the completion of specific commands. The second kind is called a memory barrier which are used to depend on memory to be present in a specific form. Both kinds of barriers are combined in Vulkan as a pipeline barrier.\todo{Add illustration of floating commands above and below a pipeline barrier.}
+
+      \begin{figure}
+      \caption{Illustration of a pipeline barrier insterted between commands in a command buffer.}
+      \centering
+      \includegraphics{Main/Images/PipelineBarrier}
+      \label{fig:PipelineBarrier}
+      \end{figure}
+
+      By inserting a memory dependency, the application indicates to the API that all memory operations need to be finished on a specified resource or memory region once the inserted barrier has been reached. Otherwise all following commands are not able to begin executing. Analogously, an execution dependency requires all previous commands to have finished execution before starting to execute other commands inserted after the barrier.
+
+      There are three types of memory barriers in Vulkan: Global memory barriers, buffer memory barriers, and image memory barriers.
+
+      \subsubsection{Global Memory Barriers}
+        \todo[inline]
+        {
+          Investigate: Are these truly global memory barriers? The spec reads ``applies to memory accesses involving all memory objects that exist at the time of its execution'' which seems very heavyweight.
+        }
+        Global memory barriers introduce a dependency to all memory objects that exist at the time of execution of the barrier. All prior memory access operations, whether they are read or write operations, must have finished before the barrier finishes execution.
+
+        Such heavy-weight memory dependencies are not needed if the memory in use is entirely cache coherent. In other words, if the rest of the system ensures that all caches are flushed at appropriate times, memory accesses from other parts of the system will be consistent and up-to-date\todo{Double-Triple-Check whether this is actually correct.}.
+
+      \subsubsection{Buffer Memory Barriers}
+        Buffer memory barriers introduce a memory access dependency on a specific region of memory associated with a buffer object. That region may encompass the entire buffer and is specified in terms of an offset, relative to the beginning of the buffer, and a size value.
+
+        This kind of barrier can be used to transfer ownership of a buffer region to another queue family or to change access flags of that region. Transferring ownership of that buffer region to another queue family is only possible if this kind of operation has been enabled for that buffer at the time it was created. Access flags are used to control how the buffer region is accessed. They could be used to make the memory region read-only, for example, or enable host access for it.
+
+      \subsubsection{Image Memory Barriers}
+        Image memory barriers are similar to buffer memory barriers. They can be used to transfer ownership image regions to another queue family, modify access flags, and to change the image layout. An image region is specified differently from a buffer region of the fact that images need not be stored linearly in device memory\todo{Refer to wherever image tiling is explained}.
+
+        Transferring ownership of an image region is only possible if the image was set up correctly at creation time. Modifying access flags has the same effect as with modifying access flags on a buffer region.
+
+        Changing the layout of the image is an important operation on Vulkan images. For example, it is required for swapchain images in order to be presentable. The presentation engine requires swapchain images to be in a specific layout when presenting them so the application must ensure that the image has that specific layout before attempting to issue the presentation command. Since the presentation layout is only meant for use by the presentation engine, the application has to use another image memory barrier to change the layout into something that can be used by the host application.
 
     % Fences are
 
@@ -139,9 +178,10 @@
     % Pipeline barriers are used to synchronize execution state and
     % Pipeline barriers are used to ensure all memory operations have finished at a certain point in the pipeline. These barriers are inserted into a command buffer using the \lstinline{vkCmdPipelineBarrier} command. A  common use-case is transitioning a Vulkan image from one layout to another, e.g. from a layout optimized for presentation purposes to a layout optimized for
 
-    \lipsum
-
   \section{Interaction with the Operating System}
-    \todo[inline]{Windowing system, specific Vulkan extensions per OS.}
+    \todo[inline]
+    {
+      Windowing system, specific Vulkan extensions per OS.
 
-    \lipsum
+      \textbf{Kill this section?}
+    }
