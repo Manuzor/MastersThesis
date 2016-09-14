@@ -167,17 +167,6 @@
 
         Changing the layout of the image is an important operation on Vulkan images. For example, it is required for swapchain images in order to be presentable. The presentation engine requires swapchain images to be in a specific layout when presenting them so the application must ensure that the image has that specific layout before attempting to issue the presentation command. Since the presentation layout is only meant for use by the presentation engine, the application has to use another image memory barrier to change the layout into something that can be used by the host application.
 
-    % Fences are
-
-    % There are semaphores, fences, and pipeline barriers.
-
-    % Fences are used to ... and can be waited on using the function \lstinline{vkWaitFences}. Fences are like
-
-    % \todo[inline]{Illustrate a pipeline barrier?}
-    % As mentioned in section \ref{sec:CommandBuffers}, commands recorded in a command buffer can be executed out-of-order\todo{Is this \textbf{really} true?} on the queue it is submitted on. The developer can explicitly synchronize
-    % Pipeline barriers are used to synchronize execution state and
-    % Pipeline barriers are used to ensure all memory operations have finished at a certain point in the pipeline. These barriers are inserted into a command buffer using the \lstinline{vkCmdPipelineBarrier} command. A  common use-case is transitioning a Vulkan image from one layout to another, e.g. from a layout optimized for presentation purposes to a layout optimized for
-
   \section{Interaction with the Operating System}
     \todo[inline]
     {
@@ -185,3 +174,14 @@
 
       \textbf{Kill this section?}
     }
+
+  Vulkan does not define platform specific functionality as part of the Vulkan core specification. Instead, Vulkan provides extensions to support platform specific functionality.
+
+  The most important extension is arguably the platform specific surface extension. This extension enables the user to create a Vulkan compatible surface object that is used by the presentation engine to present an image. Vulkan requires the application to create a platform specific window which is then used when creating a Vulkan surface. This surface is subsequently used to create the swapchain that acts as the connection between a device and the surface. With this constellation, the presentation engine is able to properly present an image on a platform specific window.
+
+    \begin{figure}
+    \caption{Illustration of the presentation engine being connected to a device using a swapchain.}
+    \centering
+    \includegraphics{Main/Images/PresentationEngine}
+    \label{fig:PresentationEngine}
+    \end{figure}
