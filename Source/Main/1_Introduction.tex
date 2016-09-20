@@ -9,6 +9,10 @@
     Maybe mention the author's (that's me!) bias towards game development.
 
     Also mention that many details are being omitted in this work/paper because it would be too much information. So make it clear this is not a comprehensive documentation of the API.
+
+    Mention target audience requirements.
+
+    Explain shader stages in this chapter somewhere.
   }
 
   The field of computer graphics poses many challenges.
@@ -38,7 +42,16 @@
 
 
   \section{High Level Graphics Workflow}
-    \todo[inline]{General overview of the stages several resources (vertices, textures, etc.) have to go through}
+    \label{sec:GraphicsWorkflow}
+    \todo[inline]
+    {
+      General overview of the stages several resources (vertices, textures, etc.) have to go through.
+
+      Explain the fixed function pipeline.
+    }
+
+    \missingfigure{Visualize data flow of data between shader stages.}
+    \tbd
 
 
   \section{Motivation for a new Graphics API}
@@ -46,9 +59,9 @@
 
     Graphics hardware is changing rapidly through the years and is highly specialized to do computational work in a massively parallel manner. This makes it not only suitable for graphics computation, but also for general-purpose parallelization of working with large sets of data. These \acrshortpl{api} have grown with the hardware, constantly adapting to it, adding new versions that support different kinds of features and provide different kinds of extensions while maintaining backwards compatability as much as possible. This lead to very complicated \acrshortpl{api} that was getting harder and harder to understand with each new release, especially for beginners.
 
-    But not only graphics and compute hardware has changed. The drivers accompanying the hardware also have to stay backwards compatible. They hide and abstract a lot of the low-level functionality that is needed to work properly with the hardware. This abstraction means that the application developer has less control over what is actually done with the data fed to drivers. Since driver's rarely get information about the exact intent of what the developer plans to do with the supplied data, they have to implement heuristics to decide the best course of action.
+    But not only graphics and compute hardware has changed. The drivers accompanying the hardware also have to stay backwards compatible. They hide and abstract a lot of the low-level functionality that is needed to work properly with the hardware. This abstraction means that the application developer has less control over what is actually done with the data fed to drivers. Since drivers rarely get information about the exact intent of what the developer plans to do with the supplied data, they have to implement heuristics to decide the best course of action.
 
-    This level of abstraction has been critiqued by many professional developers over the years, demanding for more low-level control. On gaming consoles, low-level control of the hardware was always required (except for Microsoft platforms). This meant that console developers were already used to thinking about data flow on a low level.
+    This level of abstraction has been criticized by many professional developers over the years, demanding for more low-level control. On gaming consoles, low-level control of the hardware was always required (except for Microsoft platforms). This meant that console developers were already used to thinking about data flow on a low level.
 
     Another aspect is the advent of multi-core CPUs for personal computers in the mid 2000's. Multithreading has become common in CPU programming to achieve better performance. Older graphics \acrshortpl{api}, however, were designed to run on a single thread all the time. Even though these \acrshortpl{api} provide limited support for multithreading by now, they were still originally not designed for it, making it rather difficult to fully utilize multicore performance.
 

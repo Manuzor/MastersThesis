@@ -1,3 +1,4 @@
+%!TEX program = xelatex
 \documentclass{scrreprt}
 \usepackage{scrhack}
 \KOMAoptions
@@ -10,9 +11,11 @@
 
 \usepackage[english]{babel}
 
+\usepackage[iso,english]{isodate}
+
 \usepackage[autostyle]{csquotes}
 
-\usepackage[backend=biber,style=alphabetic]{biblatex}
+\usepackage[backend=biber,style=numeric,urldate=iso8601,date=iso8601]{biblatex}
 \addbibresource{Bibliography.bib}
 
 % Alternative to `Helvetica': TeX Gyre Heros
