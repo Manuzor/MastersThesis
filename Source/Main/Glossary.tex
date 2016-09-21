@@ -1,6 +1,9 @@
 %!TEX root = ../Main.tex
 
-\makeglossaries
+
+%
+% Acronyms
+%
 
 \newacronym{api}{API}{Application Programming Interface}
 \newacronym{cpu}{CPU}{Central Processing Unit}
@@ -13,9 +16,35 @@
 
 \newacronym{glsl}{GLSL}{OpenGL Shading Language}
 \newacronym{spir}{SPIR}{Standard Portable Intermediate Representation}
-\newacronym{spir-v}{SPIR-V}{Standard Portable Intermediate Representation version `V'}
+\newacronym{spirv}{SPIR-V}{Standard Portable Intermediate Representation version `V'}
 
 \newacronym{ps3}{PS3}{Sony PlayStation 3}
 \newacronym{ps4}{PS4}{Sony PlayStation 4}
 \newacronym{xbox360}{Xbox 360}{Xbox 360}
 \newacronym{xbone}{Xbox One}{Xbox One}
+
+
+%
+% Glossary Entries
+%
+
+\newglossaryentry{host}
+{
+  name={host},
+  description={The user of the Vulkan API}
+}
+\newglossaryentry{device}
+{
+  name={device},
+  description={The GPU abstracted by the Vulkan API}
+}
+\newglossaryentry{application}
+{
+  name={application},
+  description={The user of or the developer that uses the Vulkan API}
+}
+\newglossaryentry{driver}
+{
+  name={Vulkan implementation},
+  description={The part of the Vulkan API that is opaque to the user, implemented in the hardware driver}
+}

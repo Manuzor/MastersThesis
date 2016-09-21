@@ -44,9 +44,6 @@
 \usepackage{todonotes}
 \newcommand{\tbd}[0]{\todo[inline, color=yellow!30]{\centerline{To Be Done}}}
 
-\usepackage[acronym]{glossaries}
-\input{Main/Glossary}
-
 \usepackage{xcolor}
 \definecolor{CodeComment}{gray}{0.4}
 \definecolor{CodeKeyword}{rgb}{0.0,0.0,0.8}
@@ -86,6 +83,13 @@
   urlcolor=black
 }
 
+% Note: The glossaries package needs to be loaded as late as possible to
+%       increase compat with other packages.
+\usepackage[acronym,toc]{glossaries}
+\loadglsentries{Main/Glossary.tex}
+\makenoidxglossaries
+
+
 \usepackage[nopar]{lipsum}
 \setlipsumdefault{1}
 
@@ -111,6 +115,7 @@
   \newpage
   \null
   \pagenumbering{gobble}
+
 
   %
   % Abstract and acknoledgements.
@@ -149,6 +154,13 @@
   \newpage
   \printbibliography[heading=bibintoc,title=Bibliography]
   \nocite{*} % Make sure to print all bibliography entries.
+
+
+  %
+  % Glossary
+  %
+  \printnoidxglossaries
+
 
   %
   % Appendix

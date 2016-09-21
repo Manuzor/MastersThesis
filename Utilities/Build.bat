@@ -1,4 +1,6 @@
 @echo off
-pushd "%~dp0../Source"
-  latexmk -xelatex Main.tex
-popd
+setlocal
+  pushd "%~dp0../Source"
+    latexmk -synctex=1 -interaction=nonstopmode -xelatex %* Main.tex
+  popd
+endlocal
