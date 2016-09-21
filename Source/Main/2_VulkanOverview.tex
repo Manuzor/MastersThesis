@@ -81,22 +81,23 @@
 
     An example for an instance-level extension is \lstinline{VK_EXT_debug_report}. It enables the developer to provide a callback function that is used by Vulkan layers or extensions to communicate with the developer. If validation layers are enabled, this is how they would tell the developer about any validation concerns or violations. An example for a device-level extension is the aforementioned \lstinline{VK_KHR_swapchain} extension. Not all physical devices have to be capable of rendering graphics images. In the end it is up the extension author on which level they provide their extension.
 
-  \section{Memory Management and Resources}
+  \section{Resources and Memory Allocation}
   \label{sec:MemoryManagement}
-    \todo[inline]{
-      Allocate memory separately and then binding it to resources. Decoupled on purpose for custom management and reuse.
+    Memory in Vulkan is categorized in either host memory or device memory.
 
-      Introduce buffers, images, global memory and command buffers.
+    Host memory is used by the Vulkan implementation for data that is not visible to the device. The application has the option to supply memory allocators to the Vulkan implementation to control how host memory is allocated. Host memory allocations are not performed in performance critical code paths so the application may not gain a significant amount of performance by supplying their own allocator. Instead, it is an opportunity for hosts on embedded systems to control memory allocations or for informational purposes such as logging memory allocations done by the Vulkan implementation.
 
+    Device memory is memory that can be allocated from the device. The device offers one or more heaps of memory that can be allocated from. Each of these heaps has a defined size and a combination of flags. These flags indicate whether memory from that heap is visible to the host, for example, or whether the memory is completely local to the device.
 
-      Command buffers have their own state. Used with vkCmd commands. Are submitted to a queue. Submissions can be executed out of order.
+    In order for the allocated memory to be useful, the application has to bind it to a resource. There are two fundamental types of resources in Vulkan, the buffer resource and the image resource.
 
-      Investigate: execute commands out of order within the same submission? If no barrier is present, of course.
-    }
+    A buffer is treated as a one-dimensional, unformatted, contiguous block of memory that can be used by the application to upload general purpose data to the device. This data may then be used during shader execution, for example, or may be copied and transformed on the GPU to another buffer or even an image.
 
-    Memory management is an important topic in Vulkan.
+    As opposed to buffer resources, an image contains more information about how the underlying memory is used. For example, an image has a particular format, such as having red-green-blue channels, each channel using 8 bits of memory. An image may also be in a particular layout, e.g. in ``shader read-only'' layout which is required when the image is supposed to be used by a shader.
 
-    \tbd
+    Another important image property is the image tiling. An image may either exist in linear tiling or optimal tiling. Linear tiling means that the underlying data of the image is layed out in memory in a linear fashion. The data will be in the same memory layout as it was when it was uploaded. The memory layout of the image data in optimal tiling, however, is not specified by Vulkan. The Vulkan implementation is free to lay out the data in memory as it sees fit. This is done in order to improve performance. Parts of the actual physical device may process an image faster in certain circumstances when the image data is not layed out linearly in memory.
+
+    \todo[inline]{Describe buffer views and image views.}
 
   \section{Command Buffers}
   \label{sec:CommandBuffers}
@@ -127,7 +128,7 @@
 
     \todo[inline]{Describe the graphics pipeline structure in Vulkan with descriptors pools/sets/layout/setLayouts.}
 
-    Vulkan uses the concept of pipelines to describe how work is performed on the GPU. It supports compute and graphics pipelines. The compute pipeline consists only of a single programmable stage. The, however, is considerably more complex. It has multiple fixed function stages and five programmable stages also called shader stages. Some of the fixed-function stages have state that can be manipulated by the application. For example the rasterization stage can be configured to interpret incoming vertex data as either a list of points, lines, or filled polygons with more than two sides.
+    Vulkan uses the concept of pipelines to describe how work is performed on the GPU. It supports compute and graphics pipelines. The compute pipeline consists only of a single programmable stage. The graphics pipeline, however, is considerably more complex. It has multiple fixed function stages and five programmable stages also called shader stages. Some of the fixed-function stages have state that can be manipulated by the application. For example, the rasterization stage can be configured to interpret incoming vertex data as either a list of points, lines, or filled polygons with more than two sides.
 
     Programs that are designed for use in shader stages are called shaders. Shaders are supplied to Vulkan in \acrfull{spir-v} format. \acrshort{spir-v} is a high-level graphics and parallel compute programming language provided in binary form. The specification of \acrshort{spir-v} is entirely maintained by the the Khronos Group \cite{spirvspecprov}. The five shader stages are listed below.
 
@@ -161,7 +162,7 @@
         \label{fig:PipelineCache}
       \end{figure}
 
-      Creating pipeline objects is a fairly heavy weight operation. To speed up pipeline creation, Vulkan provides what is called a pipeline cache. When creating a pipeline, such a pipeline cache object can be supplied by the application. Vulkan will try to find a matching pipeline in the cache. If it finds a matching pipeline, it is loaded from the cache instead of creating a new one. If no such pipeline is found in the pipeline cache, a new pipeline is created and written to the pipeline cache. Vulkan provides a command to retrieve the serialized pipeline cache, which can be saved by the application in whatever location is most convenient to it. This serialized pipeline cache can then be fed back to Vulkan at a later time. See figure~\ref{PipelineCache} for an illustration of this process.
+      Creating pipeline objects is a fairly heavy weight operation. To speed up pipeline creation, Vulkan provides what is called a pipeline cache. When creating a pipeline, such a pipeline cache object can be supplied by the application. Vulkan will try to find a matching pipeline in the cache. If it finds a matching pipeline, it is loaded from the cache instead of creating a new one. If no such pipeline is found in the pipeline cache, a new pipeline is created and written to the pipeline cache. Vulkan provides a command to retrieve the serialized pipeline cache, which can be saved by the application in whatever location is most convenient to it. This serialized pipeline cache can then be fed back to Vulkan at a later time. See figure~\ref{fig:PipelineCache} for an illustration of this process.
 
 
   \section{Synchronization}
