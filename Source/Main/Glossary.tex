@@ -14,6 +14,12 @@
 \newacronym{2d}{2D}{two-dimensional}
 \newacronym{3d}{3D}{three-dimensional}
 
+\newacronym{hlsl}{HLSL}{High Level Shading Language}
+\newacronym{d3d9}{D3D9}{\gls{d3d} 9}
+\newacronym{d3d10}{D3D10}{\gls{d3d} 10}
+\newacronym{d3d11}{D3D11}{\gls{d3d} 11}
+\newacronym{d3d12}{D3D12}{\gls{d3d} 12}
+
 \newacronym{glsl}{GLSL}{OpenGL Shading Language}
 \newacronym{spir}{SPIR}{Standard Portable Intermediate Representation}
 \newacronym{spirv}{SPIR-V}{Standard Portable Intermediate Representation version `V'}
@@ -23,28 +29,75 @@
 \newacronym{xbox360}{Xbox 360}{Xbox 360}
 \newacronym{xbone}{Xbox One}{Xbox One}
 
+\newacronym{ms}{MS}{Microsoft}
+
 
 %
 % Glossary Entries
 %
+
+\newglossaryentry{c}
+{
+  name={C},
+  description={The C programming language}
+}
+
+\newglossaryentry{cpp}
+{
+  name={C++},
+  description={The C++ programming language}
+}
+
+\newglossaryentry{ccpp}
+{
+  name={C/C++},
+  description={The C and C++ family of programming languages}
+}
 
 \newglossaryentry{host}
 {
   name={host},
   description={The user of the Vulkan API}
 }
+
 \newglossaryentry{device}
 {
   name={device},
   description={The GPU abstracted by the Vulkan API}
 }
+
 \newglossaryentry{application}
 {
   name={application},
   description={The user of or the developer that uses the Vulkan API}
 }
+
 \newglossaryentry{driver}
 {
   name={Vulkan implementation},
   description={The part of the Vulkan API that is opaque to the user, implemented in the hardware driver}
+}
+
+\newglossaryentry{opengl}
+{
+  name={OpenGL},
+  description={Open Graphics Library. A cross-platform \gls{api} for rendering in computer graphics with hardware acceleration}
+}
+
+\newglossaryentry{gles}
+{
+  name={OpenGL ES},
+  description={OpenGL for Embedded Systems. Also known as OpenGL ES or GLES}
+}
+
+\newglossaryentry{dx}
+{
+  name={DirectX},
+  description={Family of \glspl{api} for handling multimedia tasks on \acrfull{ms} platforms}
+}
+
+\newglossaryentry{d3d}
+{
+  name={Direct3D},
+  description={\glsl{dx} component used for 3D rendering in computer graphics}
 }
