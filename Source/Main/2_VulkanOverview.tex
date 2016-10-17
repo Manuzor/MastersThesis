@@ -11,6 +11,8 @@
     -- Make clear what an object is.
 
     -- Explain Vulkan interfaces and patterns.
+
+    -- Explain \gls{icd} and \gls{ihv}.
   }
   \todo[inline]
   {
@@ -49,7 +51,7 @@
 
     In order to produce images for the presentation engine to consume via the swapchain, a graphics pipeline needs to be created. This graphics pipeline consists of one or more render pass objects that hold information about how to complete a rendering step. \todo{Rewrite this sentence? Seems wonky.}Examples of the render pass state that has to be set are the used pipeline stages, such as vertex or fragment shader stages or compute shader stages, as well as setting framebuffer attachments. Render passes can be organized into subpasses which can be set up to depend on other subpasses, e.g. for post-processing.
 
-    With a graphics pipeline in place, command buffers can be used to record rendering commands such as copying \gls{device} memory to another location or issuing drawing commands. In order to record commands, the command buffer needs to be set into recording mode. For more information about command buffers, refer to chapter~\ref{cha:GpuResources}.
+    With a graphics pipeline in place, command buffers can be used to record rendering commands such as copying \gls{device} memory to another location or issuing drawing commands. In order to record commands, the command buffer needs to be set into recording mode. For more information about command buffers, refer to chapter~\ref{cha:RenderPipeline}.
 
     Vulkan objects can be created using \lstinline{vkCreate*} commands with the help of \lstinline{Vk*CreateInfo} structures. These info structures contain parameters to create the requested type of object. The contents of such info structures are specific to each creation command and require the \gls{application} developer to consult the Vulkan specification in order to provide correct input data. All \lstinline{vkCreate*} commands return handles to the objects they create. When the object is no longer in use, these handles can be used to destroy the object with the help of \lstinline{vkDestroy*} commands. For every \lstinline{vkCreate*} command Vulkan provides a corresponding \lstinline{vkDestroy*} command. The commands \lstinline{vkCreateBuffer} and \lstinline{vkDestroyBuffer} are examples for this.
 
@@ -129,6 +131,7 @@
     The \gls{application} may utilize several threads of execution to allocate command buffers from a command pool. If all threads used the same command pool or command buffer, they would need to synchronize access to that pool, as per the Vulkan specification. However, creating a command pool for each thread eliminates the need for synchronizing command buffer allocation. This can be leveraged to achieve maximum performance by dispatching work on several threads, where each is allocating command buffers at will filling them with data to be submitted to the queue later on the main thread.
 
   \section{Pipelines}
+  \label{sec:Pipelines}
     \todo[inline]
     {
       Describe descriptor-sets, descriptor-pools, etc?
