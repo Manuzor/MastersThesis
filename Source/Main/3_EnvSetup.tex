@@ -59,19 +59,54 @@
       \label{fig:VulkanLoaderWithDeviceLayers}
     \end{figure}
 
-    The \textit{Vulkan Common Loader}, is an open source project mainly developed and maintained by the Khronos Group. It can be found in the Khronos Vulkan Registry\cite{vulkanregistry}. It is written in \gls{c} and can be used by application developers either as a static or dynamically linked library.
+    The \textit{Vulkan Common Loader}, is an open source project mainly developed and maintained by the Khronos Group. It can be found in the Khronos Vulkan Registry\cite{vulkanregistry}. It is written in \gls{c} and can be used by application developers either as a statically or dynamically linked library.
 
-    The \textit{Vulkan Common Loader} is the interface between Vulkan applications and \glspl{icd}. It ensures that multiple \glspl{icd} can be installed on the same system without interfering with each other. It is also responsible for managing optional modules, called \textit{layers}. There are explicit and implicit layers. Explicit layers are only loaded when the Vulkan application requests these layers explicitly. This is done when creating a Vulkan instance or a Vulkan device. Implicit layers, on the other hand, are activated by default. An example for an explicit layer is some kind of validation layer, for instance one that tracks Vulkan object lifetimes. An exaple for an explicit layer is one that tracks the lifetimes of Vulkan objects.
+    The \textit{Vulkan Common Loader} is the interface between Vulkan applications and \glspl{icd}. It ensures that multiple \glspl{icd} can be installed on the same system without interfering with each other. It is also responsible for managing optional modules, called \textit{layers}. These layers are implemented as software libraries. There are explicit and implicit layers. Explicit layers can only be enabled when the Vulkan application requests these layers explicitly. \todo{Elaborate on controlling layer activation}This is done when creating a Vulkan instance or a Vulkan device. Implicit layers, on the other hand, are activated by default.
 
-    \todo{Explain layers here now?? Maybe merge sec \ref{sec:EnvLayersAndExtensions} with this one.}
+    \todo[inline]{Explain differences between explicit and implicit layers a bit more?}
 
+    \todo[inline]{Explain layers here now??}
 
+    \todo[inline]{Example for an implicit layer: Steam layer with UI overlay. Contrast it maybe with RenderDoc or validation layers.}
 
+    \todo[inline]{Besides layers there are also extensions.}
+    As explained in section~\ref{sec:WorkflowAndPatterns}, the first object that has to be created by every Vulkan application is the Vulkan instance. This instance can be used to query all layers that are available for that Vulkan instance.
 
-  \section{Layers and Extensions}
-  \label{sec:EnvLayersAndExtensions}
-    \tbd
-    \todo[inline]{Merge with the previous chapter?}
+    \lstinputlisting[
+      label=lst:VulkanFunctionLoading,
+      caption={Pseudocode for loading different Vulkan functions using the common loader module on a win32 platform.},
+      style=MyCppFloat,
+      float,
+      emph={vkGetInstanceProcAddr, vkGetDeviceProcAddr},
+      emphstyle={\underbar}
+    ]
+    {Main/Listings/VulkanFunctionLoading.txt}
+
+    In addition to what has been described so far, a layer is also able to provide several Vulkan \textit{extensions}. These extensions may define additional Vulkan commands that can be queried via the common loader using \lstinline{vkGetInstanceProcAddr} and \lstinline{vkGetDeviceProcAddr}, which are Vulkan commands to retrieve addresses of functions in a library which are identified by their name. Usage of these Vulkan commands, in the context of a Windows operating system platform, is demonstrated in listing \ref{lst:VulkanFunctionLoading} as pseudocode. On the first line, the Windows API is used to load the Vulkan Common Loader, simply called \lstinline{Loader} in the sample. On this platform, the Vulkan Common Loader for Vulkan specification 1.0 and above is a \gls{dll} and is called \textit{vulkan-1.dll}. Because it is open source software, the Vulkan Common Loader may be compiled and named by anyone to anything they like. Continuing in the sample, the next step is to acquire the function \lstinline{vkGetInstanceProcAddr} from the Loader module. The \lstinline{vkGetInstanceProcAddr} function is used to load function addresses from the Loader module that are tied to a specific Vulkan Instance. This Vulkan Instance is passed to the \lstinline{vkGetInstanceProcAddr} function as the first argument. The second argument is the name of the function to load. On line 3 in the sample, \lstinline{NULL} is passed as the Vulkan Instance. This is only allowed for a small set of functions that are not directly tied to a specific Vulkan Instance. \lstinline{vkCreateInstance} is one such function, which is subsequently used to create a Vulkan instance on line 4. As you can see the first argument to \lstinline{vkCreateInstance} is an instance of the \lstinline{VkInstanceCreateInfo} structure. This structure is where the
+
+    \lstinputlisting[
+      label=lst:VkInstanceCreateInfo,
+      caption={Definition of the \lstinline{VkInstanceCreateInfo} structure.},
+      style=MyCppFloat,
+      float,
+      emph={ppEnabledLayerNames, ppEnabledExtensionNames},
+      emphstyle={\underbar}
+    ]
+    {Main/Listings/VkInstanceCreateInfo.txt}
+
+    However, some other function addresses can be loaded without that Vulkan instance. In the sample on line 3, the first argument is \lstinline{NULL}.
+
+    \todo[inline]{Extensions are explicitly activated.}
+
+    \todo[inline]{There are instance extensions and device extensions.}
+
+    \todo[inline]{Instance extensions are debug layers, validation layers, etc.}
+
+    \todo[inline]{Device extensions are for vendor-specific extensions, such as NV\_glsl that support loading glsl shader code. For more on shaders see sec:EnvShaders.}
+
+    \todo[inline]{Layers are discovered by the loader via the registry on Windows and in special directories on Unix based platforms. Files discovered there are always in JSON format and provide information about the library location and more.}
+
+    \todo[inline]{Dissect an example JSON file and explain the parts here?}
 
 
   \section{LunarG Vulkan SDK}

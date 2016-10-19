@@ -50,7 +50,7 @@
 \definecolor{CodeString}{rgb}{0.0,0.3,0.0}
 
 \usepackage{listings}
-\lstdefinestyle{MyCpp}
+\lstdefinestyle{MyCppInline}
 {
   language=[11]C++,
   % backgroundcolor=\color{backcolour},
@@ -70,7 +70,30 @@
   showtabs=false,
   tabsize=2
 }
-\lstset{style=MyCpp}
+\lstdefinestyle{MyCppFloat}
+{
+  language=[11]C++,
+  % backgroundcolor=\color{backcolour},
+  commentstyle=\color{CodeComment},
+  keywordstyle=\color{CodeKeyword},
+  numberstyle=\ttfamily\color{CodeComment},
+  stringstyle=\color{CodeString},
+  basicstyle=\scriptsize\ttfamily,
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+  numbers=left,
+  numbersep=5pt,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=2,
+  frame=single,
+  lineskip={0.5em}
+}
+\lstset{style=MyCppInline, frameround=tttt}
+% \renewcommand\lstlistoflistingsname{List of Listings}
 
 \usepackage{hyperref}
 \hypersetup{
