@@ -101,9 +101,11 @@
 
     \todo[inline]{Device extensions are for vendor-specific extensions, such as NV\_glsl that support loading glsl shader code. For more on shaders see sec:EnvShaders.}
 
-    \todo[inline]{Layers are discovered by the loader via the registry on Windows and in special directories on Unix based platforms. Files discovered there are always in JSON format and provide information about the library location and more.}
+    \todo[inline]{Layers are discovered by the loader via the registry on Windows and in special directories on Unix based platforms. Files discovered there are always in JSON format and provide information about the library location and more. \lstinline{HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan}}
 
     \todo[inline]{Dissect an example JSON file and explain the parts here?}
+
+    \todo[inline]{Mention that the order in which layers are activated matters?}
 
 
   \section{LunarG Vulkan SDK}
@@ -111,6 +113,8 @@
     The LunarG Vulkan \gls{sdk}\cite{lunargvulkansdk} is a \acrlong{sdk} developed by LunarG. LunarG is a software company that develops tools and infrastructure for Vulkan development. The company itself is sponsored by Valve Corporation. The first version of the LunarG \gls{sdk} was released at the same time as version 1.0 of the Vulkan specification.
 
     Developing a Vulkan application does not require the LunarG \gls{sdk} to be installed. For that, only the Vulkan header and common loader are required. However, the LunarG \gls{sdk} includes these two components and a number of additional components. These components are meant to help making it easier to develop Vulkan applications. Aside from the Vulkan header and the common loader, the \gls{sdk} also includes several Vulkan layers, debugging tools, tools that aid in creating shader modules compatible with Vulkan, the Vulkan API documentation, and a range of Vulkan samples and demos as well as a sample-driven tutorial.
+
+    \todo[inline]{Introduce the \lstinline{vulkaninfo} command.}
 
 
   \section{Shaders}
@@ -134,7 +138,11 @@
 
   \section{Debugging and Profiling}
   \label{sec:DebuggingAndProfiling}
-    \todo[inline]{Describe debugging here.}
+    The layered architecture of Vulkan makes it straight-forward for tool developers to provide debugging and profiling tools that integrate seamlessly with existing Vulkan applications. These tools usually just offer one or more layers, and possibly some extensions, that are either implicitly or explicitly activated.
+
+    The LunarG Vulkan \gls{sdk} comes with a variety of layers, many of which are debugging layers. It also provides a layer which combines all debugging layers in one layer in an optimal order called \lstinline{VK_LAYER_LUNARG_standard_validation}. All these debugging layers, including the standard validation layer, are explicit layers that have to be activated when creating a Vulkan instance. Layers have been described in section~\ref{sec:LayersAndExtensions} and the careful reader might have noticed that layers do not get back in touch with the Vulkan application directly. \todo{Find out where this extension is coming from?}For this purpose the \lstinline{VK_EXT_debug_report} extension is used. This extension provides additional Vulkan commands that can be used to supply a callback that will be triggered whenever a layer, that supports the debugging interface, needs to communicate back to the Vulkan application. For example, when a validation layer detects errouneous input, it will invoke the supplied debug callback and inform the application of invalid behavior.
+
+    Another tool for debugging, that is also supplied with the LunarG Vulkan \gls{sdk}, is RenderDoc\cite{renderdoc}. RenderDoc is a graphics debugging tool that allows the developer to inspect pipeline states at each \gls{api} invokation. RenderDoc provided \gls{d3d} and \gls{opengl} support for quite some time already but also provides Vulkan support since the release of Vulkan 1.0. When RenderDoc is installed, it also installs the implicit layer called \lstinline{VK_LAYER_RENDERDOC_Capture}. This means that any Vulkan-enabled application is can be debugged using RenderDoc. This layer is used to capture \gls{api} calls and track state in that way. In order for RenderDoc to work, it has to be hooked up with the Vulkan application that is to be inspected. Once hooked up, RenderDoc is rendering s small amount of statistics, such as current framerate, in the upper left corner of the applications window. It also shows which button to press to instruct RenderDoc to capture a frame. Once a frame was captured it can be inspected inside of the RenderDoc UI.
 
     Once a Vulkan application is running correctly, the developer might also be interested whether it runs \textit{efficiently}. This is especially important for many real-time applications such as video games. Due to the young age of Vulkan, there aren't many profiling tools specifically tailored to Vulkan applications. There are some tools that can aid in this regard, though. The LunarG SDK, as described in \ref{sec:LunarGSDK}, offers API tracing and playback tools. This tool effectively records which commands are performed by an application, measuring the execution time of individual commands. This can help in tracking down bottlenecks observed on the host-side. The RenderDoc Graphics Debugging\cite{renderdoc} also has the capability of tracking API calls. However, tools of this kind are not capable of capturing how the GPU behaves for a given Vulkan application. At the time of writing, no Vulkan-specific GPU profiling tool is known to the author of this work. There are other tools that are more general that can be used for GPU profiling, though. One such tool is \gls{nvidia} FCAT\cite{nvidiafcat}. This tool requires a special piece of hardware, called a \textit{capture card}, that captures the output of a graphics card and displays analysis results directly on the attached computer display.
 
