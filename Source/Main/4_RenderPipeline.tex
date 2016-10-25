@@ -6,6 +6,8 @@
   {
     Possible titles:
 
+    -- Rendering Workflow
+
     -- Applying the Rendering Pipeline
 
     -- Rendering in Vulkan
@@ -13,6 +15,7 @@
     -- Rendering Commands and Resource Handling/Management
   }
 
+  \todo[inline]{Pipeline creation? caching?}
   \todo[inline]{Commandbuffer building. (CBs can be viewed as functions).}
   \todo[inline]{Communication with the GPU}
   \todo[inline]{Image tiling and layout}
@@ -20,15 +23,35 @@
   \todo[inline]{Commandbuffer submission. Mention out-of-order execution. Analogous to CPU instruction dispatch.}
   \todo[inline]{Commandbuffers can be built once and submitted multiple times.}
   \todo[inline]{"Setup commandbuffers", "Draw commandbuffers", "pre/post-draw commandbuffers"}
-  \todo[inline]{Concurrency/Parallelism for building commandbuffers.}
-  \todo[inline]{Pipeline creation? caching?}
   \todo[inline]{Binding of resource to memory: bind a dummy for as long as the resource loads.}
 
-  \tbd
+  This chapter describes a set of basic steps to get an image on the screen. It assumes a swapchain is set up and ready to be used using the swapchain extension as described in section~\ref{sec:WorkflowAndPatterns}.
+
+  \todo[inline]{Put the following in its own section?}
+
+  Commandbuffers are not unlike procedures where every instruction within that procude is dynamically recorded at runtime. Just like procedures on the \gls{cpu}, commandbuffers translate to machine instructions on the \gls{gpu}. When a commandbuffer is submitted, commands within that command buffer may be executed out-of-order, i.e. in another order than they were recorded, if the \gls{driver} or the \gls{gpu} decide to be more efficient in some way.
+
+  There are two kinds of commandbuffers: primary commandbuffers and secondary commandbuffers. Primary commandbuffers may be directly submitted to a device queue. Secondary commandbuffers, on the other hand, must be executed as part of a primary command buffer. The Vulkan command \lstinline{vkCmdExecuteCommands} may be used for this. \todo{Find out more about secondary commandbuffers!}Secondary commandbuffers are basically like macros.
+
+  \todo[inline, color=red!60]{Find out why secondary commandbuffers even exist! Might as well use a macro in C to record the same sequence of commands.}
+
 
   \section{Multithreaded Rendering}
   \label{sec:MultithreadedRendering}
-    \todo[inline]{Motivation. Additional complexity.}
-    \todo[inline]{}
+    \todo[inline]{Motivation. Additional complexity. Applications must be sure they gain anything from using multithreading.}
     \tbd
 
+    \subsection{Multithreaded Commandbuffer Recording}
+      \todo[inline]{References to the talks where most of this is discussed?}
+
+      As mentioned in chapter~\ref{cha:VulkanOverview}, the \gls{driver} has only limited support for multithreaded access. However, this does not mean that multithreading on the \gls{cpu} has not been taken into account when Vulkan was designed. Vulkan offers a way to utilize multiple threads on the \gls{cpu} in order to
+
+      A naive approach to utilizing multithreading is to create several commandbuffers and assign them to multiple threads. These threads would then record commands to their assigned commandbuffers and submit them to a device queue. There are multiple problems with this approach. First, as specified in section~5.3 of the Vulkan specification\cite{vkspec}, recording commands must be synchronized by the host application. This means that using commandbuffers from multiple threads is not thread-safe. The same problem exists for the submission of commandbuffers to device queues. According to section~5.4 of the Vulkan specification, this operation has to be synchronized by the host application as well.
+
+      The problem with the queue submission could be solved as follows. Instead of submitting their own commandbuffers, each thread would notify the main thread of when their commandbuffers are ready to be submitted. This way, the main thread could safely submit all commandbuffers that are ready at well-defined synchronization-free points of the application execution. This would solve the queue-submission problem.
+
+      Due to careful design of the Vulkan \gls{api}, the first problem can be solved in an elegant way. Instead of assigning commandbuffers to threads, each thread would be assigned a commandpool instead. Because command buffers only operate within the memory region of the command pool that created them, there is no need to synchronize commandbuffer operations that are conducted on a single thread as long as they stem from a command pool that is also only accessed on that thread. In other words, each thread would simply get their own command pool and create commandbuffers from it as necessary. As before, commandbuffers ready to be submitted would be signalled to the main thread using some traditional synchronization methods, e.g. using a double-ended queue for command buffers and semaphores for synchronization.
+
+    \subsection{Multithreaded Resource Creation}
+      \todo[inline]{Resource creation thread? Would need to preallocate memory or sync allocations.}
+      \tbd
