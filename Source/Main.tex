@@ -1,13 +1,28 @@
 %!TEX program = xelatex
 \documentclass{scrreprt}
 \usepackage{scrhack}
+\usepackage{setspace}
+\onehalfspacing
+
+\voffset=2em
+
 \KOMAoptions
 {
   draft,
-  DIV=calc, % this will calculate correct margins
   fontsize=12pt,
   listof=numbered,
+  headlines=4,
+  BCOR=10mm,
+  DIV=9,
 }
+
+\usepackage[automark,headsepline]{scrlayer-scrpage}
+\ihead{}
+\chead{}
+\ohead{\headmark}
+\ifoot{}
+\cfoot{}
+\ofoot{\pagemark}
 
 \usepackage[english]{babel}
 
@@ -140,6 +155,7 @@
   %
   \newpage
   \null
+  \thispagestyle{empty}
   \pagenumbering{gobble}
 
 
