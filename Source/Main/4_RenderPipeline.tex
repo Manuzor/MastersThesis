@@ -52,14 +52,13 @@
       However, this does not mean that multi-threading on the \gls{cpu} has not been taken into account when Vulkan was designed.
       There are actually several ways of utilizing multiple threads for rendering with Vulkan.
 
-      A naive approach to utilizing multi-threading is to create several command buffers and assign them to multiple threads.
+      A naive approach to utilize multi-threading is to create several command buffers and assign them to multiple threads.
       These threads would then record commands to their assigned command buffers and submit them to a device queue.
       Unfortunately, there are some problems with this approach.
       According to sections~5.3~and~5.4 of the Vulkan specification\cite{vkspec}, the host application is responsible for synchronizing interactions with command buffers and submitting them to device queues.
-      This means that using command buffers from multiple threads is not thread-safe in the scenario described above.
 
       % Problem with command buffers and multi-threaded access.
-      \todo{duplicated!}Accessing command buffers from multiple threads is not thread-safe.
+      Command buffer access is not thread-safe.
       This is because memory used by command buffers is managed by the parent command pool.
       The actual algorithms used for managing memory are left to the \gls{driver}.
       % Done for implementations to be more memory efficient.
@@ -80,9 +79,9 @@
 
       Command pools effectively do not need to be manually synchronized across multiple threads if they are not shared with them.
       In addition, command buffers created from such command pools inherit the same properties.
-      Thus, it is more suitable to assign one or more command pools to multiple threads.
+      Thus, it is more suitable to assign one or more command pools per thread.
       % Threads then allocate and record into as many command buffers as needed.
-      Each thread is then free to allocate and record into as many command buffers as needed without having to conduct any kind of synchronization.
+      Each thread is then free to allocate and record into as many command buffers as needed without having to conduct fine-grained synchronization.
 
       % Let main thread submit command buffers by sharing a datastructure with synchronized access.
       In order for command buffers allocated on other threads to be submitted to the device queue, the main thread may provide a shared datastructure that is capable of containing command buffer objects.
@@ -90,6 +89,8 @@
       % Turns the initial problem into well-understood producer-consumer problem\cite{EWD:EWD329}.
       % Solves the inital queue submission problem.
       This effectively creates the well-understood producer-consumer scenario\cite{EWD:EWD329} and solves the initial queue submission problem.
+
+      \todo[inline]{Prev paragraph is just a suggestion. May be better to do differently. Depends on application.}
 
       \subsubsection{Command Buffer Management Considerations}
         % ... There is another problem with the system mentioned above.
@@ -106,26 +107,27 @@
         Vulkan prohibits modifying submitted command buffers that are pending execution on the device.
         This includes freeing these command buffers, i.e. the application is responsible for keeping them alive as long as they are pending execution.
         In practice, this effectively means command buffers submitted in batches may only be modified or reused once the entire submission has finished execution because it is hard to predict when individual commands are processed if more than one command buffer is submitted.
-        Out-of-order execution is only one reason for this unpredictability.
+        Out-of-order execution is one reason for this unpredictability.
         The simplest way to solve this problem is to just use new command buffers for every new batch submission.
-        This poses some management overhead since individual command buffers need to be associated to these batches in order to be freed or reused.
+        This poses some management overhead since individual command buffers need to be associated to these batches in some way in order to be freed or reused.
+        Vulkan does not do this automatically.
         Otherwise, if command buffers are never freed, the application ends up allocating a lot more than necessary, effectively leaking memory.
 
         % Command pools better than just using command buffers because of decoupled underlying memory and clean separation of concern.
         A better way might be to use command pools for this purpose.
         Managing command buffers is already what they do and it also offers a clean separation of concerns between the different batches of command buffers.
-        In other words, using command pools to allocate command buffers that are submitted together provides an easy way to manage these command buffers in a uniform way.
+        In other words, using command pools to allocate command buffers that are submitted together provides a way to manage these command buffers using standard methods.
         Vulkan allows command pools to be reset, effectively resetting all command buffers spawned from them, respectively.
         This means that command pools may be reused after its associated batch of submitted command buffers has finished execution.
         When resetting a command pool, the host application is free to choose whether allocated resources should be released or not.
         If a command pool is going to be reused, and the resources associated with it are not released, this command pool can directly start producing command buffers without causing additional allocation overhead.
         This provides a clean way for managing command buffer lifetimes without the need to use anything but the Vulkan \gls{api} itself.
 
-        Care must be taken, however, in cases where many commands are allocated only once, e.g. when uploading large amount of resources to the \gls{gpu} in one submission.
-        In these cases, the command pool may request large amounts of host memory where only parts of it is used during normal rendering, potentially resulting in a waste of memory.
-        It might be worth handling such special cases differently than regular rendering.
-
         \todo{Is it better to write "Similar approaches have been described by industry experts[X][Y]"?}Similar approaches have been described by Marius Bjørge\cite{bjorge:multithreadingvulkan} in his blog post about multi-threading in Vulkan as well as Mathias Schott\cite{mschott:vulkan_multi_threading} in his talk entitled "Vulkan multi-threading".
+
+        Care must be taken, however, in cases where many commands are allocated only once, e.g. when uploading large amounts of resources to the \gls{gpu} in one submission.
+        In these cases, the command pool may request large amounts of host memory where only parts of it are used during normal rendering, potentially resulting in a waste of memory.
+        It might be worth handling such special cases differently than regular rendering.
 
     \subsection{Multi-threaded Resource Creation}
       Vulkan applications need to create resources such as images and shaders.
@@ -144,7 +146,7 @@
       Every resource creation thread needs device memory in one way or another.
       There are basically two ways of accomplishing this without race conditions.
       The first way is to preallocate the memory that is available for each thread.
-      This method does not require synchronization between threads because all this work can be performed on the main thread.
+      This method does not require synchronization between threads because each is assigned a memory region that is not overlapping memory from other threads.
       The second way is to assign a memory allocator to each thread that internally synchronizes the calls.
       This method does not require the main thread to know the size of the resources each thread creates but memory allocations need to be synchronized.
       Again, the method of choice depends on the application.

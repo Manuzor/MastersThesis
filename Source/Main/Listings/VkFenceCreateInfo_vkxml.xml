@@ -1,0 +1,13 @@
+<type category="struct" name="VkFenceCreateInfo">
+    <member values="VK_STRUCTURE_TYPE_FENCE_CREATE_INFO">
+        <type>VkStructureType</type> <name>sType</name>
+    </member>
+    <!-- Pointer to next structure -->
+    <member>
+        const <type>void</type>* <name>pNext</name>
+    </member>
+    <!-- Fence creation flags -->
+    <member optional="true">
+        <type>VkFenceCreateFlags</type> <name>flags</name>
+    </member>
+</type>

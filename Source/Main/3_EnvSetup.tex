@@ -44,13 +44,37 @@
     The Vulkan header file is generated from a more abstract representation called the Vulkan API Registry.
     The most recent version can be found in the Vulkan-Docs repository on GitHub, which can be found in the Khronos Vulkan Registry\cite{vulkanregistry}.
     This repository contains the generated \gls{ccpp} header file.
-    It also contains the file \lstinline{vkspec.xml} and a set of tools to generate the Vulkan header from it.
-    The \lstinline{vkspec.xml} essentially contains annotated C code with XML markup that is \todo{"extract" is better}easier to parse than pure C code.
-    The annotations also contain contextual information, something pure C code could not easily or conveniently provide.
-    This additional layer of abstraction was created in order to support generating a Vulkan API for contexts different from C and \gls{cpp}.
-    This means that it is possible to use these tools to generate native bindings for other programming languages, such as \gls{csharp} or \gls{python}.
+    It also contains the file \lstinline{vk.xml} and a set of tools to generate the Vulkan header from it.
 
-    \todo[inline]{Explain a sample of a vkspec.xml entry.}
+    \lstinputlisting[
+      label=lst:VkFenceCreateInfo_vkxml,
+      caption={The definition of \lstinline{VkFenceCreateInfo} as found in \lstinline{vk.xml}.},
+      style=MyXML,
+      float
+    ]
+    {Main/Listings/VkFenceCreateInfo_vkxml.xml}
+
+    \lstinputlisting[
+      label=lst:VkFenceCreateInfo,
+      caption={The result of generating C bindings from listing~\ref{lst:VkFenceCreateInfo_vkxml}.},
+      style=MyCppFloat,
+      float
+    ]
+    {Main/Listings/VkFenceCreateInfo.txt}
+
+    The \lstinline{vk.xml} essentially contains annotated C code with XML markup.
+    The annotations also contain contextual information, something pure C code could not easily or conveniently provide in a standard way.
+    Listing~\ref{lst:VkFenceCreateInfo_vkxml} shows the definition of a Vulkan structure as defined in the \lstinline{vk.xml} file.
+    For this particular entry, the resulting Vulkan header file will contain the definition shown in listing~\ref{lst:VkFenceCreateInfo}.
+
+    This additional layer of abstraction is useful to generate the Vulkan API in different ways.
+    For example, when using \gls{cpp}, structures and functions may be reorganized into classes and methods instead, resulting in a code style that is more common in \gls{cpp}.
+    It also makes it easier to generate native bindings for other programming languages, such as \gls{csharp} or \gls{python}.
+    Line 10 of listing~\ref{lst:VkFenceCreateInfo_vkxml} shows the xml attribute \lstinline{optional="true"}.
+    It basically states that it is allowed to pass a flags value of zero, i.e. no flags are set.
+    Such an annotation would not be possible in regular C code.
+    This is the main advantage of expressing the Vulkan API in this abstract format.
+
 
   \section{Vulkan Common Loader}
   \label{sec:VulkanLoader}
@@ -82,11 +106,11 @@
     \todo{Elaborate on controlling layer activation}This is done when creating a Vulkan instance or a Vulkan device.
     Implicit layers, on the other hand, are activated by default.
 
-    \subsection{FOOO}
-    \todo[inline]{Section caption!}
+    \subsection{Interaction with an ICD}
 
     As explained in section~\ref{sec:WorkflowAndPatterns}, the first Vulkan object that has to be created by every application is the Vulkan instance.
     This instance can be used to query all layers that are available for that Vulkan instance.
+    In this section, the process of loading Vulkan commands and interacting with the \gls{driver} and all layers in-between is looked at in more detail.
 
     \lstinputlisting[
       label=lst:VulkanFunctionLoading,
@@ -124,26 +148,32 @@
 
     On the first line, the \gls{winapi} is used to load the \gls{vkloader}, simply called \lstinline{Loader} in the sample.
     On this platform, the \gls{vkloader} for Vulkan specification 1.0 and above is a \gls{dll} and is called \textit{vulkan-1.dll}.
+
     Continuing in the sample, the next step is to acquire the function \lstinline{vkGetInstanceProcAddr} from the Loader module.
     The \lstinline{vkGetInstanceProcAddr} function is used to load function addresses from the Loader module that are tied to a specific Vulkan instance.
     This Vulkan instance is passed to the \lstinline{vkGetInstanceProcAddr} function as the first argument.
     The second argument is the name of the function to load.
+
     On line 3 in the sample, \lstinline{NULL} is passed as the Vulkan instance.
     This is only allowed for a small set of functions that are not directly tied to a specific Vulkan instance.
     \lstinline{vkCreateInstance} is one such function, which is subsequently used to create a Vulkan instance on line 4.
     The first argument to \lstinline{vkCreateInstance} is an instance of the \lstinline{VkInstanceCreateInfo} structure.
     Among other things, this structure is used to enable a set of layers and extensions.
     The underlined elements in listing~\ref{lst:VkInstanceCreateInfo} show the relevant fields in order to enable the respective layers and extensions.
+
     In line 5 the address of the Vulkan command \lstinline{vkCreateDevice} is acquired.
     Instead of passing \lstinline{NULL}, this time the actual Vulkan instance is passed.
     This is done in order for the loader to know which active layers have to be notified about this call since they might have registered hooks to intercept the calls when creating a Vulkan device.
+
     In the next line, a Vulkan device is created using the previously fetched Vulkan command.
     During this call, all active and relevant layers, meaning all those layers that registered a hook for this case, are traversed and notified about this call.
     Similar to the process of creating a Vulkan instance, when creating a device, the application can request certain \textit{device extensions} to be activated.
     As can be seen in listing~\ref{lst:VkDeviceCreateInfo}, the process of requesting these extensions is the very similar to requesting instance-level extensions.
+
     Line 7 acquires the address to the Vulkan command called \lstinline{vkGetDeviceProcAddr} which is used to acquire function addresses from a specific \gls{icd}.
     This way, the Vulkan application can get the implementation of a command directly from the \gls{icd}.
     This alleviates the work required from the \gls{vkloader} as it does no longer have to look up the correct \gls{icd} for the context of the current call.
+
     Lines 8 and 9 are just examples of how a device-specific command is queried and executed.
     Just like before, the \gls{vkloader} will make sure all relevant layers are notifed about this call, even though this time it is a device-specific call as opposed to an instance-specific call.
 
@@ -151,24 +181,14 @@
     Because every layer is called in order, every layer introduces additional overhead per \gls{api} call.
     Validation layers, for example, are typically not desired in a production scenario.
     At the time of writing there is no standard way to get \gls{icd} modules using the \gls{vkloader}.
-    However, because of the \gls{vkloader} being open-source software, an \todo{this is meant to be the "developer"}application could extract the relevant loader logic, customizing it to their specific needs.
-    This should only be done if absolutely necessary, though, because it requires the application to maintain their port of the \gls{vkloader} and thus may stop working correctly with future revisions of the internal behavior of the original \gls{vkloader}.
+    However, because of the \gls{vkloader} being open-source software, a developer is able to extract the relevant loader logic, customizing it to their specific needs.
+    This should only be done if absolutely necessary because it requires the developer to maintain their port of the \gls{vkloader} in case future revisions of the original \gls{vkloader} change internal behavior or layer and extension conventions crucial for proper execution of the application.
+    Otherwise the developer risks that their application stops working because of incompatibilities.
+    After all, internals or conventions introduced by the original \gls{vkloader} are not standardized or specified by Vulkan.
 
-    \todo[inline]{Performance with layers.
-    What to do in release builds: get device addresses, deactivate layers, etc...}
+    \todo[inline]{Device extensions are for vendor-specific extensions, such as NV\_glsl that support loading glsl shader code. For more on shaders see sec:EnvShaders.}
 
-    \todo[inline]{Extensions are explicitly activated.}
-
-    \todo[inline]{There are instance extensions and device extensions.}
-
-    \todo[inline]{Instance extensions are debug layers, validation layers, etc.}
-
-    \todo[inline]{Device extensions are for vendor-specific extensions, such as NV\_glsl that support loading glsl shader code.
-    For more on shaders see sec:EnvShaders.}
-
-    \todo[inline]{Layers are discovered by the loader via the registry on Windows and in special directories on Unix based platforms.
-    Files discovered there are always in JSON format and provide information about the library location and more.
-    \lstinline{HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan}}
+    \todo[inline]{Layers are discovered by the loader via the registry on Windows and in special directories on Unix based platforms. Files discovered there are always in JSON format and provide information about the library location and more. \lstinline{HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan}}
 
     \todo[inline]{Dissect an example JSON file and explain the parts here?}
 
@@ -194,10 +214,12 @@
   \section{Shaders}
   \label{sec:EnvShaders}
     As mentioned in section~\ref{sec:Pipelines}, Vulkan expects shaders to be in \gls{spirv} format.
-    Since \gls{spirv} is a binary format, it is meant to be the result of some kind of conversion operation from another shader representation.
-    \todo{rewrite this sentence? sounds funny...} A common way to write shaders for Vulkan applications is by first writing them in \gls{glsl} and then converting these shaders to \gls{spirv} using a special tool.
+    \gls{spirv} is a binary format and is not meant to be human-reabable.
+    Instead of writing shaders directly in \gls{spirv} format, they are usually written in \gls{glsl} and converted to \gls{spirv} in a subsequent step.
     This tool is called \textit{glslangValidator}\cite{glslangrepo} and is a command-line based tool that is able to validate \gls{glsl} code and to convert it into other representations.
     \todo{Describe what exactly is required. layout=N, binding=N, set=N, \#extensionm, ...}It requires the \gls{glsl} source code to be written in a specific way in order to be converted to \gls{spirv}.
+
+    \todo[inline]{explain that shaders can be converted in different shader stages, e.g. vertex-, fragment-stage, hence the file endings and filenames}
 
     \lstinputlisting[
       label=lst:glslangcmd,
@@ -207,8 +229,6 @@
     ]
     {Main/Listings/glslangValidator.txt}
 
-    \todo[inline]{explain that shaders can be converted in different shader stages, e.g. vertex-, fragment-stage, hence the file endings and filenames}
-
     Listing \ref{lst:glslangcmd} shows how to convert two shader programs, provided in \gls{glsl} format, to \gls{spirv} using Glslang.
     The \lstinline{-V} switch tells Glslang to convert to Vulkan-compatible \gls{spirv} format.
     The \lstinline{-o} switch is used to control how the output file is named.
@@ -217,7 +237,7 @@
 
     Another approach is to use a custom-made front-end that would be convertible to \gls{spirv}.
     This might be the favorable approach for many graphics or game engines since these technologies \todo{Do I need references here?}usually have their own abstract representation of shader functionality.
-    Being able to directly translate to \gls{spirv} removes the need to translate into some human-readable form first, such as \gls{glsl}.
+    Being able to directly translate to \gls{spirv} removes the need to translate into some human-readable form first, such as \gls{glsl}, as was the case with \gls{opengl}.
 
 
   \section{Debugging and Profiling}
@@ -229,7 +249,7 @@
     It also provides a layer which combines all debugging layers in one layer in an optimal order called \todo{Mention the \lstinline{VK_LAYER_LUNARG_} prefix?}\lstinline{standard_validation}.
     All these debugging layers, including the standard validation layer, are explicit layers that have to be activated when creating a Vulkan instance.
     Layers have been described in section~\ref{sec:LayersAndExtensions} and the careful reader might have noticed that layers do not get back in touch with the Vulkan application directly.
-    \todo{Find out where this extension is coming from?}For this purpose the \lstinline{VK_EXT_debug_report} extension is used.
+    \todo{Find out where this extension is coming from? i.e. from which layer. Seems like all layers provide it?!}For this purpose the \lstinline{VK_EXT_debug_report} extension is used.
     This extension provides additional Vulkan commands that can be used to supply a callback that will be triggered whenever a layer, that supports the debugging interface, needs to communicate back to the Vulkan application.
     For example, when a validation layer detects erroneous input, it will invoke the supplied debug callback and inform the application of invalid behavior.
 
@@ -243,6 +263,8 @@
     Once hooked up, RenderDoc is rendering a small amount of statistics, such as current framerate, in the upper left corner of the applications window.
     It also shows which button to press to instruct RenderDoc to \todo{elaborate on the term "capture" and what it actually does}capture a frame.
     Once a frame was captured it can be inspected inside of the RenderDoc UI.
+    When capturing a frame, RenderDoc not only captures
+    This captured frame contains, among other things, the state of the frame buffers but also records \gls{api} calls, shows their \gls{cpu} execution time, shows bound textures for active shaders, and more.
 
     Once a Vulkan application is running correctly, the developer might also be interested whether it runs \textit{efficiently}.
     This is especially important for many real-time applications such as video games.
@@ -253,18 +275,23 @@
     This can help in tracking down bottlenecks observed on the host-side.
     The RenderDoc Graphics Debugging Tool\cite{renderdoc} also has the capability of tracking API calls.
     However, tools of this kind are not capable of capturing how the GPU behaves for a given Vulkan application.
-    At the time of writing, no Vulkan-specific GPU profiling tool is known to the author of this work.
-    Although, there are other, more general tools that can be used for GPU profiling.
-    One such tool is \gls{nvidia} FCAT\cite{nvidiafcat}.
-    This tool requires a special piece of hardware, called a \textit{capture card}, that captures the output of a graphics card and displays analysis results directly on the attached computer display.
-    Thus, it does not rely on application-specific, internal measurements.
-    Usage of this tool is note wide-spread, but at least some computer magazines use it for benchmarking when comparing different models of graphics and compute harcware\cite{eurogamer2016:doomvulkan}\todo{citations! At least 2.}.
+    At the time of writing, no Vulkan-specific GPU profiling tool is known to the author \todo{Remove "of this work"?}of this work.
+
+    % For measuring \gls{gpu} behavior on a more general scale, other tools can be used.
+    % One such tool is \gls{nvidia} FCAT\cite{nvidiafcat}.
+    % This tool requires a special piece of hardware, called a \textit{capture card}, that captures the output of a graphics card and displays analysis results directly on the attached computer display.
+    % Thus, it does not rely on application-specific, internal measurements.
+    % Usage of this tool is not wide-spread but
+    % Usage of this tool is note wide-spread, but at least some computer magazines use it for benchmarking when comparing different models of graphics and compute harcware\cite{eurogamer2016:doomvulkan}\todo{citations! At least 2.}.
+
     The Vulkan \gls{api} itself also provides so-called \textit{timestamp queries}.
-    These queries can be used to insert special query commands into a commandbuffer that write a timestamp value into a \textit{query pool}.
-    The results recorded in the query pool can than be read from the host.
-    \todo{Is this comprehensive enough?}This gives applications the opportunity to implement their own \gls{gpu} profiling system by taking time samples at application-defined points in a commandbuffer.
+    These queries can be used to insert special query commands into a command buffer to write a timestamp value into a \textit{query pool}.
+    The results recorded in the query pool can then be read from the host at certain times.
+    \todo{Is this comprehensive enough?}This gives applications the opportunity to implement their own internal \gls{gpu} profiling system by taking time samples at application-defined points within command buffers.
     See section~16.5 of the Vulkan specification\cite{vkspec} for details.
 
-    \todo{Better phrasing? Make it more formal.}Vulkan has only been around for a short while now.
+    \todo[inline]{Omit the following paragraph?}
+    % \todo{Better phrasing? Make it more formal.}Vulkan has only been around for a short while now.
+    Vulkan is still relatively new technology.
     Existing tools for other graphics \glspl{api} will most likely be extended to also support Vulkan.
-    Maybe even new tools dedicated to Vulkan may arise.
+    It is also possible that new tools dedicated to Vulkan may be developed by \glspl{ihv}.
