@@ -16,43 +16,135 @@
   }
 
   \todo[inline]{Pipeline creation? caching?}
-  \todo[inline]{Commandbuffer building. (CBs can be viewed as functions).}
+  \todo[inline]{Command buffer building. (CBs can be viewed as functions).}
   \todo[inline]{Communication with the GPU}
   \todo[inline]{Image tiling and layout}
   \todo[inline]{Resource transformations.}
-  \todo[inline]{Commandbuffer submission. Mention out-of-order execution. Analogous to CPU instruction dispatch.}
-  \todo[inline]{Commandbuffers can be built once and submitted multiple times.}
-  \todo[inline]{"Setup commandbuffers", "Draw commandbuffers", "pre/post-draw commandbuffers"}
+  \todo[inline]{Command buffer submission. Mention out-of-order execution. Analogous to CPU instruction dispatch.}
+  \todo[inline]{Command buffers can be built once and submitted multiple times. Better performance because no upload (and other things).}
+  \todo[inline]{"Setup command buffers", "Draw command buffers", "pre/post-draw command buffers"}
   \todo[inline]{Binding of resource to memory: bind a dummy for as long as the resource loads.}
   \todo[inline]{Diagram for overview of the "pipeline" to give an idea of the whole thing.}
 
-  This chapter describes a set of basic steps to get an image on the screen. It assumes a swapchain is set up and ready to be used using the swapchain extension as described in section~\ref{sec:WorkflowAndPatterns}.
+  This chapter describes a set of basic steps to get an image on the screen.
+  It assumes a swapchain is set up and ready to be used using the swapchain extension as described in section~\ref{sec:WorkflowAndPatterns}.
 
-  \todo[inline]{Put the following in its own section?}
+  % Command buffers are not unlike procedures where every instruction within that procude is dynamically recorded at runtime.
+  % Just like procedures on the \gls{cpu}, command buffers translate to machine instructions on the \gls{gpu}.
+  % When a command buffer is submitted, commands within that command buffer may be executed out-of-order, i.e.
+  % in another order than they were recorded, if the \gls{driver} or the \gls{gpu} decide to be more efficient in some way.
 
-  Commandbuffers are not unlike procedures where every instruction within that procude is dynamically recorded at runtime. Just like procedures on the \gls{cpu}, commandbuffers translate to machine instructions on the \gls{gpu}. When a commandbuffer is submitted, commands within that command buffer may be executed out-of-order, i.e. in another order than they were recorded, if the \gls{driver} or the \gls{gpu} decide to be more efficient in some way.
+  % There are two kinds of command buffers: primary command buffers and secondary command buffers.
+  % Primary command buffers may be directly submitted to a device queue.
+  % Secondary command buffers, on the other hand, must be executed as part of a primary command buffer.
+  % The Vulkan command \lstinline{vkCmdExecuteCommands} may be used for this.
+  % \todo{Find out more about secondary command buffers!}Secondary command buffers are basically like macros.
+  % Secondary command buffers inherit some state form the calling primary command buffer.
 
-  There are two kinds of commandbuffers: primary commandbuffers and secondary commandbuffers. Primary commandbuffers may be directly submitted to a device queue. Secondary commandbuffers, on the other hand, must be executed as part of a primary command buffer. The Vulkan command \lstinline{vkCmdExecuteCommands} may be used for this. \todo{Find out more about secondary commandbuffers!}Secondary commandbuffers are basically like macros.
 
-  \todo[inline, color=red!60]{Find out why secondary commandbuffers even exist! Might as well use a macro in C to record the same sequence of commands.}
-
-
-  \section{Multithreaded Rendering}
+  \section{Multi-threaded Rendering}
   \label{sec:MultithreadedRendering}
-    \todo[inline]{Motivation. Additional complexity. Applications must be sure they gain anything from using multithreading.}
+    \todo[inline]{Introduction to this chapter. Motivation. Additional complexity. Applications must be sure they gain anything from using multi-threading.}
     \tbd
 
-    \subsection{Multithreaded Commandbuffer Recording}
-      \todo[inline]{References to the talks where most of this is discussed?}
+    \subsection{Multi-threaded Command Buffer Recording}
+      As mentioned in chapter~\ref{cha:VulkanOverview}, the \gls{driver} has only limited support for multi-threaded access.
+      However, this does not mean that multi-threading on the \gls{cpu} has not been taken into account when Vulkan was designed.
+      There are actually several ways of utilizing multiple threads for rendering with Vulkan.
 
-      As mentioned in chapter~\ref{cha:VulkanOverview}, the \gls{driver} has only limited support for multithreaded access. However, this does not mean that multithreading on the \gls{cpu} has not been taken into account when Vulkan was designed. Vulkan offers a way to utilize multiple threads on the \gls{cpu} in order to
+      A naive approach to utilizing multi-threading is to create several command buffers and assign them to multiple threads.
+      These threads would then record commands to their assigned command buffers and submit them to a device queue.
+      Unfortunately, there are some problems with this approach.
+      According to sections~5.3~and~5.4 of the Vulkan specification\cite{vkspec}, the host application is responsible for synchronizing interactions with command buffers and submitting them to device queues.
+      This means that using command buffers from multiple threads is not thread-safe in the scenario described above.
 
-      A naive approach to utilizing multithreading is to create several commandbuffers and assign them to multiple threads. These threads would then record commands to their assigned commandbuffers and submit them to a device queue. There are multiple problems with this approach. First, as specified in section~5.3 of the Vulkan specification\cite{vkspec}, recording commands must be synchronized by the host application. This means that using commandbuffers from multiple threads is not thread-safe. The same problem exists for the submission of commandbuffers to device queues. According to section~5.4 of the Vulkan specification, this operation has to be synchronized by the host application as well.
+      % Problem with command buffers and multi-threaded access.
+      \todo{duplicated!}Accessing command buffers from multiple threads is not thread-safe.
+      This is because memory used by command buffers is managed by the parent command pool.
+      The actual algorithms used for managing memory are left to the \gls{driver}.
+      % Done for implementations to be more memory efficient.
+      This allows command pools efficient handling of memory operations performed by multiple command buffers, e.g. by allocating more memory than is currently needed and reassigning it as more is requested.
+      % Command buffers work on memory managed by parent command pool.
+      Because command pools are free to manage memory as they see fit, any operation on a command buffer may trigger side-effects that affect other command buffers created from the same pool.
+      This fact alone makes command buffers unsuitable to be shared across multiple threads without synchronization.
 
-      The problem with the queue submission could be solved as follows. Instead of submitting their own commandbuffers, each thread would notify the main thread of when their commandbuffers are ready to be submitted. This way, the main thread could safely submit all commandbuffers that are ready at well-defined synchronization-free points of the application execution. This would solve the queue-submission problem.
+      % Command pools do not depend on anything else.
+      Command pools, on the other hand, are independent objects.
+      The memory they manage is only used for command buffers they created.
+      Whenever available memory is no longer sufficient, new memory from the host is requested, optionally using a application-supplied allocator.
+      This allocator needs to synchronize low-level allocations, like the C standard library function \lstinline{malloc} already does.
+      % Thus solution is to assign each thread its own command pool.
+      Synchronization of low-level memory allocation is certainly not as costly as synchronizing each command buffer access.
+      Typically, those low-level memory allocations do not happen very often.
+      It is likely that command pool implementations strive for minimal host allocations.
 
-      Due to careful design of the Vulkan \gls{api}, the first problem can be solved in an elegant way. Instead of assigning commandbuffers to threads, each thread would be assigned a commandpool instead. Because command buffers only operate within the memory region of the command pool that created them, there is no need to synchronize commandbuffer operations that are conducted on a single thread as long as they stem from a command pool that is also only accessed on that thread. In other words, each thread would simply get their own command pool and create commandbuffers from it as necessary. As before, commandbuffers ready to be submitted would be signalled to the main thread using some traditional synchronization methods, e.g. using a double-ended queue for command buffers and semaphores for synchronization.
+      Command pools effectively do not need to be manually synchronized across multiple threads if they are not shared with them.
+      In addition, command buffers created from such command pools inherit the same properties.
+      Thus, it is more suitable to assign one or more command pools to multiple threads.
+      % Threads then allocate and record into as many command buffers as needed.
+      Each thread is then free to allocate and record into as many command buffers as needed without having to conduct any kind of synchronization.
 
-    \subsection{Multithreaded Resource Creation}
-      \todo[inline]{Resource creation thread? Would need to preallocate memory or sync allocations.}
-      \tbd
+      % Let main thread submit command buffers by sharing a datastructure with synchronized access.
+      In order for command buffers allocated on other threads to be submitted to the device queue, the main thread may provide a shared datastructure that is capable of containing command buffer objects.
+      Access to this shared container would be synchronized using traditional synchronization methods.
+      % Turns the initial problem into well-understood producer-consumer problem\cite{EWD:EWD329}.
+      % Solves the inital queue submission problem.
+      This effectively creates the well-understood producer-consumer scenario\cite{EWD:EWD329} and solves the initial queue submission problem.
+
+      \subsubsection{Command Buffer Management Considerations}
+        % ... There is another problem with the system mentioned above.
+        % ... It is also recommended to assign more than one command pool to an individual thread.
+        % ... While a command buffer is being processed, i.e. once it has been submitted but has not finished execution yet, the command buffer should not be modified.
+        % ... The reason why multiple pools should be used instead of simply creating new command buffers from the same pool is because of the underlying memory model.
+
+        % ... In the previously described scenario, each thread has exactly one command pool that is used to create multiple command buffers from.
+        % ... Commands are recorded to these command buffers and are submitted in batches to the device for execution.
+        % ... Vulkan specifies some restrictions on what may be done with command buffers that are pending execution.
+        % ... For example, the application should not free a command buffer that is pending execution.
+
+        % Command buffers need to be kept alive while pending execution.
+        Vulkan prohibits modifying submitted command buffers that are pending execution on the device.
+        This includes freeing these command buffers, i.e. the application is responsible for keeping them alive as long as they are pending execution.
+        In practice, this effectively means command buffers submitted in batches may only be modified or reused once the entire submission has finished execution because it is hard to predict when individual commands are processed if more than one command buffer is submitted.
+        Out-of-order execution is only one reason for this unpredictability.
+        The simplest way to solve this problem is to just use new command buffers for every new batch submission.
+        This poses some management overhead since individual command buffers need to be associated to these batches in order to be freed or reused.
+        Otherwise, if command buffers are never freed, the application ends up allocating a lot more than necessary, effectively leaking memory.
+
+        % Command pools better than just using command buffers because of decoupled underlying memory and clean separation of concern.
+        A better way might be to use command pools for this purpose.
+        Managing command buffers is already what they do and it also offers a clean separation of concerns between the different batches of command buffers.
+        In other words, using command pools to allocate command buffers that are submitted together provides an easy way to manage these command buffers in a uniform way.
+        Vulkan allows command pools to be reset, effectively resetting all command buffers spawned from them, respectively.
+        This means that command pools may be reused after its associated batch of submitted command buffers has finished execution.
+        When resetting a command pool, the host application is free to choose whether allocated resources should be released or not.
+        If a command pool is going to be reused, and the resources associated with it are not released, this command pool can directly start producing command buffers without causing additional allocation overhead.
+        This provides a clean way for managing command buffer lifetimes without the need to use anything but the Vulkan \gls{api} itself.
+
+        Care must be taken, however, in cases where many commands are allocated only once, e.g. when uploading large amount of resources to the \gls{gpu} in one submission.
+        In these cases, the command pool may request large amounts of host memory where only parts of it is used during normal rendering, potentially resulting in a waste of memory.
+        It might be worth handling such special cases differently than regular rendering.
+
+        \todo{Is it better to write "Similar approaches have been described by industry experts[X][Y]"?}Similar approaches have been described by Marius Bjørge\cite{bjorge:multithreadingvulkan} in his blog post about multi-threading in Vulkan as well as Mathias Schott\cite{mschott:vulkan_multi_threading} in his talk entitled "Vulkan multi-threading".
+
+    \subsection{Multi-threaded Resource Creation}
+      Vulkan applications need to create resources such as images and shaders.
+      Loading and creating these resources may take a considerable amount of time, depending on the data in question.
+      Images, for example, can be quite large.
+      They may also have to be transformed in some way which also consumes computation time.
+      Shaders need to be compiled (by the \gls{driver}) and bound to a Vulkan pipeline.
+      Many of these time consuming operations work more or less independent from the rest of the system, depending on the specific operation.
+      This makes them interesting candidates for execution on multiple threads.
+      However, the use of multi-threaded resource creation introduces additional complexity to the system.
+
+      First of all, an application has to decide how many threads are actually needed for resource creation.
+      It is possible that only one dedicated resource creation thread is sufficient for many applications.
+      The actual number of resource creation threads depends on the application.
+
+      Every resource creation thread needs device memory in one way or another.
+      There are basically two ways of accomplishing this without race conditions.
+      The first way is to preallocate the memory that is available for each thread.
+      This method does not require synchronization between threads because all this work can be performed on the main thread.
+      The second way is to assign a memory allocator to each thread that internally synchronizes the calls.
+      This method does not require the main thread to know the size of the resources each thread creates but memory allocations need to be synchronized.
+      Again, the method of choice depends on the application.
