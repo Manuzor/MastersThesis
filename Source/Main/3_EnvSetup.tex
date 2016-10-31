@@ -246,7 +246,7 @@
     These tools usually just offer one or more layers, and possibly some extensions, that are either implicitly or explicitly activated.
 
     The LunarG Vulkan \gls{sdk} comes with a variety of layers, many of which are debugging layers.
-    It also provides a layer which combines all debugging layers in one layer in an optimal order called \todo{Mention the \lstinline{VK_LAYER_LUNARG_} prefix?}\lstinline{standard_validation}.
+    It also provides a layer which combines all debugging layers in one layer in an optimal order called \lstinline{standard_validation}\footnote{Full name: \lstinline{VK_LAYER_LUNARG_standard_validation}}.
     All these debugging layers, including the standard validation layer, are explicit layers that have to be activated when creating a Vulkan instance.
     Layers have been described in section~\ref{sec:LayersAndExtensions} and the careful reader might have noticed that layers do not get back in touch with the Vulkan application directly.
     \todo{Find out where this extension is coming from? i.e. from which layer. Seems like all layers provide it?!}For this purpose the \lstinline{VK_EXT_debug_report} extension is used.

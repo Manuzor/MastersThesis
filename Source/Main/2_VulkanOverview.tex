@@ -122,15 +122,28 @@
 
   \section{Command Buffers}
   \label{sec:CommandBuffers}
-    Vulkan provides a number of commands that can be executed on the GPU. These commands are recorded into command buffers. Command buffers are allocated from command pools.
+    All rendering in Vulkan is done with command buffers.
+    Command buffers are allocated from command pools.
+    These command pools are basically managing the memory that is used by all command buffers created from that pool.
+    As the name suggest, a command buffer is a container for \gls{gpu} commands.
+    Vulkan does not impose any limit on the number or size of commands within a single command buffer.
 
-    Command buffers have some externally visible state and some internally managed state that is unqiue to this command buffer and never shared with other command buffers. The externally visible state defines which operations are currently valid on a given command buffer.
+    Command buffers are always in one of three states.
+    When a command buffer is created, it is in the \texttt{initial} state.
+    A command buffer is put in this state when it is reset by either resetting it individually or by resetting the parent command pool.
+    From this state, the command buffer may transition to the \textit{recording} state by calling \lstinline{vkBeginCommandBuffer}.
+    In the \textit{recording} state, as the name suggests, a command buffer is able to record commands using \lstinline{vkCmd*} Vulkan API calls.
+    Once all desired commands have been recorded, calling \lstinline{vkEndCommandBuffer} brings the command buffer to the \textit{executable} state.
+    In \textit{executable} state, the command buffer may be submitted to a device queue in order to be executed on the \gls{gpu}.
+    When submitting a command buffer to the device, it may not be modified until it has finished execution.
+    Submitted command buffers will stay \textit{executable} until reset and may even be submitted multiple times.
+    In other words, command buffers may be pre-recorded once but submitted multiple times.
+    This is particularly useful for static rendering.
 
-    \todo{Briefly explain initial, record, and execute states.}In the \textit{initial} state, the internally managed state of the command buffer is undefined. From the \textit{initial} state, a command buffer can be brought into the \textit{recording} state. In this state the command buffer accepts commands to be recorded to the internally managed state. Once recording of all commands is done, the command buffer can be brought to the \textit{executable} state. In this state, the command buffer may be submitted to a queue which will execute the recorded commands on the GPU. Without implicit dependencies or explicit synchronization, \todo{Check the spec for whether this is actually true!}the order in which commands are executed on the GPU is not defined. This means that submitted commands may run concurrently or in a different order than they were recorded in.
+    A command buffer may be brought back to the \textit{initial} state by resetting the parent command pool using \lstinline{vkResetCommandPool}.
+    If the \textit{reset command buffer}\footnote{Full name: \lstinline{VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT}} flag has been set on the pool, an \textit{executable} command buffer may be individually reset by calling \lstinline{vkResetCommandBuffer} without the need to reset the entire pool.
+    In addition, with that flag present, a command buffer may even be brought to the \textit{recording} state directly by simply calling \lstinline{vkBeginCommandBuffer} again, discarding all internally buffered commands up to that point.
 
-    The internal state of a command buffer is not reset when submitting it to the queue. This enables the \gls{application} to record a command buffer once and submit it several times.
-
-    The \gls{application} may utilize several threads of execution to allocate command buffers from a command pool. If all threads used the same command pool or command buffer, they would need to synchronize access to that pool, as per the Vulkan specification. However, creating a command pool for each thread eliminates the need for synchronizing command buffer allocation. This can be leveraged to achieve maximum performance by dispatching work on several threads, where each is allocating command buffers at will filling them with data to be submitted to the queue later on the main thread.
 
   \section{Pipelines}
   \label{sec:Pipelines}
