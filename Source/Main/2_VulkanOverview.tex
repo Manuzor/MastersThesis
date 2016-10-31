@@ -124,13 +124,12 @@
   \label{sec:CommandBuffers}
     All rendering in Vulkan is done with command buffers.
     Command buffers are allocated from command pools.
-    These command pools are basically managing the memory that is used by all command buffers created from that pool.
-    As the name suggest, a command buffer is a container for \gls{gpu} commands.
-    Vulkan does not impose any limit on the number or size of commands within a single command buffer.
+    These command pools are managing the memory that is used by all command buffers created from that pool.
+    As the name suggests, a command buffer is a container for \gls{gpu} commands.
+    Vulkan does not impose any limit on the number or size of commands stored within a single command buffer.
 
     Command buffers are always in one of three states.
-    When a command buffer is created, it is in the \texttt{initial} state.
-    A command buffer is put in this state when it is reset by either resetting it individually or by resetting the parent command pool.
+    When a command buffer is created, it is in the \textit{initial} state.
     From this state, the command buffer may transition to the \textit{recording} state by calling \lstinline{vkBeginCommandBuffer}.
     In the \textit{recording} state, as the name suggests, a command buffer is able to record commands using \lstinline{vkCmd*} Vulkan API calls.
     Once all desired commands have been recorded, calling \lstinline{vkEndCommandBuffer} brings the command buffer to the \textit{executable} state.
@@ -138,7 +137,7 @@
     When submitting a command buffer to the device, it may not be modified until it has finished execution.
     Submitted command buffers will stay \textit{executable} until reset and may even be submitted multiple times.
     In other words, command buffers may be pre-recorded once but submitted multiple times.
-    This is particularly useful for static rendering.
+    This is particularly useful for rendering static geometry, for example.
 
     A command buffer may be brought back to the \textit{initial} state by resetting the parent command pool using \lstinline{vkResetCommandPool}.
     If the \textit{reset command buffer}\footnote{Full name: \lstinline{VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT}} flag has been set on the pool, an \textit{executable} command buffer may be individually reset by calling \lstinline{vkResetCommandBuffer} without the need to reset the entire pool.
