@@ -41,17 +41,171 @@
   % \todo{Find out more about secondary command buffers!}Secondary command buffers are basically like macros.
   % Secondary command buffers inherit some state form the calling primary command buffer.
 
+  This section will define the framework for the rest of the chapter.
+  All examined use-cases of the Vulkan API are moving within this framework.
+
+  \todo[inline]{Vulkan provides many ways to render. In this chapter, one of many ways is explored from beginning to end to show stuff.}
+
+  \todo[inline]{Free moving camera.}
+  \todo[inline]{Objects with fixed geometry.}
+  \todo[inline]{No complex shading - flat lighting.}
+  The graphics scene is kept very simple.
+  It only contians objects with fixed geometry.
+  The geometry itself may be arbitrarily complex because it has no impact on the usage of the \gls{api}.
+  Shaders are also kept simple because this area is not important enough for what is examined in this chapter.
+
+  The shaders used in this chapter are kept very simple.
+  Other aspects of Vulkan are more important for this chapter.
+  Each object is limited to a single sampled image to be used as a texture.
+  As for lighting objects, simple flat shading is performed.
+  A vertex consists of the following elements.
+  \begin{itemize}
+    \item Three \lstinline{float} values representing the position of the vertex in \gls{3d} space.
+    \item Two \lstinline{float} values representing the coordinates of the vertex in texture space.
+  \end{itemize}
+
+  \todo[inline]{Bring the following into better form.}
+  Restrictions:
+  \begin{itemize}
+    \item Rendering to single window / surface
+    \item Forward renderer / single render target
+    \item Simple shaders only
+    \item Static geometry (no morphing)
+    \item Freely moving camera
+    \item ...
+  \end{itemize}
+
+  \begin{figure}
+    \includegraphics{Main/Images/RenderSetupAndLoopSimple}
+    \centering
+    \caption{Overview of the setup and execution for a simple forward-render in Vulkan.}
+    \label{fig:RenderSetupAndLoopSimple}
+  \end{figure}
+
+  \section{Framework}
+    \label{sec:Framework}
+    \todo[inline]{Explain why this framework is needed. Vulkan offers many possibilities and each application by do things differently.}
+    \todo[inline]{Forward renderer.}
+    A simple forward renderer is assumed.
+    \todo[inline]{Scene with discrete number of objects.}
+    The rendered scene will contain a discrete number of objects.
+    \todo[inline]{Each object has fixed geometry and a single texture.}
+    Each object has fixed geometry and is assigned a single texture.
+    \todo[inline]{Single camera that is movable.}
+    A camera is used to observe the scene.
+    This camera is also movable, e.g. by user-input.
+    \todo[inline]{Realtime rendering? Might not be relevant.}
+    \todo[inline]{Simple shaders, contents not relevant.}
+    Simple shaders are used to render each object of the scene.
+    The exact contents of these shaders is not relevant.
+    The layout of these shaders is discussed at a later point.
+
+  % \section{Requirements}
+  %   Some requirements arise from the framework defined in section~\ref{sec:Framework} which are discussed in this section.
+  %   A central requirement is the render target.
+  %   Since the ultimate result of a rendering pass is to produce a presentable image, the render target will be an image of the swapchain.
+  %   Thus, a swapchain setup as discussed in section~\ref{sec:Pipelines} is required.
+  %   In order for each object to be sorted properly during rendering, a depth buffer needs to be set up for the rendering pipeline.
+
+  \section{Setup}
+  \label{sec:RenderingSetup}
+    \todo[inline]{Before it's possible to render, certain things need to be set up.}
+    Before it is possible to start rendering an image, proper Vulkan facilities need to be set up.
+    These are discussed in section.
+    The setup here adheres to the framework defined in section~\ref{sec:Framework}.
+
+    \subsection{Creating a Proper Device}
+      The Vulkan device that is to be used for rendering needs to support both the swapchain extension and queues with graphics and present capabilities.
+
+      In order for a rendered image to be presented to a window, the swapchain extension\footnote{Full name: \lstinline{VK_KHR_swapchain}} needs to be activated.
+      This can be done when creating the device.
+      Without this extension, no swapchain can be created for this device, which is necessary to present a rendered image in Vulkan.
+      Note, however, that the swapchain is not created at this point.
+      This has to be done explicitly by the application and is explained later.
+
+      In Vulkan, rendering commands are submitted to a device queue.
+      For the purposes of this chapter, queues with two specific capabilities are required.
+      These capabilities are called the \textit{graphics capability} and the \textit{present capability}.
+      \todo{Is it important \textbf{how} to get the info about the capabilities?}The first specifies whether the queue supports graphics commands such as \lstinline{vkCmdDraw}.
+      The second capability specifies whether \lstinline{vkQueuePresentKHR} is supported on that queue.
+      Without both of these capabilities, rendering and presenting an image is not possible.
+      \todo{Rephrase}A queue might support both of these capabilities but it is also possible that two separate queues are used for graphics and presenting, respectively.
+      Once proper queues have been chosen, a logical device can be created.
+      This logical device will be used for all subsequent Vulkan operations.
+      The queues that were created along with the logical device will be used to submit rendering commands to the \gls{gpu} and to trigger the presentation engine.
+
+    \subsection{Creating a Surface and a Swapchain}
+      \todo[inline]{Setup of OS specific surface and swapchain.}
+      Now that a device with the enabled swapchain extension is in place, a swapchain can actually be created.
+      Creating a swapchain requires what is called a Vulkan \textit{surface} to be created first.
+      This surface is operating specific and represents the connection to the actual window.
+      It is also the target of the presentation engine, i.e. that surface is used to present a rendered image.
+
+      \todo[inline]{Number, format, extent, colorspace of swapchain images.}
+      \todo[inline]{Present modes / VSync.}
+      A swapchain consists of multiple images.
+      These images are managed by the presentation engine.
+      The application may require the swapchain to create a certain number of images constrained to a range defined by the surface.
+
+      \todo[inline]{Move this either to chapter 2 or 3. In this chapter, we mainly care about setting up the swapchain for the framework defined above.}
+      The reason why an application may care about the number of swapchain images is rather straight-forward.
+      A swapchain image passes some stages until is presented eventually.
+      Initially the image is free and can be acquired by the application.
+      Once an application acquires the image it is considered to be in use by the application and no longer free.
+      At some point, the application hands back the image to the presentation engine, requesting that image to be presented.
+      \todo{Explain more presentation modes?}In the \gls{fifo} presentation mode, the image will be put into a queue to be processed by the presentation engine at a convenient time.
+      Once that time has come, the image will actually be presented on the surface.
+      While an image is either currently presented or still pending presentation in the queue, it cannot be acquired by the application for rendering.
+      When there is no free swapchain image, and the application tries to acquire one, the application will be stalled until a swapchain image is available.
+      Depending on the chosen presentation mode, the number of swapchain images can be tuned to find the balance that works best for the application.
+      Using too many swapchain images wastes memory but not having enough images may stall the application.
+
+      \todo[inline]{Transform mode? Not really relevant for this chapter, right?}
+      \todo[inline]{Usage? Swapchain images can always be used as color attachment.}
+      Swapchain images will be used exclusively as color attachments for the framebuffer.
+
+    \subsection{Creating a Graphics Pipeline}
+      \todo[inline]{Create depth buffer}
+      A depth buffer also needs to be created and used within the render pass in order for the objects to be rendered correctly according to how they are ordered.
+
+      \todo[inline]{Create framebuffer for each swapchain image, a render pass, and graphics pipeline. }
+      \tbd
+
+    \subsection{Creating Scene Objects}
+      \todo[inline]{Create renderable objects. Needs sampled image, geometry. Mention push constants.}
+      \tbd
+
+  \section{Command Buffer Recording}
+  \label{sec:BuildCommandBuffers}
+    \todo[inline]{Mention that this is done on a single thread.}
+    \todo[inline]{Mention that this may be done once or multiple times, depending on use of push constants and other things.}
+    \todo[inline]{Build command buffers that will never change. Depend on whether push constants are used or not.}
+    \todo[inline]{Image layout transition with barriers.}
+
+  \section{Rendering Loop}
+  \label{sec:RenderLoop}
+    \todo[inline]{Rather simple because of pre-recording command buffers.}
+    \todo[inline]{Update uniform buffers.}
+    \todo[inline]{Possibly explain push constants.}
+    \todo[inline]{Acquire swapchain image.}
+    \todo[inline]{Submit command buffers.}
+    \todo[inline]{Present swapchain image.}
+    \todo[inline]{Sync for submission and presenting (render semaphore, present semaphore) so swapchain image isn't used for rendering while presenting and vice versa. Also image layout transition happens with commands, meaning sync is necessary!}
+    \tbd
+
+  \section{Window Resizing}
+    \todo[inline]{Should I actually add this section? (Only if there's enough time.)}
+    \tbd
 
   \section{Multi-threaded Rendering}
   \label{sec:MultithreadedRendering}
     \todo[inline]{Introduction to this chapter. Motivation. Additional complexity. Applications must be sure they gain anything from using multi-threading.}
-    \tbd
+    As mentioned in chapter~\ref{cha:VulkanOverview}, the \gls{driver} has only limited support for multi-threaded access.
+    However, this does not mean that multi-threading on the \gls{cpu} has not been taken into account when Vulkan was designed.
+    There are actually several ways of utilizing multiple threads for rendering with Vulkan.
+    Creating resources and recording command buffers from multiple threads are explored in the following subsections.
 
     \subsection{Multi-threaded Command Buffer Recording}
-      As mentioned in chapter~\ref{cha:VulkanOverview}, the \gls{driver} has only limited support for multi-threaded access.
-      However, this does not mean that multi-threading on the \gls{cpu} has not been taken into account when Vulkan was designed.
-      There are actually several ways of utilizing multiple threads for rendering with Vulkan.
-
       A naive approach to utilize multi-threading is to create several command buffers and assign them to multiple threads.
       These threads would then record commands to their assigned command buffers and submit them to a device queue.
       Unfortunately, there are some problems with this approach.
@@ -77,7 +231,7 @@
       Typically, those low-level memory allocations do not happen very often.
       It is likely that command pool implementations strive for minimal host allocations.
 
-      Command pools effectively do not need to be manually synchronized across multiple threads if they are not shared with them.
+      Command pools effectively do not need to be manually synchronized across multiple threads if they are not shared between them.
       In addition, command buffers created from such command pools inherit the same properties.
       Thus, it is more suitable to assign one or more command pools per thread.
       % Threads then allocate and record into as many command buffers as needed.
@@ -118,16 +272,18 @@
         Managing command buffers is already what they do and it also offers a clean separation of concerns between the different batches of command buffers.
         In other words, using command pools to allocate command buffers that are submitted together provides a way to manage these command buffers using standard methods.
         Vulkan allows command pools to be reset, effectively resetting all command buffers spawned from them, respectively.
-        This means that command pools may be reused after its associated batch of submitted command buffers has finished execution.
-        When resetting a command pool, the host application is free to choose whether allocated resources should be released or not.
-        If a command pool is going to be reused, and the resources associated with it are not released, this command pool can directly start producing command buffers without causing additional allocation overhead.
+        This means that command pools may be reused after their associated batch of submitted command buffers has finished execution.
+        When resetting a command pool, the host application is free to choose whether memory allocated by that command pool should be released or not.
+        If a command pool is going to be reused, and the memory is not released, this command pool can directly start producing command buffers without causing additional allocation overhead.
         This provides a clean way for managing command buffer lifetimes without the need to use anything but the Vulkan \gls{api} itself.
 
-        \todo{Is it better to write "Similar approaches have been described by industry experts[X][Y]"?}Similar approaches have been described by Marius Bjørge\cite{bjorge:multithreadingvulkan} in his blog post about multi-threading in Vulkan as well as Mathias Schott\cite{mschott:vulkan_multi_threading} in his talk entitled "Vulkan multi-threading".
+        \todo{Describe what they did differently?}Similar approaches have been described by industry experts such as Marius Bjørge\cite{bjorge:multithreadingvulkan} in his blog post about multi-threading in Vulkan as well as Mathias Schott\cite{mschott:vulkan_multi_threading} in his talk entitled "Vulkan multi-threading".
 
-        Care must be taken, however, in cases where many commands are allocated only once, e.g. when uploading large amounts of resources to the \gls{gpu} in one submission.
-        In these cases, the command pool may request large amounts of host memory where only parts of it are used during normal rendering, potentially resulting in a waste of memory.
-        It might be worth handling such special cases differently than regular rendering.
+        Care must be taken, however, in cases where the amount of memory required by a command buffer is not steady during its lifetime.
+        For example, when transitioning from a large \gls{3d} scene, with many objects to render, to a small scene with less draw calls to perform, the memory requirements of each command buffer may be lowered considerably for the new scene.
+        In cases like this, it might make sense to reset all relevant command buffers, freeing their associated memory.
+        Switching from a small scene to larger one is not a problem, of course, because the command buffer will simply allocate enough memory for the new scene.
+
 
     \subsection{Multi-threaded Resource Creation}
       Vulkan applications need to create resources such as images and shaders.
@@ -135,7 +291,7 @@
       Images, for example, can be quite large.
       They may also have to be transformed in some way which also consumes computation time.
       Shaders need to be compiled (by the \gls{driver}) and bound to a Vulkan pipeline.
-      Many of these time consuming operations work more or less independent from the rest of the system, depending on the specific operation.
+      Many of these time consuming operations work more or less independently from the rest of the system, depending on the specific operation.
       This makes them interesting candidates for execution on multiple threads.
       However, the use of multi-threaded resource creation introduces additional complexity to the system.
 
@@ -143,7 +299,7 @@
       It is possible that only one dedicated resource creation thread is sufficient for many applications.
       The actual number of resource creation threads depends on the application.
 
-      Every resource creation thread needs device memory in one way or another.
+      All resource creation threads need device memory in one way or another.
       There are basically two ways of accomplishing this without race conditions.
       The first way is to preallocate the memory that is available for each thread.
       This method does not require synchronization between threads because each is assigned a memory region that is not overlapping memory from other threads.

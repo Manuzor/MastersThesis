@@ -255,7 +255,7 @@
 
     Another tool for debugging, that is also supplied with the LunarG Vulkan \gls{sdk}, is RenderDoc\cite{renderdoc}.
     RenderDoc is a graphics debugging tool that allows the developer to inspect pipeline states at each \gls{api} invocation.
-    RenderDoc provided \gls{d3d} and \gls{opengl} support for quite some time already but also provides Vulkan support since the release of Vulkan 1.0.
+    RenderDoc has provided \gls{d3d} and \gls{opengl} support for quite some time already but also provides Vulkan support since the release of Vulkan 1.0.
     When RenderDoc is installed, it also installs the implicit layer called \lstinline{VK_LAYER_RENDERDOC_Capture}.
     This means that any Vulkan-enabled application can be debugged using RenderDoc.
     This layer is used to capture \gls{api} calls and track state in that way.
@@ -263,19 +263,18 @@
     Once hooked up, RenderDoc is rendering a small amount of statistics, such as current framerate, in the upper left corner of the applications window.
     It also shows which button to press to instruct RenderDoc to \todo{elaborate on the term "capture" and what it actually does}capture a frame.
     Once a frame was captured it can be inspected inside of the RenderDoc UI.
-    When capturing a frame, RenderDoc not only captures
     This captured frame contains, among other things, the state of the frame buffers but also records \gls{api} calls, shows their \gls{cpu} execution time, shows bound textures for active shaders, and more.
 
-    Once a Vulkan application is running correctly, the developer might also be interested whether it runs \textit{efficiently}.
+    Once a Vulkan application is running correctly, the developer might also be interested in whether it runs \textit{efficiently}.
     This is especially important for many real-time applications such as video games.
     Due to the young age of Vulkan, there are not many profiling tools specifically tailored towards Vulkan applications.
     There are some tools that can aid in this regard, though.
-    The LunarG SDK, as described in \ref{sec:LunarGSDK}, offers API tracing and playback tools.
+    The LunarG SDK, as described in section~\ref{sec:LunarGSDK}, offers API tracing and playback tools.
     These tools effectively record which commands are performed by an application, measuring the execution time of individual commands.
     This can help in tracking down bottlenecks observed on the host-side.
     The RenderDoc Graphics Debugging Tool\cite{renderdoc} also has the capability of tracking API calls.
     However, tools of this kind are not capable of capturing how the GPU behaves for a given Vulkan application.
-    At the time of writing, no Vulkan-specific GPU profiling tool is known to the author \todo{Remove "of this work"?}of this work.
+    At the time of writing, no Vulkan-specific GPU profiling tool is available as known to the author.
 
     % For measuring \gls{gpu} behavior on a more general scale, other tools can be used.
     % One such tool is \gls{nvidia} FCAT\cite{nvidiafcat}.
@@ -287,7 +286,7 @@
     The Vulkan \gls{api} itself also provides so-called \textit{timestamp queries}.
     These queries can be used to insert special query commands into a command buffer to write a timestamp value into a \textit{query pool}.
     The results recorded in the query pool can then be read from the host at certain times.
-    \todo{Is this comprehensive enough?}This gives applications the opportunity to implement their own internal \gls{gpu} profiling system by taking time samples at application-defined points within command buffers.
+    \todo{Is this comprehensive enough?}This enables application developers to implement their own internal \acrshort{gpu} profiling system by taking time samples at application-defined points within command buffers.
     See section~16.5 of the Vulkan specification\cite{vkspec} for details.
 
     \todo[inline]{Omit the following paragraph?}
