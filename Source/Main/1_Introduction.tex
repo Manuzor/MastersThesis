@@ -4,11 +4,11 @@
 \label{cha:Introduction}
   \todo[inline]
   {
-    Brief introduction of computer graphics. One of the biggest problems: Performance. Especially with virtual reality.
+    Brief introduction of computer graphics. One of the biggest problems: Performance. Especially on mobile and with virtual reality.
 
     Maybe mention the author's (that's me!) bias towards game development.
 
-    Mention target audience requirements.
+    Mention target audience requirements?
 
     Explain shader stages of modern graphics hardware somewhere in this chapter.
   }
@@ -31,7 +31,7 @@
 
   \begin{figure}
     \centering
-    \includegraphics{Main/Images/Application_API_Driver_Overview}
+    \includegraphics[width=\textwidth]{Main/Images/Application_API_Driver_Overview}
     \caption{Interaction between the application and the hardware via the API.}
     \label{fig:AppApiDriverOverview}
   \end{figure}
@@ -48,22 +48,45 @@
       Explain the fixed function pipeline.
     }
 
-    \missingfigure{Visualize data flow of data between shader stages.}
     \tbd
+    \begin{figure}
+      \includegraphics[width=\textwidth]{Main/Images/Rendering_Pipeline_Overview}
+      \centering
+      \caption{Overview of the rendering pipeline on modern graphics hardware.}
+      \label{fig:Rendering_Pipeline_Overview}
+    \end{figure}
 
 
   \section{Motivation for a new Graphics API}
     \todo[inline]{Basically write why Vulkan is needed.}
 
-    Graphics hardware is changing rapidly through the years and is highly specialized to do computational work in a massively parallel manner. This makes it not only suitable for graphics computation, but also for general-purpose parallelization of working with large sets of data. These \glspl{api} have grown with the hardware, constantly adapting to it, adding new versions that support different kinds of features and provide different kinds of extensions while maintaining backwards compatability as much as possible. This lead to very complicated \glspl{api} that was getting harder and harder to understand with each new release, especially for beginners.
+    Graphics hardware is changing rapidly through the years and is highly specialized to do computational work in a massively parallel manner.
+    This makes it not only suitable for graphics computation, but also for general-purpose parallelization of working with large sets of data.
+    These \glspl{api} have grown with the hardware, constantly adapting to it, adding new versions that support different kinds of features and provide different kinds of extensions while maintaining backwards compatability as much as possible.
+    This lead to very complicated \glspl{api} that was getting harder and harder to understand with each new release, especially for beginners.
 
-    \todo[inline]{It might be too obvious that the paragraph above refers to OpenGL. Maybe just make it OpenGL-specific. Would still need to explain why Vulkan is not as abstract as OpenGL. Parts of this is explained below.}
+    \todo[inline]{It might be too obvious that the paragraph above refers to OpenGL.
+    Maybe just make it OpenGL-specific.
+    Would still need to explain why Vulkan is not as abstract as OpenGL.
+    Parts of this is explained below.}
 
-    But not only graphics and compute hardware has changed. The drivers accompanying the hardware also have to stay backwards compatible. They hide and abstract a lot of the low-level functionality that is needed to work properly with the hardware. This abstraction means that the application developer has less control over what is actually done with the data fed to drivers. Since drivers rarely get information about the exact intent of what the developer plans to do with the supplied data, they have to implement heuristics to decide the best course of action.
+    But not only graphics and compute hardware has changed.
+    The drivers accompanying the hardware also have to stay backwards compatible.
+    They hide and abstract a lot of the low-level functionality that is needed to work properly with the hardware.
+    This abstraction means that the application developer has less control over what is actually done with the data fed to drivers.
+    Since drivers rarely get information about the exact intent of what the developer plans to do with the supplied data, they have to implement heuristics to decide the best course of action.
 
-    This level of abstraction has been criticized by many professional developers over the years, demanding for more low-level control\todo{Reference something here. A paper, in the best case.}. On gaming consoles, low-level control of the hardware was always required, except for Microsoft platforms where the \gls{d3d} technology has always been in use. This meant that console developers were already used to thinking about data flow on a low level and work very closely with the hardware.
+    \todo{Reference something here. A paper, in the best case.}
+    This level of abstraction has been criticized by many professional developers over the years, demanding for more low-level control.
+    On gaming consoles, low-level control of the hardware was always required, except for Microsoft platforms where the \gls{d3d} technology has always been in use.
+    This meant that console developers were already used to thinking about data flow on a low level and work very closely with the hardware.
 
-    Another aspect is the advent of multi-core CPUs for personal computers in the mid 2000's. Multithreading has become common in CPU programming to achieve better performance. Older graphics \glspl{api}, however, were designed to run on a single thread all the time. Even though these \glspl{api} provide limited support for multithreading by now, they were still originally not designed for it, making it rather difficult to fully utilize multicore performance.
+    Another aspect is the advent of multi-core CPUs for personal computers in the mid 2000's.
+    Multithreading has become common in CPU programming to achieve better performance.
+    Older graphics \glspl{api}, however, were designed to run on a single thread all the time.
+    Even though these \glspl{api} provide limited support for multithreading by now, they were still originally not designed for it, making it rather difficult to fully utilize multicore performance.
+
+    \todo[inline]{Mention CPU overhead of GPU instructions, especially on mobile.}
 
     \todo[inline]{Talk about new \glspl{api} such as D3D12, Mantle, Metal, and also talk about consoles (no specs) that all adress these problems.}
 
@@ -72,7 +95,9 @@
     \todo[inline]{What does it do. Where does it come from. What are people expecting from it. Cross-platform nature (in comparison maybe to PS4's libGNM made specifically for PS4 hardware).}
 
     \todo[inline]{Insert missing references.}
-    The Vulkan \gls{api} was designed by the Khronos Group in collaboration with many industry representatives, including Valve Coroporation, AMD, NVIDIA. Version 1.0 of the Vulkan specification was released on the 16th February in 2016. It was designed to provide low-level control to the developer when interacting with graphics and compute hardware.
+    The Vulkan \gls{api} was designed by the Khronos Group in collaboration with many industry representatives, including Valve Coroporation, AMD, NVIDIA.
+    Version 1.0 of the Vulkan specification was released on the 16th February in 2016.
+    It was designed to provide low-level control to the developer when interacting with graphics and compute hardware.
 
     Vulkan was designed with a variety of goals in mind.
 
@@ -84,11 +109,18 @@
       \item Consistent API
     \end{itemize}
 
-    There are many different kinds of hardware configurations today, ranging from high-end gaming systems to mobile platforms such as smartphones. Vulkan is designed to be used with all of these systems. There will be no special version of Vulkan dedicated to embedded systems as was the case with \gls{gles}.
+    There are many different kinds of hardware configurations today, ranging from high-end gaming systems to mobile platforms such as smartphones.
+    Vulkan is designed to be used with all of these systems.
+    There will be no special version of Vulkan dedicated to embedded systems as was the case with \gls{gles}.
 
-    As a result of striving for less driver overhead, Vulkan also provides the possibility of reducing CPU and GPU power consumption. The driver implementation will have to make fewer guesses of what the host application is trying to do. It is up to the application developer to tell the Vulkan driver exactly what needs to be done. This way the driver only does as much work as it needs to function properly and less power will be consumed. Hardware vendors will also have an easier time providing robust drivers with less bugs due to reduced complexity.
+    As a result of striving for less driver overhead, Vulkan also provides the possibility of reducing CPU and GPU power consumption.
+    The driver implementation will have to make fewer guesses of what the host application is trying to do.
+    It is up to the application developer to tell the Vulkan driver exactly what needs to be done.
+    This way the driver only does as much work as it needs to function properly and less power will be consumed.
+    Hardware vendors will also have an easier time providing robust drivers with less bugs due to reduced complexity.
 
-    Another advantage of Vulkan, being a new API built without worrying about backwards compatability, is the chance of designing a new and consistent API so developers will have an easier time creating applications. For more information about the API structure and common patterns in Vulkan, see chapter \ref{cha:VulkanOverview}.
+    Another advantage of Vulkan, being a new API built without worrying about backwards compatability, is the chance of designing a new and consistent API so developers will have an easier time creating applications.
+    For more information about the API structure and common patterns in Vulkan, see chapter \ref{cha:VulkanOverview}.
 
     Version 1.0 of Vulkan was not entirely built in-house at Khronos Group but is in part based on components of AMD's Mantle API, which was donated to the Khronos Group.
 
@@ -98,11 +130,18 @@
 
       Other \glspl{api} exist that are direct competitors to Vulkan.
 
-      \gls{opengl} is Vulkans predecessor and provides a higher level of abstraction from the hardware. It is a very successful API running on several different platforms with varying hardware configurations. Due to its level of abstraction, \gls{opengl} drivers are very complex and do a significant amount of work on the CPU in order to match abstract commands to the hardware.
+      \gls{opengl} is Vulkans predecessor and provides a higher level of abstraction from the hardware.
+      It is a very successful API running on several different platforms with varying hardware configurations.
+      Due to its level of abstraction, \gls{opengl} drivers are very complex and do a significant amount of work on the CPU in order to match abstract commands to the hardware.
 
       Special flavors of \gls{opengl} exist, such as \gls{gles}, which is a subset of \gls{opengl} to enable hardware-accelerated graphics processing on embedded systems such as smartphones and tablets.
 
-      The \gls{d3d} family of \glspl{api} is developed by Microsoft and only supports Microsoft platforms such as the Windows operating system or the Xbox gaming console. The most recent versions of \gls{d3d} are \acrlong{d3d11} and \acrlong{d3d12}. \acrlong{d3d11} provides a higher level of abstraction from the hardware, not unlike \gls{opengl}. It has been around since the release of Windows 7 in 20??\todo{date}. \acrlong{d3d12}, the latest revision of the \gls{d3d} specification released in 2015\todo{exact date?}, is comparable to Vulkan in terms of of hardware abstraction. It provides much more control to the developer over the hardware.
+      The \gls{d3d} family of \glspl{api} is developed by Microsoft and only supports Microsoft platforms such as the Windows operating system or the Xbox gaming console.
+      The most recent versions of \gls{d3d} are \acrlong{d3d11} and \acrlong{d3d12}.
+      \acrlong{d3d11} provides a higher level of abstraction from the hardware, not unlike \gls{opengl}.
+      It has been around since the release of Windows 7 in 2009.
+      \acrlong{d3d12}, the latest revision of the \gls{d3d} specification released in 2015, is comparable to Vulkan in terms of of hardware abstraction.
+      It provides much more control to the developer over the hardware.
 
       \todo[inline]{Mac OS X: Metal}
 
@@ -112,6 +151,10 @@
 
 
   \section{Document Structure}
-    \todo[inline]{The structure and content of this document.}
+    Chapter~\ref{cha:Introduction} is the introduction to the topics discussed within this document.
+    In chapter~\ref{cha:VulkanOverview}, an overview of the Vulkan graphics \gls{api} is given in terms of its components and features.
+    Chapter~\ref{cha:EnvSetup} is a guide for setting up Vulkan for application development with a bias towards \gls{windows} platforms.
+    Chapter~\ref{cha:RenderPipeline} set's up a simple rendering scenario and explains it step by step.
+    And finally, chapter~\ref{cha:Conclusion} concludes this document and provides insight to thoughts of the author about the topics discussed.
 
-    \tbd
+    \todo[inline]{Explain where to find references (bibliography), the list of figures, etc?}

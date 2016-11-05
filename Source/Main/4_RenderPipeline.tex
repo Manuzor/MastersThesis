@@ -78,7 +78,7 @@
   \begin{figure}
     \includegraphics{Main/Images/RenderSetupAndLoopSimple}
     \centering
-    \caption{Overview of the setup and execution for a simple forward-render in Vulkan.}
+    \caption{Overview of the setup and execution of a simple forward-renderer in Vulkan as implemented in chapter~\ref{cha:RenderPipeline}.}
     \label{fig:RenderSetupAndLoopSimple}
   \end{figure}
 
@@ -86,7 +86,7 @@
     \label{sec:Framework}
     \todo[inline]{Explain why this framework is needed. Vulkan offers many possibilities and each application by do things differently.}
     \todo[inline]{Forward renderer.}
-    A simple forward renderer is assumed.
+    A simple forward renderer is assumed which means that rendering is performed to an image that is presented as soon as possible.
     \todo[inline]{Scene with discrete number of objects.}
     The rendered scene will contain a discrete number of objects.
     \todo[inline]{Each object has fixed geometry and a single texture.}
@@ -114,7 +114,7 @@
     These are discussed in section.
     The setup here adheres to the framework defined in section~\ref{sec:Framework}.
 
-    \subsection{Creating a Proper Device}
+    \subsection{Device and Queue Setup}
       The Vulkan device that is to be used for rendering needs to support both the swapchain extension and queues with graphics and present capabilities.
 
       In order for a rendered image to be presented to a window, the swapchain extension\footnote{Full name: \lstinline{VK_KHR_swapchain}} needs to be activated.
@@ -165,11 +165,101 @@
       Swapchain images will be used exclusively as color attachments for the framebuffer.
 
     \subsection{Creating a Graphics Pipeline}
-      \todo[inline]{Create depth buffer}
-      A depth buffer also needs to be created and used within the render pass in order for the objects to be rendered correctly according to how they are ordered.
-
+      \todo[inline]{Introduction to what a (graphics) pipeline is and why it is useful.}
+      \todo[inline]{Optional dynamic state (line width, viewport, etc...)}
       \todo[inline]{Create framebuffer for each swapchain image, a render pass, and graphics pipeline. }
+      \todo[inline]{Mention PSO creation is costly. Viewport is dynamic state because of window resizing.}
+      \todo[inline]{Sub-sub-sections here are derived from what a VkGraphicsPipelineCreateInfo expects. Mention this?}
       \tbd
+
+      \subsubsection{Shader Stage}
+        \todo[inline]{Shader loading and module creation.}
+        \todo[inline]{Only vertex and fragment shader in our case.}
+        \tbd
+        The graphics pipeline has one or more shader stages.
+        Each shader stage needs to specify which pipeline a shader module
+
+      \subsubsection{Vertex Input State}
+        \tbd
+
+      \subsubsection{Input Assembly State}
+        The input-assembly state describes how the input data to the vertex shader is interpreted.
+        The most important parameter to set is the primitive topology.
+        This is where the \gls{gpu} is told what kind of primitives the input data represents.
+        For the purposes of this chapter, the chosen primitive topology is the triangle list\footnote{Full name: \lstinline{VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}}.
+
+      \subsubsection{Tessellation State}
+        This state is only useful for the tessellation shader stage.
+        In this chapter, only the vertex and fragment shader stages are in use so this state is ignored.
+
+      \subsubsection{Viewport State}
+        The viewport state specifies how many viewports and scissors are active in a pipeline.
+        \todo{Mention GPU feature that has to be enabled if more than 1 viewport is required?}In this chapter, only one of each is used.
+        There are two ways to specify the actual viewport and scissor data.
+        The simplest way is to specify it at this point directly, i.e. when creating the graphics pipeline.
+        However, this also means that the viewport and scissor data may never change during the lifetime of the pipeline.
+        Changing the viewport and scissor data is necessary when the dimension of the render targets change.
+        For example, when the application window is resized, the swapchain along with all swapchain images need to be re-created with dimensions matching the new window size, thus the viewport and scissor need to be updated as well.
+        In order to prevent re-creating the entire graphics pipeline every time, which is a costly operation, the pipeline can be configured to accept \textit{dynamic state}.
+        That is the other way to specify viewport and scissor data.
+        Dynamic state has to be set everytime when a render pass is being processed, i.e. state data is supplied using command buffers.
+        This is the way it is done in this chapter.
+
+      \subsubsection{Rasterization State}
+        The rasterization state is used to configure the behavior of the rasterizer.
+        It can be configured to control how fragments are produced and the circumstances in which they may be discarded.
+
+        It is also used to control how primitves are rasterized.
+        For example, given a triangle primitve, there are three ways for the rasterizer to produce fragments: Densely fill the entire rectangle, only produce fragments for the outline of the triangle, or just produce a fragment for each of the vertices, respectively.
+
+        The rasterizer can also be configured to perform face culling, i.e. discarding fragments that are facing in a certain direction.
+        Without this option, fragments are produced regardless of the direction they are facing.
+        However, it is common to enable back-face culling, i.e. discarding fragments that would be viewed from ``behind'', for triangle meshes that form a closed object.
+
+        In order to perform culling, the rasterizer needs to know the facing direction of a polygon.
+        This facing direction is also configurable in the rasterizer state.
+        It is defined by the winding order of the vertices, which is considered to be either \textit{clockwise} or \textit{counter-clockwise}.
+
+        \lstinputlisting[
+          label=lst:RasterizationState,
+          caption={Rasterization state setup for chapter~\ref{cha:RenderPipeline}.},
+          style=MyCppFloat,
+          % float
+        ]
+        {Main/Listings/RasterizationState.cpp}
+
+        \todo[inline]{I don't show a listing for any of the other pipeline states. This is an experiment to see how it would be if I backed the text with corresponding listings.}
+
+        In this chapter, the rasterizer is configured to produce densely filled polygons and does not perform any culling operations on the fragments as can be seen in listing~\ref{lst:RasterizationState}.
+
+      \subsubsection{Multisample State}
+        Multisampling is used to perform anti-aliasing, achieving a smoother appearance of jagged edges, and can be configured in the Multisample state.
+        Disabling multisampling is not simply a matter of specifying the default value for all options.
+        This state controls how many times the fragment shader is invoked and if a value of zero is passed as the number of samples, the fragment shader will never be invoked.
+
+        Multisampling is not being used in this chapter so the number of samples is set to one.
+
+      \subsubsection{Depth Stencil State}
+        Depth and stencil tests are controlled in this state.
+        Individual control is provided to enable depth testing, depth writing, depth bounds testing, as well as stencil testing.
+        Depth bounds and comparison operations as well as stencil operations can be configured in this state.
+        The comparison operation during depth tests can also be controlled.
+
+        In this chapter, stencil tests are disabled.
+        Depth testing, on the other hand, is enabled with depth bounds of $[0, 1]$ and with the typical less-or-equal comparison operation.
+
+      \subsubsection{Color Blend State}
+        The color blend state controls how color values produced by the fragment shader are combined, or blended, with the color that is already in the framebuffer.
+        \todo{Mention `logicOp' and `blendConstants'?}
+        The blend operations need to be specified for each render target individually.
+        Blend operations may also be turned off which simply replaces whatever was in the framebuffer with the output of the fragment shader.
+
+        In addition to controlling blending, a color mask can be set that controls which components of the resulting color values are written to the framebuffer.
+        If a color mask of 0 is supplied, the framebuffer contents will remain unchanged.
+        Likewise, a color mask with all bits set to 1 will copy all color components to the framebuffer.
+        It is crucial to set this value correctly, otherwise undesired behavior may be observed.
+
+        In this chapter, blending is turned off and a color mask is chosen so all color components are copied to the framebuffer.
 
     \subsection{Creating Scene Objects}
       \todo[inline]{Create renderable objects. Needs sampled image, geometry. Mention push constants.}
@@ -185,7 +275,7 @@
   \section{Rendering Loop}
   \label{sec:RenderLoop}
     \todo[inline]{Rather simple because of pre-recording command buffers.}
-    \todo[inline]{Update uniform buffers.}
+    \todo[inline]{Update shader data (UBOs, dynamic state, etc).}
     \todo[inline]{Possibly explain push constants.}
     \todo[inline]{Acquire swapchain image.}
     \todo[inline]{Submit command buffers.}
@@ -277,7 +367,7 @@
         If a command pool is going to be reused, and the memory is not released, this command pool can directly start producing command buffers without causing additional allocation overhead.
         This provides a clean way for managing command buffer lifetimes without the need to use anything but the Vulkan \gls{api} itself.
 
-        \todo{Describe what they did differently?}Similar approaches have been described by industry experts such as Marius Bjørge\cite{bjorge:multithreadingvulkan} in his blog post about multi-threading in Vulkan as well as Mathias Schott\cite{mschott:vulkan_multi_threading} in his talk entitled "Vulkan multi-threading".
+        \todo{Describe what they did differently?}Similar approaches have been described by industry experts such as Marius Bjørge\cite{bjorge:multithreadingvulkan} in his blog post about multi-threading in Vulkan as well as Mathias Schott\cite{mschott:vulkan_multi_threading} in his talk entitled ``Vulkan multi-threading''.
 
         Care must be taken, however, in cases where the amount of memory required by a command buffer is not steady during its lifetime.
         For example, when transitioning from a large \gls{3d} scene, with many objects to render, to a small scene with less draw calls to perform, the memory requirements of each command buffer may be lowered considerably for the new scene.

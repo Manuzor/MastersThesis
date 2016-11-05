@@ -87,7 +87,7 @@
 
     \begin{figure}
       \centering
-      \includegraphics{Main/Images/PresentationEngine}
+      \includegraphics[width=\textwidth]{Main/Images/PresentationEngine}
       \caption{Illustration of the presentation engine being connected to a device using a swapchain.}
       \label{fig:PresentationEngine}
     \end{figure}
@@ -159,12 +159,12 @@
 
     \begin{figure}
       \centering
-      \includegraphics{Main/Images/GraphicsPipeline}
+      \includegraphics[width=\textwidth]{Main/Images/GraphicsPipeline}
       \caption{Graphics pipeline setup.}
       \label{fig:GraphicsPipeline}
     \end{figure}
 
-    Vulkan uses the concept of pipelines to describe how work is performed on the GPU. It supports compute and graphics pipelines. The compute pipeline consists only of a single programmable stage. The graphics pipeline, however, is considerably more complex. It has multiple fixed function stages and five programmable stages, called shader stages. Some of the fixed-function stages have a configurable state that can be manipulated by the \gls{application}. For example, the rasterization stage can be configured to interpret incoming vertex data as either a list of points, lines, or filled polygons with more than two sides.
+    Vulkan uses the concept of pipelines to describe how work is performed on the GPU. It supports compute and graphics pipelines. The compute pipeline consists only of a single programmable stage. The graphics pipeline, however, is considerably more complex. \todo{What are the fixed function stages?}It has multiple fixed function stages and five programmable stages, called shader stages. Some of the fixed-function stages have a configurable state that can be manipulated by the \gls{application}. For example, the rasterization stage can be configured to interpret incoming vertex data as either a list of points, lines, or filled polygons with more than two sides.
 
     Programs that are designed for use in shader stages are called shaders. Shaders are supplied to Vulkan in \gls{spirv} format. \gls{spirv} is a high-level graphics and parallel compute programming language provided in \todo{Mention need to convert from GLSL or others to SPIR-V}binary form. The specification of \gls{spirv} is entirely maintained by the the Khronos Group \cite{spirvspecprov}. The five shader stages are listed below.
 
@@ -178,7 +178,7 @@
 
     When defining a graphics pipeline, Vulkan requires the \gls{application} to at least specify a vertex shader. All other graphics stages are optional. Vulkan has restrictions on the possible combinations of active shader stages. Details can be found in the Vulkan specification \cite{vkspec}\todo{Remove these two sentences?}.
 
-    \todo[inline]{Describe why having only a vertex shader stage can be useful?}
+    \todo[inline]{Describe why having only a vertex shader stage can be useful? (Cache skinning results)}
 
     \subsection{Pipeline Cache}
     \label{subsec:PipelineCache}
