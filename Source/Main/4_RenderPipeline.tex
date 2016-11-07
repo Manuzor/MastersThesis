@@ -179,8 +179,28 @@
         The graphics pipeline has one or more shader stages.
         Each shader stage needs to specify which pipeline a shader module
 
+        \lstinputlisting[
+          label=lst:ShaderStageSetup,
+          caption={Setup of the shader stages for chapter~\ref{cha:RenderPipeline}.},
+          style=MyCppFloat,
+          firstline=4,
+          lastline=10,
+          float
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
+
       \subsubsection{Vertex Input State}
         \tbd
+
+        \lstinputlisting[
+          label=lst:VertexInputStateSetup,
+          caption={Vertex input state setup for chapter~\ref{cha:RenderPipeline}.},
+          style=MyCppFloat,
+          firstline=15,
+          lastline=34,
+          float
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
 
       \subsubsection{Input Assembly State}
         The input-assembly state describes how the input data to the vertex shader is interpreted.
@@ -188,22 +208,57 @@
         This is where the \gls{gpu} is told what kind of primitives the input data represents.
         For the purposes of this chapter, the chosen primitive topology is the triangle list\footnote{Full name: \lstinline{VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}}.
 
+        \lstinputlisting[
+          label=lst:InputAssemblyStateSetup,
+          caption={Input assembly state setup for chapter~\ref{cha:RenderPipeline}.},
+          style=MyCppFloat,
+          firstline=39,
+          lastline=40,
+          float
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
+
       \subsubsection{Tessellation State}
+        \todo[inline]{Just omit this state and subsubsection? It's nullptr in the graphics pipeline.}
         This state is only useful for the tessellation shader stage.
         In this chapter, only the vertex and fragment shader stages are in use so this state is ignored.
 
       \subsubsection{Viewport State}
         The viewport state specifies how many viewports and scissors are active in a pipeline.
         \todo{Mention GPU feature that has to be enabled if more than 1 viewport is required?}In this chapter, only one of each is used.
+
         There are two ways to specify the actual viewport and scissor data.
         The simplest way is to specify it at this point directly, i.e. when creating the graphics pipeline.
+
         However, this also means that the viewport and scissor data may never change during the lifetime of the pipeline.
         Changing the viewport and scissor data is necessary when the dimension of the render targets change.
-        For example, when the application window is resized, the swapchain along with all swapchain images need to be re-created with dimensions matching the new window size, thus the viewport and scissor need to be updated as well.
-        In order to prevent re-creating the entire graphics pipeline every time, which is a costly operation, the pipeline can be configured to accept \textit{dynamic state}.
-        That is the other way to specify viewport and scissor data.
-        Dynamic state has to be set everytime when a render pass is being processed, i.e. state data is supplied using command buffers.
-        This is the way it is done in this chapter.
+        For example, when the application window is resized, the swapchain along with all swapchain images typically need to be re-created with dimensions matching the new window size, thus the viewport and scissor need to be updated as well.
+
+        \lstinputlisting[
+          label=lst:DynamicStateSetup,
+          caption={Dynamic state setup for viewport and scissor state in chapter~\ref{cha:RenderPipeline}.},
+          style=MyCppFloat,
+          firstline=45,
+          lastline=51,
+          float
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
+
+        \lstinputlisting[
+          label=lst:ViewportStateSetup,
+          caption={Viewport state setup for chapter~\ref{cha:RenderPipeline}.},
+          style=MyCppFloat,
+          firstline=53,
+          lastline=55,
+          float
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
+
+        In order to prevent re-creating the entire graphics pipeline every time, which is a costly operation, the pipeline can be configured to accept \textit{dynamic state} as shown in listing~\ref{lst:DynamicStateSetup}.
+        Dynamic state has to be set everytime when a render pass is being processed.
+        Dynamic state data is recorded in command buffers and submitted along with the relevant render pass commands.
+
+        Because dynamic state for the viewport and scissor data is used in chapter, specifying the number of viewports and scissors as shown in listing~\ref{lst:ViewportStateSetup} is sufficient for the purpose of setting up a graphics pipeline.
 
       \subsubsection{Rasterization State}
         The rasterization state is used to configure the behavior of the rasterizer.
@@ -221,23 +276,36 @@
         It is defined by the winding order of the vertices, which is considered to be either \textit{clockwise} or \textit{counter-clockwise}.
 
         \lstinputlisting[
-          label=lst:RasterizationState,
+          label=lst:RasterizationStateSetup,
           caption={Rasterization state setup for chapter~\ref{cha:RenderPipeline}.},
           style=MyCppFloat,
-          % float
+          firstline=60,
+          lastline=62,
+          float
         ]
-        {Main/Listings/RasterizationState.cpp}
+        {Main/Listings/GraphicsPipelineSetup.cpp}
 
-        \todo[inline]{I don't show a listing for any of the other pipeline states. This is an experiment to see how it would be if I backed the text with corresponding listings.}
+        % \todo[inline]{I don't show a listing for any of the other pipeline states. This is an experiment to see how it would be if I backed the text with corresponding listings.}
 
-        In this chapter, the rasterizer is configured to produce densely filled polygons and does not perform any culling operations on the fragments as can be seen in listing~\ref{lst:RasterizationState}.
+        In this chapter, the rasterizer is configured to produce densely filled polygons and does not perform any culling operations on the fragments as can be seen in listing~\ref{lst:RasterizationStateSetup}.
 
       \subsubsection{Multisample State}
+        \label{subsubsec:MultisampleState}
         Multisampling is used to perform anti-aliasing, achieving a smoother appearance of jagged edges, and can be configured in the Multisample state.
         Disabling multisampling is not simply a matter of specifying the default value for all options.
         This state controls how many times the fragment shader is invoked and if a value of zero is passed as the number of samples, the fragment shader will never be invoked.
 
         Multisampling is not being used in this chapter so the number of samples is set to one.
+
+        \lstinputlisting[
+          label=lst:MultisampleStateSetup,
+          caption={Multisample state setup for chapter~\ref{cha:RenderPipeline}.},
+          style=MyCppFloat,
+          firstline=67,
+          lastline=68,
+          float
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
 
       \subsubsection{Depth Stencil State}
         Depth and stencil tests are controlled in this state.
@@ -247,6 +315,16 @@
 
         In this chapter, stencil tests are disabled.
         Depth testing, on the other hand, is enabled with depth bounds of $[0, 1]$ and with the typical less-or-equal comparison operation.
+
+        \lstinputlisting[
+          label=lst:DepthStencilStateSetup,
+          caption={Depth and stencil state setup for chapter~\ref{cha:RenderPipeline}.},
+          style=MyCppFloat,
+          firstline=73,
+          lastline=77,
+          float
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
 
       \subsubsection{Color Blend State}
         The color blend state controls how color values produced by the fragment shader are combined, or blended, with the color that is already in the framebuffer.
@@ -259,7 +337,102 @@
         Likewise, a color mask with all bits set to 1 will copy all color components to the framebuffer.
         It is crucial to set this value correctly, otherwise undesired behavior may be observed.
 
+        \lstinputlisting[
+          label=lst:ColorBlendStateSetup,
+          caption={Color blend state setup for chapter~\ref{cha:RenderPipeline}.},
+          style=MyCppFloat,
+          firstline=82,
+          lastline=88,
+          float
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
+
         In this chapter, blending is turned off and a color mask is chosen so all color components are copied to the framebuffer.
+
+      \subsubsection{Render Pass}
+
+        Each graphics pipeline has exactly one render pass.
+        A render pass stores information about the flow of data between subpasses and the execution of rendering commands.
+        It stores framebuffer attachment and information about layout transitions at the beginning and the end of the render pass as well as between subpasses.
+        Framebuffer attachments are images such as a swapchain image or a depth-buffer.
+        A render pass also consists of one or more subpasses.
+        Each of these subpass may reference the aforementioned framebuffer attachments of the render pass.
+        Dependencies of each subpass are also stored in the render pass.
+        Rendering commands are always recorded to one of the subpasses of a render pass \textit{instance}.
+        Command buffer recording is discussed in section~\ref{sec:BuildCommandBuffers}.
+
+        \lstinputlisting[
+          label=lst:RenderPassAttachmentsSetup,
+          caption={Setup of the attachments for the render pass used in chapter~\ref{cha:RenderPipeline}.},
+          style=MyCppFloat,
+          firstline=93,
+          lastline=106,
+          float
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
+
+        In listing~\ref{lst:RenderPassAttachmentsSetup}, the attachments for the render pass are being set up.
+        The first attachment, attachment 0, is the render target which is actually a swapchain image.
+        The format of that attachment is set to the same format as the surface.
+        Like before in section~\ref{subsubsec:MultisampleState}, the sampling count is set to 1, i.e. multisampling is not used.
+        On line 4, the render pass is configured to clear the contents of the first attachment at load-time.
+        The value to clear the contents with is defined in the render pass instance.
+        Once the render pass has finished executing, the \lstinline{storeOp} determines what happens to this attachment.
+        In this case, on line 5, the framebuffer contents are preserved.
+        Another is be to tell the render pass to discard the results but that is not the desired behavior in this particular case.
+
+        The following settings are used to control the image layout at the beginning and the end of a render pass, respectively.
+        On line 6 the initial layout of the attachment is specified to be undefined.
+        This tells the \gls{driver} that it may discard the contents if it sees fit.
+        The previous contents of the attachment are not relevant for this render pass because the attachment is cleared as the first operation when loaded by this render pass.
+        On line 7, the render pass is configured to ensure that the attachment is in presentation layout\footnote{Full name: \lstinline{VK_IMAGE_LAYOUT_PRESENT_SRC_KHR}}.
+        This way no further transformations to the undrelying swapchain image have to be performed before it can be presented.
+
+        On lines 9--14 the depth buffer attachment is configured.
+        The format of this attachment is set to the format of the actual depth buffer.
+        Similarly to the first attachment, the depth buffer is cleared at the beginning of the render pass.
+        The \lstinline{storeOp} is set to \lstinline{DONT_CARE}\footnote{Full name: \lstinline{VK_ATTACHMENT_STORE_OP_DONT_CARE}} because the depth buffer is not used outside the render pass.
+        This is also the reason why both the inital and the final layout are simply set to \lstinline{DEPTH_STENCIL_ATTACHMENT}\footnote{Full name: \lstinline{VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}}.
+
+        \lstinputlisting[
+          label=lst:RenderPassSubpassSetup,
+          caption={Setup of the single subpass for use in chapter~\ref{cha:RenderPipeline}.},
+          style=MyCppFloat,
+          firstline=108,
+          lastline=120,
+          float
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
+
+        As mentioned before, a render pass consists of multiple subpasses.
+        Every render pass needs at least one subpass.
+        For the purposes of this chapter, a single subpass is sufficient.
+        This subpass is configured in listing~\ref{lst:RenderPassSubpassSetup}.
+
+        A subpass accepts configurations for the layout of individual attachments.
+        Subpasses have references to the attachments of the render pass itself.
+        These attachment references contain additional information, the most important one being the layout in that subpass.
+        On line 2 of listing~\ref{lst:RenderPassSubpassSetup}, the index of the referenced attachment in the render pass is set.
+        On line 3, the attachment reference is configured to ensure the correct image layout for the referenced attachment during the execution of that subpass.
+        Every subpass within a render pass may define their own requirements for the layout of every individual attachment.
+        Image layout transitions are performed by the \gls{driver} between subpasses as needed to ensure each subpass uses the attachment in the required layout.
+        The depth-stencil reference on lines 6 and 7 is referencing the remaining attachment of the render pass and requires the \lstinline{DEPTH_STENCIL_ATTACHMENT} layout for this attachment.
+
+        Note that the depth-stencil attachment reference on line 13 is only a single element, not an array.
+        Color references on line 11 and 12, on the other hand, are not limited to a single instance.
+        This means that a subpass may reference many color attachments but only a single depth-stencil attachment.
+
+        \lstinputlisting[
+          label=lst:RenderPassCreation,
+          caption={Creation of a render pass object using the data defined in listings~\ref{lst:RenderPassAttachmentsSetup}~and~\ref{lst:RenderPassSubpassSetup}.},
+          style=MyCppFloat,
+          firstline=122,
+          lastline=129,
+          float
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
+
+        And finally, the attachment and subpass information defined previously are combined and passed to the appropriate Vulkan command on line 8 in listing~\ref{lst:RenderPassCreation} to create the actual render pass object.
 
     \subsection{Creating Scene Objects}
       \todo[inline]{Create renderable objects. Needs sampled image, geometry. Mention push constants.}
