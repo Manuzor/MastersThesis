@@ -13,6 +13,8 @@
     Explain shader stages of modern graphics hardware somewhere in this chapter.
   }
 
+  \todo[inline]{Mention the terms \gls{cpu} and \gls{gpu} here somewhere.}
+
   % The field of computer graphics poses many challenges.
 
   % Data is consumed by a pipeline and transformed by complex algorithms, resulting in another set of data that is used in further processing. This transformation process is usually referred to as ``rendering''. In its most simple form, the output of the rendering process is used to present a graphical representation of the input data to the user, typically via a computer monitor peripheral device.
@@ -45,10 +47,10 @@
     {
       General overview of the stages several resources (vertices, textures, etc.) have to go through.
 
-      Explain the fixed function pipeline.
+      Explain the fixed function stages.
     }
 
-    \tbd
+    \todo[inline]{Change the text ``Vertex Data'' to ``Input Data'' in figure~\ref{fig:Rendering_Pipeline_Overview}.}
     \begin{figure}
       \includegraphics[width=\textwidth]{Main/Images/Rendering_Pipeline_Overview}
       \centering
@@ -56,46 +58,90 @@
       \label{fig:Rendering_Pipeline_Overview}
     \end{figure}
 
+    Generally speaking, graphics hardware is built like a pipeline that is made up of several components called pipeline stages.
+    Each of these stages is processing data that is provided by the \textit{host application}, before being passed on to the next stage in the pipeline.
+    The pipeline stages can generally be categorized into fixed-function stages and shader stages.
+    Fixed-function stages perform the same kind of operation on incoming data.
+    Control over the operation is limited, but in many cases a fixed-function stage can be configured to some extent.
+    Shader stages accept application-defined programs, called \textit{shaders}, that are run in order to process incoming data.
+    In figure~\ref{fig:Rendering_Pipeline_Overview}, fixed-function stages are depicted with solid, rounded outlines and shader stages with dashed outlines.
+    The available shader stages are the vertex, tessellation, geometry, and fragment shader stage.
+
+    % The input assembly, for example, is responsible for producing primitives from the input data for the vertex shader to consume.
+
+    \begin{description}
+      \item[Vertex Shader]
+        Vertex shaders are invoked for individual vertices.
+        This stage is typically used to transform vertices to different coordinate systems.
+
+      \item[Tessellation Shader]
+        Tessellation shaders are generally used to turn coarse geometry into smoother geometry by adding more detail.
+
+      \item[Geometry Shader]
+        Geometry shaders are used to generate new geometry from existing primitives.
+        For example, the geometry shader may be used to turn a single vertex into a triangle.
+
+      \item[Fragment Shader]
+        Fragment shaders work on individual output pixels to determine values that are written to the framebuffer.
+        In other words, this is the stage where the actual pixel colors are produced, optionally by sampling textures and applying lighting computations.
+    \end{description}
+
+    \todo[inline]{Is this enough for the \underline{high level} graphics workflow?}
 
   \section{Motivation for a new Graphics API}
-    \todo[inline]{Basically write why Vulkan is needed.}
+    \todo[inline]{Hardware abstraction of old APIs based on old hardware design.
+    Hardware design changed a lot (much more general purpose).
+    Old APIs need to perform a lot of work to maintain the illusion of old hardware design.
+    Special purpose hardware is largely replaced by general purpose memory and massively parallel processors for crunching data.}
+    Old graphics \glspl{api} were designed for old graphics hardware designs.
+    However, hardware design has changed significantly over time.
+    The model older graphics \glspl{api} are based on no longer reflect modern hardware design.
+    In order to remain compatible, these \glspl{api} need to perform a mapping of their model to modern hardware design.
+    This mapping may come at a significant cost in terms of performance.
 
-    Graphics hardware is changing rapidly through the years and is highly specialized to do computational work in a massively parallel manner.
-    This makes it not only suitable for graphics computation, but also for general-purpose parallelization of working with large sets of data.
-    These \glspl{api} have grown with the hardware, constantly adapting to it, adding new versions that support different kinds of features and provide different kinds of extensions while maintaining backwards compatability as much as possible.
-    This lead to very complicated \glspl{api} that was getting harder and harder to understand with each new release, especially for beginners.
+    In practice, this often means that the hardware driver, implementing an old graphics \gls{api}, wastes a considerable amount of time that could be used by the host application to perform useful \todo{Use `operations' instead?}computations.
+    For some applications, this overhead caused by the driver is not very significant.
+    Applications like these may not gain much by the new \glspl{api} other than lower power consumption due to reduced \gls{cpu} usage, which might be important on mobile platforms.
 
-    \todo[inline]{It might be too obvious that the paragraph above refers to OpenGL.
-    Maybe just make it OpenGL-specific.
-    Would still need to explain why Vulkan is not as abstract as OpenGL.
-    Parts of this is explained below.}
+    Modern hardware design tends to be more suitable for general purpose computing compared to old hardware design.
+    Older hardware consisted of many special purpose components that were largely replaced by general purpose memory and programmable processing cores that perform work in a massively parallel manner.
 
-    But not only graphics and compute hardware has changed.
-    The drivers accompanying the hardware also have to stay backwards compatible.
-    They hide and abstract a lot of the low-level functionality that is needed to work properly with the hardware.
-    This abstraction means that the application developer has less control over what is actually done with the data fed to drivers.
-    Since drivers rarely get information about the exact intent of what the developer plans to do with the supplied data, they have to implement heuristics to decide the best course of action.
+    \todo[inline]{Main goal of modern APIs is to match modern hardware design. Enables drivers to work more directly with the hardware instead of perform a mapping between the abstract model and the actual hardware.}
 
-    \todo{Reference something here. A paper, in the best case.}
-    This level of abstraction has been criticized by many professional developers over the years, demanding for more low-level control.
-    On gaming consoles, low-level control of the hardware was always required, except for Microsoft platforms where the \gls{d3d} technology has always been in use.
-    This meant that console developers were already used to thinking about data flow on a low level and work very closely with the hardware.
+    Modern graphics \glspl{api} match their abstraction closer to modern hardware design.
+    This enables drivers to work more directly with the hardware and reduce the aforementioned cost of mapping the driver model to the actual hardware.
+    This is arguably the main motivation for new graphics \glspl{api}.
 
-    Another aspect is the advent of multi-core CPUs for personal computers in the mid 2000's.
-    Multithreading has become common in CPU programming to achieve better performance.
-    Older graphics \glspl{api}, however, were designed to run on a single thread all the time.
-    Even though these \glspl{api} provide limited support for multithreading by now, they were still originally not designed for it, making it rather difficult to fully utilize multicore performance.
+    Another aspect of modern graphics \glspl{api} is the level of control that is given to the application.
+    modern \glspl{api} tend to design their model much closer to the actual hardware, exposing it a lot more than older \glspl{api} did.
+    The fact that modern graphics hardware becomes more general purpose is certainly a factor in this.
+    Designing general purpose hardware only to be constrained by \glspl{api} that do not provide ways to leverage it would be a waste of resources.
+    \todo{References??}But having more control of the hardware has been the desire of many developers in the past.
+    On gaming consoles, for example, working closely with graphics hardware was always required\footnote{Except on \gls{ms} platforms where \gls{d3d} technology is used.}.
+    A game ported from a console to a platform such as the \gls{pc} would often run less optimal in comparison.
+
+    Providing more control to the application also means that drivers have to do less guess-work to figure out what the application wants to do.
+    This makes driver implementations simpler and easier to maintain, reducing the possibility for \glspl{bug}.
+    It also reduces the gap between different driver implementations, making applications work more consistently across hardware from different vendors.
+
+    \todo[inline]{Secondary goal is to make drivers simpler at the cost of making applications more complicated. This is not necessarily bad because the application has control over how hardware is utilized. Drivers don't need to guess user intent as much anymore. Also, less complex driver means better maintainability and fewer bugs.}
+
+    Multithreading is also a concern for modern graphics applications.
+    With older graphics \glspl{api} it was usually much harder, if not impossible, to utilize multiple threads in terms of rendering.
+    At the time these \glspl{api} were designed, applications were usually running only on a single thread.
+    Modern graphics \glspl{api}, on the other hand, were designed at times multiple processing cores have been common in consumer hardware.
+    Hence, modern \glspl{api} are well prepared for multithreaded use.
 
     \todo[inline]{Mention CPU overhead of GPU instructions, especially on mobile.}
 
-    \todo[inline]{Talk about new \glspl{api} such as D3D12, Mantle, Metal, and also talk about consoles (no specs) that all adress these problems.}
+    \todo[inline]{Talk about new APIs such as D3D12, Mantle, Metal, and also talk about consoles (no specs) that all adress these problems.}
 
 
   \section{The Vulkan Graphics and Compute API}
     \todo[inline]{What does it do. Where does it come from. What are people expecting from it. Cross-platform nature (in comparison maybe to PS4's libGNM made specifically for PS4 hardware).}
 
     \todo[inline]{Insert missing references.}
-    The Vulkan \gls{api} was designed by the Khronos Group in collaboration with many industry representatives, including Valve Coroporation, AMD, NVIDIA.
+    The Vulkan \gls{api} was designed by the Khronos Group in collaboration with many industry representatives, including Valve Coroporation, \gls{amd}, \gls{nvidia}.
     Version 1.0 of the Vulkan specification was released on the 16th February in 2016.
     It was designed to provide low-level control to the developer when interacting with graphics and compute hardware.
 
@@ -104,7 +150,7 @@
     \begin{itemize}
       \item Cross-platform
       \item Keep driver complexity at a minimum
-      \item Less driver-side CPU overhead
+      \item Less driver-side \gls{cpu} overhead
       \item Enable developers a lot of control over the hardware.
       \item Consistent API
     \end{itemize}
@@ -113,7 +159,7 @@
     Vulkan is designed to be used with all of these systems.
     There will be no special version of Vulkan dedicated to embedded systems as was the case with \gls{gles}.
 
-    As a result of striving for less driver overhead, Vulkan also provides the possibility of reducing CPU and GPU power consumption.
+    As a result of striving for less driver overhead, Vulkan also provides the possibility of reducing \gls{cpu} and \gls{gpu} power consumption.
     The driver implementation will have to make fewer guesses of what the host application is trying to do.
     It is up to the application developer to tell the Vulkan driver exactly what needs to be done.
     This way the driver only does as much work as it needs to function properly and less power will be consumed.
@@ -132,7 +178,7 @@
 
       \gls{opengl} is Vulkans predecessor and provides a higher level of abstraction from the hardware.
       It is a very successful API running on several different platforms with varying hardware configurations.
-      Due to its level of abstraction, \gls{opengl} drivers are very complex and do a significant amount of work on the CPU in order to match abstract commands to the hardware.
+      Due to its level of abstraction, \gls{opengl} drivers are very complex and do a significant amount of work on the \gls{cpu} in order to match abstract commands to the hardware.
 
       Special flavors of \gls{opengl} exist, such as \gls{gles}, which is a subset of \gls{opengl} to enable hardware-accelerated graphics processing on embedded systems such as smartphones and tablets.
 
