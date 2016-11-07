@@ -32,7 +32,7 @@
     "builder_settings":
     {
       "program": "xelatex",
-      "options": "--shell-escape"
+      "options": ["--shell-escape"]
     },
     "word_wrap": true
   }
