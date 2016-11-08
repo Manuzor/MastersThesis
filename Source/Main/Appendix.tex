@@ -2,45 +2,67 @@
 
 \appendix
 
-\chapter{Prototype Source Code}
-  \label{cha:PrototypeSourceCode}
-  \todo[inline]
-  {
-    Goals:\\
-    -- Refer to the disc that came with the thesis document.\\
-    -- Also refer to GitHub. Make sure the source code is in the MastersThesis repo.\\
-  }
-  \tbd
 
 %
 % List of Listings
 %
+\renewcommand\lstlistlistingname{List of Listings}
+% \addcontentsline{toc}{chapter}{\lstlistlistingname}
 \lstlistoflistings
+
 
 %
 % List of Figures
 %
-% \chapter{List of Figures}
-% \label{cha:ListOfFigures}
-% \cleardoublepage
-% \phantomsection
-% \addcontentsline{toc}{section}{\listfigurename}
-% \begingroup
-%   \let\clearpage\relax
-%   \listoffigures
-% \endgroup
 \listoffigures
+
 
 %
 % List of Tables
 %
-% \chapter{List of Tables}
-% \label{cha:ListOfTables}
-% \cleardoublepage
-% \phantomsection
-% \addcontentsline{toc}{section}{\listtablename}
-% \begingroup
-%   \let\clearpage\relax
-%   \listoftables
-% \endgroup
-\listoftables
+% \listoftables
+
+
+% \chapter{Prototype Source Code}
+%   \label{cha:PrototypeSourceCode}
+%   \todo[inline]
+%   {
+%     Goals:\\
+%     -- Refer to the disc that came with the thesis document.\\
+%     -- Also refer to GitHub. Make sure the source code is in the MastersThesis repo.\\
+%   }
+%   \tbd
+
+
+%
+% Document Source Code
+%
+\chapter{Document Source}
+  The sources of this document can be found on GitHub using the following \gls{url}.
+  Published versions of this document can also be found there in the \textit{releases} section.
+  \newline
+
+  \noindent
+  \url{https://github.com/Manuzor/MastersThesis}
+  \newline
+
+  \noindent
+  The published version of this document is \lstinline{v1.0} and can be found using the following \gls{url}.
+  \newline
+
+  \noindent
+  \url{https://github.com/Manuzor/MastersThesis/tree/v1.0}
+
+
+%
+% Prototype Source Code
+%
+\chapter{Prototype Source Code}
+  During the development of this document, another project has been developed concurrently.
+  The project is written in \gls{cpp} and uses the Vulkan graphics \gls{api}.
+  It was mainly used for experimenting with Vulkan and everything closely involved.
+  The project is only losely connected to this document but may still provide a valuable resource to the reader.
+  \newline
+
+  \noindent
+  \url{https://github.com/Manuzor/VulkanExperiments}

@@ -2,7 +2,7 @@
 \documentclass{scrreprt}
 \usepackage{scrhack}
 \usepackage{setspace}
-\onehalfspacing
+\setstretch{1.3}
 
 \voffset=2em
 
@@ -12,8 +12,9 @@
   fontsize=12pt,
   listof=numbered,
   headlines=4,
+  parskip=half,
   BCOR=10mm,
-  DIV=9,
+  DIV=10,
 }
 
 \usepackage[automark,headsepline]{scrlayer-scrpage}
@@ -39,6 +40,7 @@
 \setromanfont{TeX Gyre Bonum} % Enhanced version of `Bookman Old Style'.
 \setmonofont{Consolas}
 % \setsansfont{TeX Gyre Heros} % Replacement for Helvetica.
+\setsansfont{Arial} % Replacement for Helvetica.
 
 % Choose default font family.
 %
@@ -56,8 +58,12 @@
 
 \usepackage[toc,page]{appendix}
 
+% To disable todonotes: [disable]
 \usepackage{todonotes}
-\newcommand{\tbd}[0]{\todo[inline, color=yellow!30]{\centerline{To Be Done}}}
+\newcommand{\tbd}[0]{\todo[inline, nolist, color=yellow!30]{\centerline{To Be Done}}{}}
+% Put todo notes on the left side
+\reversemarginpar
+\setlength{\marginparwidth}{3.2cm}
 
 \usepackage{xcolor}
 \definecolor{CodeComment}{gray}{0.4}
@@ -87,11 +93,10 @@
 \lstdefinestyle{MyCppFloat}
 {
   language=[11]C++,
-  % backgroundcolor=\color{backcolour},
-  commentstyle=\color{CodeComment},
-  keywordstyle=\color{CodeKeyword},
-  numberstyle=\ttfamily\color{CodeComment},
-  stringstyle=\color{CodeString},
+  % commentstyle=\color{CodeComment},
+  % keywordstyle=\color{CodeKeyword},
+  % numberstyle=\ttfamily\color{CodeComment},
+  % stringstyle=\color{CodeString},
   basicstyle=\scriptsize\ttfamily,
   breakatwhitespace=false,
   breaklines=true,
@@ -108,11 +113,10 @@
 \lstdefinestyle{MyXML}
 {
   language=XML,
-  % backgroundcolor=\color{backcolour},
-  commentstyle=\color{CodeComment},
-  keywordstyle=\color{CodeKeyword},
-  numberstyle=\ttfamily\color{CodeComment},
-  stringstyle=\color{CodeString},
+  % commentstyle=\color{CodeComment},
+  % keywordstyle=\color{CodeKeyword},
+  % numberstyle=\ttfamily\color{CodeComment},
+  % stringstyle=\color{CodeString},
   basicstyle=\scriptsize\ttfamily,
   breakatwhitespace=false,
   breaklines=true,
@@ -148,37 +152,112 @@
 \loadglsentries{Main/Glossary.tex}
 \makenoidxglossaries
 
+% \usepackage[parfill]{parskip}
+
+\usepackage{hhline}
+
+\usepackage{tabu}
 
 \usepackage[nopar]{lipsum}
 \setlipsumdefault{1}
-
-
-\title{Evaluating the Vulkan Graphics API
-  \todo[inline, color=red!64]{\centerline{DRAFT}}
-}
-
-\date{\today}
-\author{Manuel Maier}
 
 \emergencystretch=1em
 
 \hyphenation{LunarG}
 
+
+\usepackage{ifthen}
+\newboolean{hdm}
+\setboolean{hdm}{true}
+
+\usepackage[perpage]{footmisc}
+
+\usepackage{comment}
+
 \begin{document}
   %
   % Title Page
   %
-  \pagenumbering{gobble}
-  \maketitle
+
+  \ifthenelse{\boolean{hdm}}
+  {
+    \begin{titlepage}
+      \begin{centering}
+        \todo[inline, nolist, color=red!64]{\centerline{DRAFT}}{}
+
+        \large
+
+        Masterarbeit im Studiengang \\ \textbf{\Large Computer Science and Media}
+
+        \vspace{\fill}
+
+        {\fontsize{2.8em}{0}\selectfont\bfseries
+          Evaluation of the \par Vulkan Graphics API
+        }
+
+        \vspace{\fill}
+
+        vorgelegt von \\ \textbf{\Large Manuel Maier} \\ Matrikelnummer 28535
+
+        an der \\ \textbf{\Large Hochschule der Medien Stuttgart}
+
+        am \\ \textbf{\Large 14.11.2016}
+
+        zur Erlangung des akademischen Grades eines \\ \textbf{\Large Master of Science (M.Sc.)}
+
+      \end{centering}
+
+      \vspace{\fill}
+
+      \begin{tabu} to \linewidth { l X }
+        Erstprüfer: & \textbf{Prof. Dr. Stefan Radicke}\\
+        Zweitprüfer: & \textbf{Patrick Bader, M.Sc.}
+      \end{tabu}
+    \end{titlepage}
+  }
+  {
+    \titlehead{\todo[inline, nolist, color=red!64]{\centerline{DRAFT}}{}}
+    \subject{Master's Thesis \\ Computer Science and Media \\ Hochschule der Medien Stuttgart}
+    \title{Evaluation of the \\ Vulkan Graphics API}
+    \author{Manuel Maier}
+    \date{\today}
+    \publishers
+    {
+      Supervisors \\
+      \textbf{Prof. Dr. Stefan Radicke}\\
+      \textbf{Patrick Bader, M.Sc.}
+    }
+    \maketitle
+  }
 
 
   %
   % Blank page for physical notes, name entries, etc.
   %
   \newpage
-  \null
+  \ifthenelse{\boolean{hdm}}
+  {
+    % \begin{centering}
+      \begin{tabu} to \linewidth { X[r] X[l] }
+        \multicolumn{2}{c}{Masterarbeit} \\
+        Author         & Manuel Maier \\
+        Semester       & Wintersemester 2016 \\
+        Abgabedatum    & 14.11.2016 [dd.mm.yyyy] \\
+        Matrikelnummer & 28535 \\
+        Kürzel         & mm198 \\
+        E-Mail         & mjmaier@gmx.de \\
+      \end{tabu}
+  }
+  {
+    \null
+  }
   \thispagestyle{empty}
   \pagenumbering{gobble}
+
+  %
+  % Eidesstattliche Versicherung
+  %
+  \ifthenelse{\boolean{hdm}}{\input{Main/EidesstattlicheVersicherung}}{}
 
 
   %
@@ -195,6 +274,12 @@
   \pagenumbering{roman}
   \tableofcontents
   \newpage
+
+
+  %
+  % List of todos.
+  %
+  % \listoftodos
 
 
   %
@@ -225,7 +310,6 @@
   % Glossary
   %
   \printnoidxglossaries
-
 
   %
   % Appendix

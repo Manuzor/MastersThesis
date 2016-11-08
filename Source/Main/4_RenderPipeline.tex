@@ -1,79 +1,44 @@
 %!TEX root = ../Main.tex
 
-\chapter{Rendering Pipeline}
+\chapter{Vulkan Rendering}
 \label{cha:RenderPipeline}
   \todo[inline]
   {
     Possible titles:
-
-    -- Rendering Workflow
-
-    -- Applying the Rendering Pipeline
-
-    -- Rendering in Vulkan
-
-    -- Rendering Commands and Resource Handling/Management
+    Rendering Workflow,
+    Applying the Rendering Pipeline,
+    Rendering in Vulkan,
+    Rendering Commands and Resource Handling/Management,
+    Rendering Walkthrough/Guide,
+    Specific/Concrete Example of a Rendering Pipeline
   }
 
-  \todo[inline]{Pipeline creation? caching?}
-  \todo[inline]{Command buffer building. (CBs can be viewed as functions).}
-  \todo[inline]{Communication with the GPU}
   \todo[inline]{Image tiling and layout}
   \todo[inline]{Resource transformations.}
-  \todo[inline]{Command buffer submission. Mention out-of-order execution. Analogous to CPU instruction dispatch.}
-  \todo[inline]{Command buffers can be built once and submitted multiple times. Better performance because no upload (and other things).}
-  \todo[inline]{"Setup command buffers", "Draw command buffers", "pre/post-draw command buffers"}
-  \todo[inline]{Binding of resource to memory: bind a dummy for as long as the resource loads.}
-  \todo[inline]{Diagram for overview of the "pipeline" to give an idea of the whole thing.}
 
-  This chapter describes a set of basic steps to get an image on the screen.
-  It assumes a swapchain is set up and ready to be used using the swapchain extension as described in section~\ref{sec:WorkflowAndPatterns}.
+  This chapter provides an overview of the steps required to render an image using the Vulkan graphics \gls{api}.
+  Because there are many ways to perform rendering with Vulkan, a framework is defined that constrains the actual work that needs to be done to a comprehensible amount.
 
-  % Command buffers are not unlike procedures where every instruction within that procude is dynamically recorded at runtime.
-  % Just like procedures on the \gls{cpu}, command buffers translate to machine instructions on the \gls{gpu}.
-  % When a command buffer is submitted, commands within that command buffer may be executed out-of-order, i.e.
-  % in another order than they were recorded, if the \gls{driver} or the \gls{gpu} decide to be more efficient in some way.
+  First, the aforementioned framework is defined.
+  Subsequently, the necessary Vulkan \gls{api} calls are show and explained in order to prepare for rendering.
+  Following these preparations, recording of the actual rendering commands is shown.
+  And finally, in the render loop.
+  Section~\ref{sec:MultithreadedRendering} at the end of this chapter provides additional information about multi-threaded rendering in Vulkan.
 
-  % There are two kinds of command buffers: primary command buffers and secondary command buffers.
-  % Primary command buffers may be directly submitted to a device queue.
-  % Secondary command buffers, on the other hand, must be executed as part of a primary command buffer.
-  % The Vulkan command \lstinline{vkCmdExecuteCommands} may be used for this.
-  % \todo{Find out more about secondary command buffers!}Secondary command buffers are basically like macros.
-  % Secondary command buffers inherit some state form the calling primary command buffer.
+  Throughout this chapter, listings are presented that show the usage of select Vulkan commands and data structures that are required for rendering.
+  It must be noted, however, that these listings are simplified in order to improve legibility.
 
-  This section will define the framework for the rest of the chapter.
-  All examined use-cases of the Vulkan API are moving within this framework.
-
-  \todo[inline]{Vulkan provides many ways to render. In this chapter, one of many ways is explored from beginning to end to show stuff.}
-
-  \todo[inline]{Free moving camera.}
-  \todo[inline]{Objects with fixed geometry.}
-  \todo[inline]{No complex shading - flat lighting.}
-  The graphics scene is kept very simple.
-  It only contians objects with fixed geometry.
-  The geometry itself may be arbitrarily complex because it has no impact on the usage of the \gls{api}.
-  Shaders are also kept simple because this area is not important enough for what is examined in this chapter.
-
-  The shaders used in this chapter are kept very simple.
-  Other aspects of Vulkan are more important for this chapter.
-  Each object is limited to a single sampled image to be used as a texture.
-  As for lighting objects, simple flat shading is performed.
-  A vertex consists of the following elements.
-  \begin{itemize}
-    \item Three \lstinline{float} values representing the position of the vertex in \gls{3d} space.
-    \item Two \lstinline{float} values representing the coordinates of the vertex in texture space.
-  \end{itemize}
-
-  \todo[inline]{Bring the following into better form.}
-  Restrictions:
-  \begin{itemize}
-    \item Rendering to single window / surface
-    \item Forward renderer / single render target
-    \item Simple shaders only
-    \item Static geometry (no morphing)
-    \item Freely moving camera
-    \item ...
-  \end{itemize}
+  \section{Framework}
+  \label{sec:Framework}
+    \todo{Make sure to explain that the image is created only in a single step.}A simple forward renderer is assumed which means that rendering is performed to an image that is presented as soon as possible.
+    A camera is used to observe the scene.
+    This camera is not fixed, i.e. it may change position or rotation over time.
+    The rendered scene will contain a fixed number of objects.
+    Each object has fixed geometry and is assigned a single texture as well as a position in an application-defined coordinate space.
+    Simple shaders are used to render each object of the scene.
+    No complicated lighting algorithms are used.
+    In fact, only flat shaded surfaces are produced.
+    The actual layout of these shaders is discussed in section~\ref{subsubsec:VertexInputStateSetup}.
 
   \begin{figure}
     \includegraphics{Main/Images/RenderSetupAndLoopSimple}
@@ -82,40 +47,19 @@
     \label{fig:RenderSetupAndLoopSimple}
   \end{figure}
 
-  \section{Framework}
-    \label{sec:Framework}
-    \todo[inline]{Explain why this framework is needed. Vulkan offers many possibilities and each application by do things differently.}
-    \todo[inline]{Forward renderer.}
-    A simple forward renderer is assumed which means that rendering is performed to an image that is presented as soon as possible.
-    \todo[inline]{Scene with discrete number of objects.}
-    The rendered scene will contain a discrete number of objects.
-    \todo[inline]{Each object has fixed geometry and a single texture.}
-    Each object has fixed geometry and is assigned a single texture.
-    \todo[inline]{Single camera that is movable.}
-    A camera is used to observe the scene.
-    This camera is also movable, e.g. by user-input.
-    \todo[inline]{Realtime rendering? Might not be relevant.}
-    \todo[inline]{Simple shaders, contents not relevant.}
-    Simple shaders are used to render each object of the scene.
-    The exact contents of these shaders is not relevant.
-    The layout of these shaders is discussed at a later point.
+  Figure~\ref{fig:RenderSetupAndLoopSimple} provides an abstract overview of this framework.
+  The different steps depicted are explained during the course of this chapter.
 
-  % \section{Requirements}
-  %   Some requirements arise from the framework defined in section~\ref{sec:Framework} which are discussed in this section.
-  %   A central requirement is the render target.
-  %   Since the ultimate result of a rendering pass is to produce a presentable image, the render target will be an image of the swapchain.
-  %   Thus, a swapchain setup as discussed in section~\ref{sec:Pipelines} is required.
-  %   In order for each object to be sorted properly during rendering, a depth buffer needs to be set up for the rendering pipeline.
 
   \section{Setup}
   \label{sec:RenderingSetup}
-    \todo[inline]{Before it's possible to render, certain things need to be set up.}
     Before it is possible to start rendering an image, proper Vulkan facilities need to be set up.
-    These are discussed in section.
+    \todo{Complete the sentence.}These are discussed in section.
     The setup here adheres to the framework defined in section~\ref{sec:Framework}.
 
     \subsection{Device and Queue Setup}
-      The Vulkan device that is to be used for rendering needs to support both the swapchain extension and queues with graphics and present capabilities.
+      \todo[inline]{Listings for this section?}
+      The Vulkan device to be used for rendering needs to support both the swapchain extension as well as queues with graphics and present capabilities.
 
       In order for a rendered image to be presented to a window, the swapchain extension\footnote{Full name: \lstinline{VK_KHR_swapchain}} needs to be activated.
       This can be done when creating the device.
@@ -126,19 +70,18 @@
       In Vulkan, rendering commands are submitted to a device queue.
       For the purposes of this chapter, queues with two specific capabilities are required.
       These capabilities are called the \textit{graphics capability} and the \textit{present capability}.
-      \todo{Is it important \textbf{how} to get the info about the capabilities?}The first specifies whether the queue supports graphics commands such as \lstinline{vkCmdDraw}.
+      The first specifies whether the queue supports graphics commands such as \lstinline{vkCmdDraw}\todo{Is it important \textbf{how} to get the info about the capabilities? Might be too much detail.}.
       The second capability specifies whether \lstinline{vkQueuePresentKHR} is supported on that queue.
       Without both of these capabilities, rendering and presenting an image is not possible.
-      \todo{Rephrase}A queue might support both of these capabilities but it is also possible that two separate queues are used for graphics and presenting, respectively.
+      A queue might support both of these capabilities but it is also possible that two separate queues are used for graphics and presenting, respectively\todo{Rephrase?}.
       Once proper queues have been chosen, a logical device can be created.
       This logical device will be used for all subsequent Vulkan operations.
       The queues that were created along with the logical device will be used to submit rendering commands to the \gls{gpu} and to trigger the presentation engine.
 
     \subsection{Creating a Surface and a Swapchain}
-      \todo[inline]{Setup of OS specific surface and swapchain.}
       Now that a device with the enabled swapchain extension is in place, a swapchain can actually be created.
       Creating a swapchain requires what is called a Vulkan \textit{surface} to be created first.
-      This surface is operating specific and represents the connection to the actual window.
+      This surface is specific to the operating system and represents the connection to the actual window.
       It is also the target of the presentation engine, i.e. that surface is used to present a rendered image.
 
       \todo[inline]{Number, format, extent, colorspace of swapchain images.}
@@ -149,7 +92,7 @@
 
       \todo[inline]{Move this either to chapter 2 or 3. In this chapter, we mainly care about setting up the swapchain for the framework defined above.}
       The reason why an application may care about the number of swapchain images is rather straight-forward.
-      A swapchain image passes some stages until is presented eventually.
+      From the point of view of the presentation engine, a swapchain image passes several stages until it is presented eventually.
       Initially the image is free and can be acquired by the application.
       Once an application acquires the image it is considered to be in use by the application and no longer free.
       At some point, the application hands back the image to the presentation engine, requesting that image to be presented.
@@ -160,16 +103,10 @@
       Depending on the chosen presentation mode, the number of swapchain images can be tuned to find the balance that works best for the application.
       Using too many swapchain images wastes memory but not having enough images may stall the application.
 
-      \todo[inline]{Transform mode? Not really relevant for this chapter, right?}
-      \todo[inline]{Usage? Swapchain images can always be used as color attachment.}
-      Swapchain images will be used exclusively as color attachments for the framebuffer.
+      Swapchain images will be used exclusively as color attachments for the framebuffer in this chapter.
 
     \subsection{Creating a Graphics Pipeline}
-      \todo[inline]{Introduction to what a (graphics) pipeline is and why it is useful.}
-      \todo[inline]{Optional dynamic state (line width, viewport, etc...)}
       \todo[inline]{Create framebuffer for each swapchain image, a render pass, and graphics pipeline. }
-      \todo[inline]{Mention PSO creation is costly. Viewport is dynamic state because of window resizing.}
-      \todo[inline]{Sub-sub-sections here are derived from what a VkGraphicsPipelineCreateInfo expects. Mention this?}
       \tbd
 
       \subsubsection{Shader Stage}
@@ -190,6 +127,7 @@
         {Main/Listings/GraphicsPipelineSetup.cpp}
 
       \subsubsection{Vertex Input State}
+        \label{subsubsec:VertexInputStateSetup}
         \tbd
 
         \lstinputlisting[
@@ -206,7 +144,7 @@
         The input-assembly state describes how the input data to the vertex shader is interpreted.
         The most important parameter to set is the primitive topology.
         This is where the \gls{gpu} is told what kind of primitives the input data represents.
-        For the purposes of this chapter, the chosen primitive topology is the triangle list\footnote{Full name: \lstinline{VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}}.
+        For the purposes of this chapter, the chosen primitive topology is \lstinline{TRIANGLE_LIST}\footnote{Full name: \lstinline{VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}}.
 
         \lstinputlisting[
           label=lst:InputAssemblyStateSetup,
@@ -227,8 +165,8 @@
         The viewport state specifies how many viewports and scissors are active in a pipeline.
         \todo{Mention GPU feature that has to be enabled if more than 1 viewport is required?}In this chapter, only one of each is used.
 
-        There are two ways to specify the actual viewport and scissor data.
-        The simplest way is to specify it at this point directly, i.e. when creating the graphics pipeline.
+        There are two ways to specify the actual viewport and scissor data.\todo{Explain briefly what viewport and scissors actually do.}{}
+        The simplest way is to specify it at this point directly, \todo{Try reducing the use of i.e.}i.e. when creating the graphics pipeline.
 
         However, this also means that the viewport and scissor data may never change during the lifetime of the pipeline.
         Changing the viewport and scissor data is necessary when the dimension of the render targets change.
@@ -258,7 +196,7 @@
         Dynamic state has to be set everytime when a render pass is being processed.
         Dynamic state data is recorded in command buffers and submitted along with the relevant render pass commands.
 
-        Because dynamic state for the viewport and scissor data is used in chapter, specifying the number of viewports and scissors as shown in listing~\ref{lst:ViewportStateSetup} is sufficient for the purpose of setting up a graphics pipeline.
+        Because dynamic state for the viewport and scissor data is used in this chapter, specifying the number of viewports and scissors as shown in listing~\ref{lst:ViewportStateSetup} is sufficient for the purpose of setting up a graphics pipeline.
 
       \subsubsection{Rasterization State}
         The rasterization state is used to configure the behavior of the rasterizer.
@@ -271,7 +209,7 @@
         Without this option, fragments are produced regardless of the direction they are facing.
         However, it is common to enable back-face culling, i.e. discarding fragments that would be viewed from ``behind'', for triangle meshes that form a closed object.
 
-        In order to perform culling, the rasterizer needs to know the facing direction of a polygon.
+        In order to perform culling, the rasterizer needs to know the facing direction of a triangle.
         This facing direction is also configurable in the rasterizer state.
         It is defined by the winding order of the vertices, which is considered to be either \textit{clockwise} or \textit{counter-clockwise}.
 
@@ -329,7 +267,7 @@
       \subsubsection{Color Blend State}
         The color blend state controls how color values produced by the fragment shader are combined, or blended, with the color that is already in the framebuffer.
         \todo{Mention `logicOp' and `blendConstants'?}
-        The blend operations need to be specified for each render target individually.
+        The blend operations need to be specified for each render target individually.\todo{Mention that a pipeline is needed for each material.}{}
         Blend operations may also be turned off which simply replaces whatever was in the framebuffer with the output of the fragment shader.
 
         In addition to controlling blending, a color mask can be set that controls which components of the resulting color values are written to the framebuffer.
@@ -349,6 +287,8 @@
 
         In this chapter, blending is turned off and a color mask is chosen so all color components are copied to the framebuffer.
 
+        \todo[inline]{Give an example (transparent vs. non-transparent) if there is enough time.}
+
       \subsubsection{Render Pass}
 
         Each graphics pipeline has exactly one render pass.
@@ -360,6 +300,8 @@
         Dependencies of each subpass are also stored in the render pass.
         Rendering commands are always recorded to one of the subpasses of a render pass \textit{instance}.
         Command buffer recording is discussed in section~\ref{sec:BuildCommandBuffers}.
+
+        \todo[inline]{Give an example about subpasses (post-processing) if there is enough time.}
 
         \lstinputlisting[
           label=lst:RenderPassAttachmentsSetup,
@@ -375,20 +317,20 @@
         The first attachment, attachment 0, is the render target which is actually a swapchain image.
         The format of that attachment is set to the same format as the surface.
         Like before in section~\ref{subsubsec:MultisampleState}, the sampling count is set to 1, i.e. multisampling is not used.
-        On line 4, the render pass is configured to clear the contents of the first attachment at load-time.
+        On line~4, the render pass is configured to clear the contents of the first attachment at load-time.
         The value to clear the contents with is defined in the render pass instance.
         Once the render pass has finished executing, the \lstinline{storeOp} determines what happens to this attachment.
-        In this case, on line 5, the framebuffer contents are preserved.
-        Another is be to tell the render pass to discard the results but that is not the desired behavior in this particular case.
+        In this case, on line~5, the framebuffer contents are preserved.
+        Alternatively, the render pass can be configured to discard the results instead but that is not the desired behavior in this particular case.
 
-        The following settings are used to control the image layout at the beginning and the end of a render pass, respectively.
-        On line 6 the initial layout of the attachment is specified to be undefined.
+        The subsequent settings are used to control the image layout at the beginning and the end of a render pass, respectively.
+        On line~6, the initial layout of the attachment is specified to be undefined.
         This tells the \gls{driver} that it may discard the contents if it sees fit.
         The previous contents of the attachment are not relevant for this render pass because the attachment is cleared as the first operation when loaded by this render pass.
-        On line 7, the render pass is configured to ensure that the attachment is in presentation layout\footnote{Full name: \lstinline{VK_IMAGE_LAYOUT_PRESENT_SRC_KHR}}.
+        On line~7, the render pass is configured to ensure that the image layout state of the attachment is \lstinline{PRESENT_SRC}\footnote{Full name: \lstinline{VK_IMAGE_LAYOUT_PRESENT_SRC_KHR}}.
         This way no further transformations to the undrelying swapchain image have to be performed before it can be presented.
 
-        On lines 9--14 the depth buffer attachment is configured.
+        On lines 9--14, the depth buffer attachment is configured.
         The format of this attachment is set to the format of the actual depth buffer.
         Similarly to the first attachment, the depth buffer is cleared at the beginning of the render pass.
         The \lstinline{storeOp} is set to \lstinline{DONT_CARE}\footnote{Full name: \lstinline{VK_ATTACHMENT_STORE_OP_DONT_CARE}} because the depth buffer is not used outside the render pass.
@@ -407,19 +349,19 @@
         As mentioned before, a render pass consists of multiple subpasses.
         Every render pass needs at least one subpass.
         For the purposes of this chapter, a single subpass is sufficient.
-        This subpass is configured in listing~\ref{lst:RenderPassSubpassSetup}.
+        This subpass is configured as shown in listing~\ref{lst:RenderPassSubpassSetup}.
 
         A subpass accepts configurations for the layout of individual attachments.
         Subpasses have references to the attachments of the render pass itself.
         These attachment references contain additional information, the most important one being the layout in that subpass.
-        On line 2 of listing~\ref{lst:RenderPassSubpassSetup}, the index of the referenced attachment in the render pass is set.
-        On line 3, the attachment reference is configured to ensure the correct image layout for the referenced attachment during the execution of that subpass.
+        On line~2 of listing~\ref{lst:RenderPassSubpassSetup}, the index of the referenced attachment in the render pass is set.
+        On line~3, the attachment reference is configured to ensure the correct image layout for the referenced attachment during the execution of that subpass.
         Every subpass within a render pass may define their own requirements for the layout of every individual attachment.
         Image layout transitions are performed by the \gls{driver} between subpasses as needed to ensure each subpass uses the attachment in the required layout.
         The depth-stencil reference on lines 6 and 7 is referencing the remaining attachment of the render pass and requires the \lstinline{DEPTH_STENCIL_ATTACHMENT} layout for this attachment.
 
-        Note that the depth-stencil attachment reference on line 13 is only a single element, not an array.
-        Color references on line 11 and 12, on the other hand, are not limited to a single instance.
+        Note that the depth-stencil attachment reference on line~13 is only a single element, not an array.
+        Color references on line~11 and 12, on the other hand, are not limited to a single instance.
         This means that a subpass may reference many color attachments but only a single depth-stencil attachment.
 
         \lstinputlisting[
@@ -432,7 +374,7 @@
         ]
         {Main/Listings/GraphicsPipelineSetup.cpp}
 
-        And finally, the attachment and subpass information defined previously are combined and passed to the appropriate Vulkan command on line 8 in listing~\ref{lst:RenderPassCreation} to create the actual render pass object.
+        And finally, the attachment and subpass information defined previously are combined and passed to the appropriate Vulkan command on line~8 in listing~\ref{lst:RenderPassCreation} to create the actual render pass object.
 
     \subsection{Creating Scene Objects}
       \todo[inline]{Create renderable objects. Needs sampled image, geometry. Mention push constants.}
@@ -444,6 +386,9 @@
     \todo[inline]{Mention that this may be done once or multiple times, depending on use of push constants and other things.}
     \todo[inline]{Build command buffers that will never change. Depend on whether push constants are used or not.}
     \todo[inline]{Image layout transition with barriers.}
+    \todo[inline]{Command buffer submission. Mention out-of-order execution. Analogous to CPU instruction dispatch.}
+    \todo[inline]{Command buffers can be built once and submitted multiple times. Better performance because no additonal upload (and other things).}
+    \tbd
 
   \section{Rendering Loop}
   \label{sec:RenderLoop}
@@ -463,7 +408,7 @@
   \section{Multi-threaded Rendering}
   \label{sec:MultithreadedRendering}
     \todo[inline]{Introduction to this chapter. Motivation. Additional complexity. Applications must be sure they gain anything from using multi-threading.}
-    As mentioned in chapter~\ref{cha:VulkanOverview}, the \gls{driver} has only limited support for multi-threaded access.
+    As mentioned in chapter~\ref{cha:VulkanOverview}, Vulkan API calls are not synchronized implicitly by the \gls{driver} in order to facilitate multi-threaded processing.
     However, this does not mean that multi-threading on the \gls{cpu} has not been taken into account when Vulkan was designed.
     There are actually several ways of utilizing multiple threads for rendering with Vulkan.
     Creating resources and recording command buffers from multiple threads are explored in the following subsections.
@@ -534,7 +479,7 @@
         A better way might be to use command pools for this purpose.
         Managing command buffers is already what they do and it also offers a clean separation of concerns between the different batches of command buffers.
         In other words, using command pools to allocate command buffers that are submitted together provides a way to manage these command buffers using standard methods.
-        Vulkan allows command pools to be reset, effectively resetting all command buffers spawned from them, respectively.
+        Vulkan allows command pools to be reset, effectively resetting all command buffers spawned from them.
         This means that command pools may be reused after their associated batch of submitted command buffers has finished execution.
         When resetting a command pool, the host application is free to choose whether memory allocated by that command pool should be released or not.
         If a command pool is going to be reused, and the memory is not released, this command pool can directly start producing command buffers without causing additional allocation overhead.
@@ -549,6 +494,7 @@
 
 
     \subsection{Multi-threaded Resource Creation}
+      \todo[inline]{Mention staging buffers somehow?}
       Vulkan applications need to create resources such as images and shaders.
       Loading and creating these resources may take a considerable amount of time, depending on the data in question.
       Images, for example, can be quite large.

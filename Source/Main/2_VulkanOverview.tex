@@ -39,13 +39,13 @@
 
     Vulkan makes use of \textit{handle} types allowing the \gls{application} to track objects created with the API. The first object that has to be created is a Vulkan instance. The Vulkan instance can be used to query available physical \glspl{device} that provide Vulkan support. These physical \glspl{device} can be queried for certain capabilities, such as supported image formats and hardware features, to aid in deciding which physical device to use for the \gls{application}. A physical device can subsequently be used to create a logical device, or just device. The number of \glspl{device} created from a physical device is not limited. When a device is created, all queues associated with it are created as well. This is why there is no \lstinline{vkCreateQueue} but rather \lstinline{vkGetQueue} command. Among other things, \glspl{device} are used to allocate Vulkan objects or GPU memory. Changes made on Vulkan objects do not have global side-effect observable with the regular Vulkan API\todo{Elaborate. Contrast with OpenGL}. However, \glspl{driver} and Vulkan layers or extensions are free to modify their own state across Vulkan object boundaries.\todo{Redundant sentence? This should be a given.}
 
-    \begin{figure}
-      % \includegraphics{Main/Images/VulkanInitialization}
-      \missingfigure{Initializing a Vulkan device and retrieving the queue to support the previous paragraph.}
-      \centering
-      \caption{}
-      \label{fig:VulkanInitialization}
-    \end{figure}
+    % \begin{figure}
+    %   % \includegraphics{Main/Images/VulkanInitialization}
+    %   \missingfigure{Initializing a Vulkan device and retrieving the queue to support the previous paragraph.}
+    %   \centering
+    %   \caption{}
+    %   \label{fig:VulkanInitialization}
+    % \end{figure}
 
     \todo[inline]{Describe/mention GPU queues in the introduction chapter.}
 
@@ -71,13 +71,13 @@
 
     A layer in Vulkan can be thought of as an observer to the API calls done by the \gls{application}. It does not add new types or commands the \gls{application} can use directly.\todo{Elaborate more to make it crystal clear. Make sure to mention no layers are required to be active for Vulkan to work properly.}
 
-    \begin{figure}
-      \centering
-      % \includegraphics{Main/Images/VulkanLayers}
-      \missingfigure{Illustration of Vulkan with some layers between it and the application.}
-      \caption{Illustration of the presentation engine being connected to a device using a swapchain.}
-      \label{fig:VulkanLayers}
-    \end{figure}
+    % \begin{figure}
+    %   \centering
+    %   % \includegraphics{Main/Images/VulkanLayers}
+    %   \missingfigure{Illustration of Vulkan with some layers between it and the application.}
+    %   \caption{Illustration of the presentation engine being connected to a device using a swapchain.}
+    %   \label{fig:VulkanLayers}
+    % \end{figure}
 
     The \todo{Reference}LunarG SDK, for example, comes with a set of layers to validate usage of the Vulkan API. This is extremely useful during development as it allows the \gls{application} to focus on their code rather than the perfect use of the Vulkan API. It should also be noted that bare Vulkan, without any validation layers enabled, does not do any error checking. When the \gls{application} passes an invalid combination of flags to some Vulkan function, it is undefined behavior and has to be corrected by the \gls{application}.
 
@@ -140,7 +140,8 @@
     This is particularly useful for rendering static geometry, for example.
 
     A command buffer may be brought back to the \textit{initial} state by resetting the parent command pool using \lstinline{vkResetCommandPool}.
-    If the \textit{reset command buffer}\footnote{Full name: \lstinline{VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT}} flag has been set on the pool, an \textit{executable} command buffer may be individually reset by calling \lstinline{vkResetCommandBuffer} without the need to reset the entire pool.
+    Command buffers may be reset individually by calling \lstinline{vkResetCommandBuffer} without the need to reset the entire pool, if the \lstinline{RESET_COMMAND_BUFFER}\footnote{Full name: \lstinline{VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT}} flag has been set on that pool.
+    % If the \lstinline{RESET_COMMAND_BUFFER}\footnote{Full name: \lstinline{VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT}} flag has been set on the pool, an \textit{executable} command buffer may be individually reset by calling \lstinline{vkResetCommandBuffer} without the need to reset the entire pool.
     In addition, with that flag present, a command buffer may even be brought to the \textit{recording} state directly by simply calling \lstinline{vkBeginCommandBuffer} again, discarding all internally buffered commands up to that point.
 
 
@@ -185,15 +186,23 @@
 
       \todo[inline]{Describe driver syncing the pipeline cache. Ref to GDC talk if it's not in the vkspec?}
 
-      \begin{figure}
-        \centering
-        % \includegraphics{Main/Images/PipelineCache}
-        \missingfigure{Illustration of how an \gls{application} creates a bunch of pipelines using a pipeline cache, saves that cache to disk, terminates, and loads that cache the next time the \gls{application} is started again, feeding that cache to Vulkan in order to create pipelines from it.}
-        \caption{Example of an \gls{application} using the pipeline cache.}
-        \label{fig:PipelineCache}
-      \end{figure}
+      % \begin{figure}
+      %   \centering
+      %   % \includegraphics{Main/Images/PipelineCache}
+      %   \missingfigure{Illustration of how an \gls{application} creates a bunch of pipelines using a pipeline cache, saves that cache to disk, terminates, and loads that cache the next time the \gls{application} is started again, feeding that cache to Vulkan in order to create pipelines from it.}
+      %   \caption{Example of an \gls{application} using the pipeline cache.}
+      %   \label{fig:PipelineCache}
+      % \end{figure}
 
-      Creating pipeline objects is a fairly heavyweight operation. To speed up pipeline creation, Vulkan provides what is called a pipeline cache. When creating a pipeline, such a pipeline cache object can be supplied by the \gls{application}. Vulkan will try to find a matching pipeline in the cache. If it finds a matching pipeline, it is loaded from the cache instead of creating a new one. If no such pipeline is found in the pipeline cache, a new pipeline is created and written to the pipeline cache. Vulkan provides a command to retrieve the serialized pipeline cache, which can be saved by the \gls{application} in whatever location is most convenient to it. This serialized pipeline cache can then be fed back to Vulkan at a later time. See figure~\ref{fig:PipelineCache} for an illustration of this process.
+      Creating pipeline objects is a fairly heavyweight operation.
+      To speed up pipeline creation, Vulkan provides what is called a pipeline cache.
+      When creating a pipeline, such a pipeline cache object can be supplied by the \gls{application}.
+      Vulkan will try to find a matching pipeline in the cache.
+      If it finds a matching pipeline, it is loaded from the cache instead of creating a new one.
+      If no such pipeline is found in the pipeline cache, a new pipeline is created and written to the pipeline cache.
+      Vulkan provides a command to retrieve the serialized pipeline cache, which can be saved by the \gls{application} in whatever location is most convenient to it.
+      This serialized pipeline cache can then be fed back to Vulkan at a later time.
+      % See figure~\ref{fig:PipelineCache} for an illustration of this process.
 
   \section{Synchronization}
     \todo[inline]{Maybe reduce the use of `Vulkan was designed to' throughout the document?}
@@ -232,7 +241,7 @@
 
       \begin{figure}
         \centering
-        \includegraphics{Main/Images/PipelineBarrier}
+        \includegraphics[width=\textwidth]{Main/Images/PipelineBarrier}
         \caption{Illustration of a pipeline barrier insterted between commands in a command buffer.}
         \label{fig:PipelineBarrier}
       \end{figure}
