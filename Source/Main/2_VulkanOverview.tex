@@ -144,6 +144,23 @@
     % If the \lstinline{RESET_COMMAND_BUFFER}\footnote{Full name: \lstinline{VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT}} flag has been set on the pool, an \textit{executable} command buffer may be individually reset by calling \lstinline{vkResetCommandBuffer} without the need to reset the entire pool.
     In addition, with that flag present, a command buffer may even be brought to the \textit{recording} state directly by simply calling \lstinline{vkBeginCommandBuffer} again, discarding all internally buffered commands up to that point.
 
+  \section{Render Passes}
+  \label{sec:RenderPassesOverview}
+    \todo[inline]
+    {
+      Explain subpasses and their relationship with framebuffers, and pipelines.
+      Mention render pass instances that contain other state.
+      Check ``Vulkan in 30 Minutes'' for brief explanations.
+    }
+    \tbd
+
+    \begin{figure}
+      \centering
+      % \missingfigure{Main/Images/RenderPassOverview}
+      \includegraphics[width=\textwidth]{Main/Images/RenderPassOverview}
+      \caption{Overview of a render pass that consists of multiple attachments and subpasses that reference these attachments.}
+      \label{fig:RenderPassOverview}
+    \end{figure}
 
   \section{Pipelines}
   \label{sec:Pipelines}
@@ -160,8 +177,9 @@
 
     \begin{figure}
       \centering
-      \includegraphics[width=\textwidth]{Main/Images/GraphicsPipeline}
-      \caption{Graphics pipeline setup.}
+      \missingfigure{Main/Images/GraphicsPipeline}
+      % \includegraphics[width=\textwidth]{Main/Images/GraphicsPipeline}
+      \caption{Overview of the components of a graphics pipeline.}
       \label{fig:GraphicsPipeline}
     \end{figure}
 
@@ -180,6 +198,16 @@
     When defining a graphics pipeline, Vulkan requires the \gls{application} to at least specify a vertex shader. All other graphics stages are optional. Vulkan has restrictions on the possible combinations of active shader stages. Details can be found in the Vulkan specification \cite{vkspec}\todo{Remove these two sentences?}.
 
     \todo[inline]{Describe why having only a vertex shader stage can be useful? (Cache skinning results)}
+
+
+    \begin{figure}
+      \centering
+      \includegraphics[width=\textwidth]{Main/Images/RenderPassInstanceSample}
+      \caption{Overview of a render pass instance with a framebuffer and bound pipelines.}
+      \label{fig:RenderPassInstanceSample}
+    \end{figure}
+
+    \todo[inline]{Describe figure~\ref{fig:RenderPassInstanceSample} here. This mixes the render pass topic in a bit but that should be ok.}
 
     \subsection{Pipeline Cache}
     \label{subsec:PipelineCache}
