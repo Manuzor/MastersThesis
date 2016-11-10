@@ -1,25 +1,18 @@
 *.sublime-workspace
 
-*.out
-*.aux
-*.fdb_latexmk
-*.fls
-*.log
-*.pdf
-*.lof
-*.lot
-*.blg
-*.bbl
-*-blx.bib
-*.bcf
-*.run.xml
-*.toc
-*.synctex
-*.synctex.gz
-*.acn
-*.glo
-*.ist
-*.lol
-*.tdo
+# Ignore all the garbage in the Source folder.
+/Source/*
+# But allow tex and bib files.
+!/Source/*.tex
+!/Source/*.bib
+# And also allow the contents in subfolders.
+!/Source/*/
 
+# Ignore the shipping folder.
+/Shipping
+
+# Silly Windows thumbnail cache.
 [tT]humbs.[dD][bB]
+
+# PDF files are allowed in there.
+# !/Source/Main/Images/*.pdf
