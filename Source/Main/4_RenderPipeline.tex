@@ -162,8 +162,19 @@
         In this chapter, only the vertex and fragment shader stages are in use so this state is ignored.
 
       \subsubsection{Viewport State}
+        \label{subsubsec:ViewportState}
         The viewport state specifies how many viewports and scissors are active in a pipeline.
-        \todo{Mention GPU feature that has to be enabled if more than 1 viewport is required?}In this chapter, only one of each is used.
+        Both the viewport and scissor define a non-rotated rectangular region within the framebuffer that will be written to by shaders.
+        Rendering results that would usually write to the entire extent of the framebuffer will be scaled down and displaced to fit into the viewport and cropped to be inside the scissor.
+        See figure~\ref{fig:ViewportScissorSample} for an illustration of this.
+        In this chapter, only one of each is used that \todo{encompass?}include the entire framebuffer.
+
+        \begin{figure}
+          \includegraphics[width=0.8\textwidth]{Main/Images/ViewportScissorSample}
+          \centering
+          \caption{Framebuffer {\large$f_A$} has a viewport and scissor that contain the entire framebuffer. No transformation or cropping is performed. In framebuffer {\large$f_B$}, the viewport {\large$v$} causes the contents to be displaced and scaled down while scissor {\large$s$} causes the remaining contents to be cropped.}
+          \label{fig:ViewportScissorSample}
+        \end{figure}
 
         There are two ways to specify the actual viewport and scissor data.\todo{Explain briefly what viewport and scissors actually do.}{}
         The simplest way is to specify it at this point directly, \todo{Try reducing the use of i.e.}i.e. when creating the graphics pipeline.
@@ -225,7 +236,7 @@
 
         % \todo[inline]{I don't show a listing for any of the other pipeline states. This is an experiment to see how it would be if I backed the text with corresponding listings.}
 
-        In this chapter, the rasterizer is configured to produce densely filled polygons and does not perform any culling operations on the fragments as can be seen in listing~\ref{lst:RasterizationStateSetup}.
+        In listing~\ref{lst:RasterizationStateSetup}, the rasterizer is configured to produce densely filled polygons and does not perform any culling operations on the fragments.
 
       \subsubsection{Multisample State}
         \label{subsubsec:MultisampleState}
@@ -290,13 +301,12 @@
         \todo[inline]{Give an example (transparent vs. non-transparent) if there is enough time.}
 
       \subsubsection{Render Pass}
-
-        Each graphics pipeline has exactly one render pass.
-        A render pass stores information about the flow of data between subpasses and the execution of rendering commands.
+        \label{subsubsec:RenderPassSetup}
+        Each graphics pipeline has exactly one render pass in Vulkan.
+        A render pass consists of multiple subpasses and stores information about the flow of data between subpasses and the execution of rendering commands.
         It stores framebuffer attachment and information about layout transitions at the beginning and the end of the render pass as well as between subpasses.
         Framebuffer attachments are images such as a swapchain image or a depth-buffer.
-        A render pass also consists of one or more subpasses.
-        Each of these subpass may reference the aforementioned framebuffer attachments of the render pass.
+        Each of these subpasses may reference the aforementioned framebuffer attachments of the render pass.
         Dependencies of each subpass are also stored in the render pass.
         Rendering commands are always recorded to one of the subpasses of a render pass \textit{instance}.
         Command buffer recording is discussed in section~\ref{sec:BuildCommandBuffers}.
@@ -377,18 +387,183 @@
         And finally, the attachment and subpass information defined previously are combined and passed to the appropriate Vulkan command on line~8 in listing~\ref{lst:RenderPassCreation} to create the actual render pass object.
 
     \subsection{Creating Scene Objects}
+      \label{subsubsec:CreatingSceneObjects}
       \todo[inline]{Create renderable objects. Needs sampled image, geometry. Mention push constants.}
+      \todo[inline]{Mention the transformation matrix being in a uniform buffer.}
       \tbd
 
   \section{Command Buffer Recording}
   \label{sec:BuildCommandBuffers}
-    \todo[inline]{Mention that this is done on a single thread.}
-    \todo[inline]{Mention that this may be done once or multiple times, depending on use of push constants and other things.}
-    \todo[inline]{Build command buffers that will never change. Depend on whether push constants are used or not.}
-    \todo[inline]{Image layout transition with barriers.}
     \todo[inline]{Command buffer submission. Mention out-of-order execution. Analogous to CPU instruction dispatch.}
-    \todo[inline]{Command buffers can be built once and submitted multiple times. Better performance because no additonal upload (and other things).}
-    \tbd
+
+    Rendering in Vulkan is done by issuing rendering commands.
+    These commands are not dispatched to the \gls{gpu} directly but recorded into a \textit{command buffer} which is submitted to a device queue for execution.
+    Command buffers have been introduced in chapter~\ref{cha:VulkanOverview}, specifically section~\ref{sec:CommandBuffers}.
+
+    Command buffer objects are created using \textit{command pools}.
+    Command pools manage the memory of the command buffers created from them.
+    A command buffer is either in the \textit{initial}, \textit{recording}, or \textit{executable} state.
+    The contents of a command buffer are immutable for as long as that command buffer is \textit{executable}.
+    Resetting a command buffer clears its contents and reverts it to the \textit{initial} state.
+    It must be noted that submitting a command buffer also does not clear its contents.
+    This means that command buffers may be recorded once and executed multiple times.
+    This can be very useful when recording a series of render commands for state .
+    It also improves performance insofar that the \gls{driver} is able to keep frequently used command buffers in \gls{gpu} memory, reducing required communication overhead between the \gls{cpu} and the \gls{gpu} and thus, reducing required bandwidth for data transmission.
+    An example for such kinds of command buffers is for rendering state scene geometry.
+    This kind of geometry is does not change with time, hence the commands required for rendering also do not change.
+
+    For the purposes of this chapter, command buffers will only be recorded once and submitted in the render loop in section~\ref{sec:RenderLoop}.
+    The framework defined before allows this to be possible because all objects in the scene are static in terms of rendering commands.
+    However, this is only true because per-object shader data is stored in uniform buffer objects as established in section~\ref{subsubsec:CreatingSceneObjects}.
+    Uniform buffers are independent of the rendering commands and can be updated directly using memory mapping operations.
+    Alternatively to uniform buffers, \textit{push constants} may be used to supply data to be used in shaders.
+    Compared to uniform buffer objects, push constants have certain limitations that need to be considered.
+
+    For each shader module, only a single \textit{push constant block} may be declared.
+    The size of such a block is limited.
+    The Vulkan specification requires that \glspl{driver} support sizes of at least 128 bytes but larger blocks may also be supported.
+    The upper limit is specific to individual devices and can be queried using the Vulkan \gls{api}.
+    Sizes of 256 bytes are common on current \gls{nvidia} hardware.
+    Because of small sizes like this, push constants are likely to be stored in registers directly as opposed to uniform buffers which are stored in \gls{vram}.
+    A note in section~13.2.6 also hints that using push constants may yield improved performance in terms of execution speed.
+
+    The way values are supplied for push constant blocks is different from how a uniform buffer object is updated.
+    Push constant values are updated using commands and are recorded to command buffers.
+    This means that these values may be different for each recorded command buffer.
+    If values are stored in the push constant block that change every frame, such as the model-view-projection matrix of a scene object, command buffers need to be recorded every frame.
+
+    \subsection{Rendering a Scene Object}
+      In this section, the necessary steps to record rendering commands for all scene objects are shown and explained.
+
+      \lstinputlisting[
+        label=lst:BeginCommandBuffer,
+        caption={Start of the recording of a command buffer.},
+        style=MyCppFloat,
+        firstline=1,
+        lastline=2,
+        float
+      ]
+      {Main/Listings/CommandBufferRecording.cpp}
+
+      % The first action that has to be performed is to start command buffer recording.
+      Before issuing rendering commands, the command buffer has to be put into \textit{recording} state, which can be seen on line~2 of listing~\ref{lst:BeginCommandBuffer}.
+      When beginning a command buffer, additional information can be passed in the \lstinline{VkCommandBufferBeginInfo} structure which can be seen on line~1.
+      For example, this can be used to inform Vulkan that this particular command buffer is only submitted once which might allow the \gls{driver} to perform optimizations.
+      For the purposes of this example, the default values are sufficient.
+
+      \lstinputlisting[
+        label=lst:DynamicStateUpdate,
+        caption={Updating dynamic render pass state using Vulkan commands.},
+        style=MyCppFloat,
+        firstline=4,
+        lastline=13,
+        float,
+        emph={vkCmdSetViewport, vkCmdSetScissor}
+      ]
+      {Main/Listings/CommandBufferRecording.cpp}
+
+      Once the command buffer is \textit{recording}, the dynamic state can be set.
+      As defined in section~\ref{subsubsec:ViewportState} and shown in listing~\ref{lst:DynamicStateSetup}, the dynamic state to update include the viewport and scissor.
+      \todo{Highlight vkCmdSet* in the listings?}
+      The commands for updating this state are shown in listing~\ref{lst:DynamicStateUpdate}.
+      The viewport is set to include the entire framebuffer on lines~2--3 as well as the entire depth buffer extent on lines~4--5.
+      The scissor is set to contain the entire viewport on line~9, effectively disabling cropping of the resulting image.
+
+      Dynamic state values are part of the command buffer.
+      These values are read by graphics pipelines when executing draw commands without clearing them.
+      This means that dynamic state only has to be set once for every command buffer if the values never change which why dynamic state updates are the first commands recorded in the example of this chapter.
+      These commands may be recorded at a later point if need be, but no later than before the first draw command is recorded.
+      Additionally, setting these values is only necessary if the graphics pipeline has been set up to accept viewport and scissor data as dynamic state.
+      Graphics pipelines that are not instructed to look for dynamic state will simply ignore the data in the command buffer and instead use the data supplied at pipeline creation.
+
+      \lstinputlisting[
+        label=lst:BeginRenderPass,
+        caption={Creation of a render pass instance within a command buffer.},
+        style=MyCppFloat,
+        firstline=15,
+        lastline=25,
+        float,
+        emph={vkCmdBeginRenderPass}
+      ]
+      {Main/Listings/CommandBufferRecording.cpp}
+
+      In the next step, a render pass is started which results in the creation of a \textit{render pass instance}.
+      This render pass instance is associated with a specific framebuffer on line~7 and clear values on line~10~and~11 that are used to clear attachment contents if their \lstinline{loadOp} is set to \lstinline{CLEAR}\footnote{Full name: \lstinline{VK_ATTACHMENT_LOAD_OP_CLEAR}}.
+      The \lstinline{loadOp} settings were specified for each attachment in section~\ref{subsubsec:RenderPassSetup}.
+      Another property of the render pass instance is the render area on line~8.
+      As can be seen, it set to the same value as the scissor that was set before.
+      The render area is used to control which pixels of the framebuffer are affected in the active render pass.
+      This is used to minimize necessary work for the \gls{gpu}.
+      As per the Vulkan specification, a render area that is smaller than the entire framebuffer may affect performance negatively.
+      A render area that is larger than the framebuffer is invalid.
+
+      When beginning a render pass, Vulkan also needs to be told about whether secondary command buffers will be used or not.
+      For the purposes of this chapter, only a single primary command buffer is used in a single subpass, which is why the render pass is instructed to inline render commands directly in the primary command buffer, disallowing execution of secondary command buffer.\todo{Refer to where primary and secondary command buffers are explained.}{}
+
+      \todo[inline]
+      {
+        If the reader is not following carefully, it might seem like scissors do the same thing as the render area, which is not strictly true.
+        First, there may be many scissors but only a single render area at once.
+        Secondly, scissors are specified as part of the pipeline while the render area is part of the render pass \textbf{instance}.
+        Should I mention and explain this?
+        It should be obvious from the text and would be redundant.
+      }
+
+      \lstinputlisting[
+        label=lst:ObjectRenderingLoop,
+        caption={Rendering of all scene objects.},
+        style=MyCppFloat,
+        firstline=27,
+        lastline=40,
+        float
+      ]
+      {Main/Listings/CommandBufferRecording.cpp}
+
+      Now that a render pass instance is set up, draw commands can be recorded.
+      Because there are multiple objects in the scene that need to be rendered, this will happen in a loop as can be seen on line~1 in listing~\ref{lst:ObjectRenderingLoop}.
+      The first command causes the binding of a descriptor set with a specific pipeline layout.\todo{Reference where descriptor sets and pipeline layouts are first explained.}{}
+      \todo{Explain the other, optional arguments?}
+
+      \todo[inline]{Explain why the pipeline is bound later than the render pass. Maybe mention that a render pass may be shared between multiple pipelines.}
+      Afterwards, the command to bind the graphics pipeline is recorded on line~9.
+      It is explicitly stated that the passed pipeline object is a graphics pipeline.
+
+      \todo{Too informal?}With a pipeline in place, the vertex buffer and index buffer objects are bound.
+      In both cases, the entire buffers are used, which is why all offsets are set to zero.
+      As can be seen on line~11, multiple vertex buffers can be bound at once.
+      Vertex buffers may be bound to different binding locations using the second argument to the depicted Vulkan API call, as long as these locations are valid for the given pipeline layout.
+      In the case of this example, only a single vertex buffer is used per object that is bound to location 0.
+      The indices in the index buffer contains unsigned 32~bit integer values.
+      This information is passed to Vulkan on line~12.
+
+      Following all the binding commands, the actual drawing command is issued.
+      There are several drawing commands available but for the combination of objects that are bound only indexed drawing is valid.
+      Because rendering is supposed to be done by using the bound index buffer, the drawing command to be recorded is \lstinline{vkCmdDrawIndexed}.
+      The arguments are, in order, the number of indices to read from the index buffer, the number of instances to render, the index of the index buffer to use, an offset that is added to each value in the index buffer before it is used to perform vertex lookups, and finally the ID of the first instance to draw.
+      Because instanced rendering is not intended, the instance count is set to 1 and the ID of the first instance is set to 0.
+      The index buffer is assumed to be set up to reference every vertex directly.
+      This means that the entire index buffer can be used with both offsets set to 0 and the count set to the number of available indices in the index buffer.
+
+      \lstinputlisting[
+        label=lst:ConcludingCommandBufferRecording,
+        caption={Completion of the render pass and command buffer recording.},
+        style=MyCppFloat,
+        firstline=42,
+        lastline=43,
+        float
+      ]
+      {Main/Listings/CommandBufferRecording.cpp}
+
+      Once all commands have been recorded, the render pass and the command buffer may be ended.
+      This is shown in listing~\ref{lst:ConcludingCommandBufferRecording}.
+      This transitions the command buffer from \textit{recording} to \textit{executable} state.
+      The function \lstinline{vkEndCommandBuffer}, as seen on line~2, returns a status code of type \lstinline{VkResult}.
+      If an error occurred during command buffer recording, all subsequent \lstinline{vkCmd*} calls will be ignored and an error code will be return when the command buffer is ended.
+      For example, the command buffer may run out of memory early on and signal this once recording has ended.
+
+      The command buffer is now ready for submission to a queue and execution on the \gls{gpu}.
+      This is covered in section~\ref{sec:RenderLoop}.\todo{More verbose conclusion paragraph? Or remove it?}{}
+
 
   \section{Rendering Loop}
   \label{sec:RenderLoop}
@@ -400,6 +575,82 @@
     \todo[inline]{Present swapchain image.}
     \todo[inline]{Sync for submission and presenting (render semaphore, present semaphore) so swapchain image isn't used for rendering while presenting and vice versa. Also image layout transition happens with commands, meaning sync is necessary!}
     \tbd
+
+    \lipsum
+
+    \lstinputlisting[
+      label=lst:RenderLoop_SemaphoreCreation,
+      caption={Creation of two semaphores used in the render loop.},
+      style=MyCppFloat,
+      firstline=1,
+      lastline=3,
+      float
+    ]
+    {Main/Listings/RenderLoop.cpp}
+
+    \lipsum
+
+    \lstinputlisting[
+      label=lst:RenderLoop_ShaderDataUpload,
+      caption={Creation of two semaphores used in the render loop.},
+      style=MyCppFloat,
+      firstline=5,
+      lastline=19,
+      float
+    ]
+    {Main/Listings/RenderLoop.cpp}
+
+    \lipsum
+
+    \lstinputlisting[
+      label=lst:RenderLoop_AcquireNextImage,
+      caption={Creation of two semaphores used in the render loop.},
+      style=MyCppFloat,
+      firstline=21,
+      lastline=27,
+      float
+    ]
+    {Main/Listings/RenderLoop.cpp}
+
+    \lipsum
+
+    \lstinputlisting[
+      label=lst:RenderLoop_QueueSubmission,
+      caption={Creation of two semaphores used in the render loop.},
+      style=MyCppFloat,
+      firstline=30,
+      lastline=43,
+      float
+    ]
+    {Main/Listings/RenderLoop.cpp}
+
+    \todo[inline]{Next action is command buffer submission. Mention that it must be re-recorded here is push constants would be used.}
+
+    \lipsum
+
+    \lstinputlisting[
+      label=lst:RenderLoop_QueuePresent,
+      caption={Creation of two semaphores used in the render loop.},
+      style=MyCppFloat,
+      firstline=45,
+      lastline=55,
+      float
+    ]
+    {Main/Listings/RenderLoop.cpp}
+
+    \lipsum
+
+    \lstinputlisting[
+      label=lst:RenderLoop_QueueWaitIdle,
+      caption={Creation of two semaphores used in the render loop.},
+      style=MyCppFloat,
+      firstline=57,
+      lastline=61,
+      float
+    ]
+    {Main/Listings/RenderLoop.cpp}
+
+    \lipsum
 
   \section{Window Resizing}
     \todo[inline]{Should I actually add this section? (Only if there's enough time.)}

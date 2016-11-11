@@ -18,12 +18,12 @@ VertexBinding.stride = (3 + 2) * sizeof(float);
 VertexBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 VkVertexInputAttributeDescription VertexAttributes[2]{};
-VertexAttributes[0].location = 0;
 VertexAttributes[0].binding = 0;
+VertexAttributes[0].location = 0;
 VertexAttributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 VertexAttributes[0].offset = 0;
-VertexAttributes[1].location = 1;
 VertexAttributes[1].binding = 0;
+VertexAttributes[1].location = 1;
 VertexAttributes[1].format = VK_FORMAT_R32G32_SFLOAT;
 VertexAttributes[1].offset = 3 * sizeof(float);
 
@@ -55,7 +55,7 @@ ViewportState.viewportCount = 1;
 ViewportState.scissorCount = 1;
 
 //
-// Pipeline Rasterization State
+// Rasterization State
 //
 VkPipelineRasterizationStateCreateInfo RasterizationState{};
 RasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
@@ -132,21 +132,21 @@ vkCreateRenderPass(Device, &RenderPassCreateInfo, nullptr, &RenderPass);
 // Graphics Pipeline Creation
 //
 VkGraphicsPipelineCreateInfo GraphicsPipeline{};
-uint32_t                                         stageCount;
-const VkPipelineShaderStageCreateInfo*           pStages;
-const VkPipelineVertexInputStateCreateInfo*      pVertexInputState;
-const VkPipelineInputAssemblyStateCreateInfo*    pInputAssemblyState;
-const VkPipelineTessellationStateCreateInfo*     pTessellationState;
-const VkPipelineViewportStateCreateInfo*         pViewportState;
-const VkPipelineRasterizationStateCreateInfo*    pRasterizationState;
-const VkPipelineMultisampleStateCreateInfo*      pMultisampleState;
-const VkPipelineDepthStencilStateCreateInfo*     pDepthStencilState;
-const VkPipelineColorBlendStateCreateInfo*       pColorBlendState;
-const VkPipelineDynamicStateCreateInfo*          pDynamicState;
-VkPipelineLayout                                 layout;
-VkRenderPass                                     RenderPass;
-uint32_t                                         subpass;
-VkPipeline                                       basePipelineHandle;
-int32_t                                          basePipelineIndex;
+GraphicsPipeline.stageCount = 2;
+GraphicsPipeline.pStages = &ShaderStages[0];
+GraphicsPipeline.pVertexInputState = &VertexInputState;
+GraphicsPipeline.pInputAssemblyState = &InputAssemblyState;
+GraphicsPipeline.pTessellationState = &pTessellationState;
+GraphicsPipeline.pViewportState = &ViewportState;
+GraphicsPipeline.pRasterizationState = &RasterizationState;
+GraphicsPipeline.pMultisampleState = &MultisampleState;
+GraphicsPipeline.pDepthStencilState = &DepthStencilState;
+GraphicsPipeline.pColorBlendState = &ColorBlendState;
+GraphicsPipeline.pDynamicState = &DynamicState;
+GraphicsPipeline.layout = ;
+GraphicsPipeline.RenderPass = RenderPass;
+GraphicsPipeline.subpass = ;
+GraphicsPipeline.basePipelineHandle = ;
+GraphicsPipeline.basePipelineIndex = ;
 
 
