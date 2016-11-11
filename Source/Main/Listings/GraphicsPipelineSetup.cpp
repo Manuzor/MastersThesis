@@ -15,23 +15,18 @@ ShaderStages[1].pName = "main";
 VkVertexInputBindingDescription VertexBinding{};
 VertexBinding.binding = 0;
 VertexBinding.stride = (3 + 2) * sizeof(float);
-VertexBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-VkVertexInputAttributeDescription VertexAttributes[2]{};
-VertexAttributes[0].binding = 0;
-VertexAttributes[0].location = 0;
-VertexAttributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-VertexAttributes[0].offset = 0;
-VertexAttributes[1].binding = 0;
-VertexAttributes[1].location = 1;
-VertexAttributes[1].format = VK_FORMAT_R32G32_SFLOAT;
-VertexAttributes[1].offset = 3 * sizeof(float);
+VkVertexInputAttributeDescription VertexAttribute{};
+VertexAttribute.binding = 0;
+VertexAttribute.location = 0;
+VertexAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
+VertexAttribute.offset = 0;
 
 VkPipelineVertexInputStateCreateInfo VertexInputState{};
 VertexInputState.vertexBindingDescriptionCount = 1;
 VertexInputState.pVertexBindingDescriptions = &VertexBinding;
-VertexInputState.vertexAttributeDescriptionCount = 2;
-VertexInputState.pVertexAttributeDescriptions = &VertexAttributes[0];
+VertexInputState.vertexAttributeDescriptionCount = 1;
+VertexInputState.pVertexAttributeDescriptions = &VertexAttribute;
 
 //
 // Input Assembly State
@@ -143,10 +138,6 @@ GraphicsPipeline.pMultisampleState = &MultisampleState;
 GraphicsPipeline.pDepthStencilState = &DepthStencilState;
 GraphicsPipeline.pColorBlendState = &ColorBlendState;
 GraphicsPipeline.pDynamicState = &DynamicState;
-GraphicsPipeline.layout = ;
+GraphicsPipeline.layout = PipelineLayout;
 GraphicsPipeline.RenderPass = RenderPass;
-GraphicsPipeline.subpass = ;
-GraphicsPipeline.basePipelineHandle = ;
-GraphicsPipeline.basePipelineIndex = ;
-
-
+GraphicsPipeline.subpass = 0;

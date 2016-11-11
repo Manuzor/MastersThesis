@@ -193,8 +193,8 @@
 
         \vspace{\fill}
 
-        {\fontsize{2.8em}{0}\selectfont\bfseries
-          Evaluation of the \par Vulkan Graphics API
+        {\fontsize{2.4em}{0}\selectfont\bfseries
+          Prototypical Evaluation \par of Vulkan's Low-Level \par Graphics Pipeline
         }
 
         \vspace{\fill}
@@ -211,16 +211,17 @@
 
       \vspace{\fill}
 
-      \begin{tabu} to \linewidth { l X }
-        Erstprüfer: & \textit{Prof. Dr. Stefan Radicke}\\
+      \begin{tabu}{ll}
+        Erstprüfer:  & \textit{Prof. Dr. Stefan Radicke} \\
         Zweitprüfer: & \textit{Patrick Bader, M.Sc.}
       \end{tabu}
+
     \end{titlepage}
   }
   {
     \titlehead{\todo[inline, nolist, color=red!64]{\centerline{DRAFT}}{}}
     \subject{Master's Thesis \\ Computer Science and Media \\ Hochschule der Medien Stuttgart}
-    \title{Evaluation of the \\ Vulkan Graphics API}
+    \title{Prototypical Evaluation \par of Vulkan's Low-Level \par Graphics Pipeline}
     \author{Manuel Maier}
     \date{\today}
     \publishers
@@ -239,15 +240,27 @@
   \newpage
   \ifthenelse{\boolean{hdm}}
   {
-    % \begin{centering}
-      \begin{tabu} to \linewidth { X[r] X[l] }
+      \begin{tabu}{ |l|X| }
         \multicolumn{2}{c}{Masterarbeit} \\
-        Author         & Manuel Maier \\
-        Semester       & Wintersemester 2016 \\
-        Abgabedatum    & 14.11.2016 [dd.mm.yyyy] \\
-        Matrikelnummer & 28535 \\
-        Kürzel         & mm198 \\
-        E-Mail         & mjmaier@gmx.de \\
+        \multicolumn{2}{c}{Computer Science and Media} \\
+        \multicolumn{2}{c}{Hochschule der Medien Stuttgart} \\
+        \hline
+        Titel               & Prototypical Evaluation of Vulkan's Low-Level Graphics Pipeline \\
+        \hline
+        Titel bei Anmeldung & Evaluating the Resource Management Possibilities of the Vulkan Graphics API \\
+        \hline
+        Autor               & Manuel Maier \\
+        \hline
+        Semester            & Wintersemester 2016 \\
+        \hline
+        Abgabedatum         & 14.11.2016 [dd.mm.yyyy] \\
+        \hline
+        Matrikelnummer      & 28535 \\
+        \hline
+        Kürzel              & mm198 \\
+        \hline
+        E-Mail              & mjmaier@gmx.de \\
+        \hline
       \end{tabu}
   }
   {
@@ -288,11 +301,11 @@
   % Chapters
   %
   \pagenumbering{arabic}
-  \input{Main/1_Introduction}
-  \input{Main/2_VulkanOverview}
-  \input{Main/3_EnvSetup}
+  % \input{Main/1_Introduction}
+  % \input{Main/2_VulkanOverview}
+  % \input{Main/3_EnvSetup}
   \input{Main/4_RenderPipeline}
-  % \input{Main/5_Prototype}
+  \input{Main/5_Prototype}
   \input{Main/6_Conclusion}
 
   \newpage

@@ -34,11 +34,11 @@
     A camera is used to observe the scene.
     This camera is not fixed, i.e. it may change position or rotation over time.
     The rendered scene will contain a fixed number of objects.
-    Each object has fixed geometry and is assigned a single texture as well as a position in an application-defined coordinate space.
-    Simple shaders are used to render each object of the scene.
-    No complicated lighting algorithms are used.
-    In fact, only flat shaded surfaces are produced.
-    The actual layout of these shaders is discussed in section~\ref{subsubsec:VertexInputStateSetup}.
+    Each object has fixed geometry and is assigned a position in an application-defined coordinate space.
+    The shaders used to render each object is kept very simple.
+    Objects do not have textures or other color information and are rendered in a solid color.
+    Lighting is restricted to only produce flat shaded surfaces.
+    The actual layout of these shaders is shown in section~\ref{subsec:GraphicsPipelineSetup}.
 
   \begin{figure}
     \includegraphics{Main/Images/RenderSetupAndLoopSimple}
@@ -48,7 +48,7 @@
   \end{figure}
 
   Figure~\ref{fig:RenderSetupAndLoopSimple} provides an abstract overview of this framework.
-  The different steps depicted are explained during the course of this chapter.
+  The different steps depicted are explained in the course of this chapter.
 
 
   \section{Setup}
@@ -106,15 +106,16 @@
       Swapchain images will be used exclusively as color attachments for the framebuffer in this chapter.
 
     \subsection{Creating a Graphics Pipeline}
+    \label{subsec:GraphicsPipelineSetup}
       \todo[inline]{Create framebuffer for each swapchain image, a render pass, and graphics pipeline. }
-      \tbd
+      The graphics pipeline controls the data flow on the \gls{gpu}.
+      Every graphics pipeline must be bound to a render subpass in order to be used, as shown later in chapter.
 
-      \subsubsection{Shader Stage}
-        \todo[inline]{Shader loading and module creation.}
-        \todo[inline]{Only vertex and fragment shader in our case.}
-        \tbd
-        The graphics pipeline has one or more shader stages.
-        Each shader stage needs to specify which pipeline a shader module
+      \subsubsection{Shader Stages}
+      \label{sss:GraphicsPipelineShaderStages}
+        Among other things, the graphics pipeline consists of multiple shader stages.
+        For each shader stage, the application needs to supply the actual shader code in \gls{spirv} format, as mention in previous chapters.
+        For the purposes of this chapter, only a vertex shader and fragment shader will be used.
 
         \lstinputlisting[
           label=lst:ShaderStageSetup,
@@ -126,19 +127,143 @@
         ]
         {Main/Listings/GraphicsPipelineSetup.cpp}
 
-      \subsubsection{Vertex Input State}
-        \label{subsubsec:VertexInputStateSetup}
-        \tbd
+        Listing~\ref{lst:ShaderStageSetup} shows how information about the shader stages is specified.
+        This information will be supplied to the graphics pipeline later.
+        The types of the used shader stages is set on line~2 for the vertex shader and on line~5 for the fragment shader.
+        Both shaders are loaded from a file on lines~3~and~6.
+        As specified by the framework in section~\ref{sec:Framework}, shaders are kept very simple.
+        The contents of these shaders are examined below.
 
         \lstinputlisting[
-          label=lst:VertexInputStateSetup,
-          caption={Vertex input state setup for chapter~\ref{cha:RenderPipeline}.},
+          label=lst:VertexShader,
+          caption={Simplified vertex shader used in chapter~\ref{cha:RenderPipeline}.},
+          style=MyCppFloat,
+          firstline=4,
+          lastline=8,
+          float
+        ]
+        {Main/Listings/PerObjectShader.glsl}
+
+        Listing shows the vertex shader that is used.
+        It simply takes the vertex position and transforms it into clip space using the model view projection (MVP) matrix supplied as a uniform value.
+        As can be seen in listing~\ref{lst:VertexShader}, the layout of the shader is not very complicated.
+        It only consists of a single uniform buffer object, containing a four by four\todo{Write 4x4 instead?}{} matrix, as well as the vertex input specification.
+        Vertex data is limited to a single three-dimensional vector storing the position of the associated vertex in an application-specific space.
+        The actual shader code, specified in the function called \lstinline{main}, transforms each vertex position from the application-specific space to clip space.
+
+        \lstinputlisting[
+          label=lst:FragmentShader,
+          caption={Simplified fragment shader used in chapter~\ref{cha:RenderPipeline}.},
+          style=MyCppFloat,
+          firstline=13,
+          lastline=16,
+          float
+        ]
+        {Main/Listings/PerObjectShader.glsl}
+
+        The fragment shader is shown in listing~\ref{lst:FragmentShader}.
+        The only output value of the fragment shader is a four-dimensional vector containing the color value that will be stored in the framebuffer.
+        This color value is set to a solid color in the \lstinline{main} function on line~3.
+
+      \subsubsection{Graphics Pipeline Layout}
+      \label{sss:GraphicsPipelineLayout}
+        The graphics pipeline requires information about the layout of the shaders shown in section~\ref{sss:GraphicsPipelineShaderStages}.
+        The information about uniform buffers, push constants, and samplers are all part of what is called the \textit{pipeline layout}.
+        The pipeline layout is defined in terms of \textit{descriptor set layouts}, which describe the layout of actual descriptor sets.
+        Descriptor sets are part of the actual rendered objects which and are covered later in section~\ref{sss:CreatingSceneObjects}\todo{Make sure this is actually the section where it is covered.}, but the layout of these descriptors is important for the pipeline specification.
+
+        \lstinputlisting[
+          label=lst:DescriptorSetLayoutBinding,
+          caption={Definition of a descriptor set layout binding for a single uniform buffer used only in the vertex shader stage.},
+          style=MyCppFloat,
+          firstline=1,
+          lastline=5,
+          float
+        ]
+        {Main/Listings/GraphicsPipelineLayout.cpp}
+
+        \lstinputlisting[
+          label=lst:PipelineLayout,
+          caption={Creation of the pipeline layout and a descriptor set layout using a previously defined descriptor set layout binding.},
+          style=MyCppFloat,
+          firstline=7,
+          lastline=15,
+          float,
+          emph={vkCreateDescriptorSetLayout, vkCreatePipelineLayout}
+        ]
+        {Main/Listings/GraphicsPipelineLayout.cpp}
+
+        A descriptor set layout consists of multiple descriptor set layout \textit{bindings}.
+        Listing~\ref{lst:DescriptorSetLayoutBinding} shows the definition of such a binding for a single uniform buffer that is used in the vertex shader stage.
+        This matches the shader layout shown earlier in section~\ref{sss:GraphicsPipelineShaderStages}.
+        In listing~\ref{lst:PipelineLayout} the descriptor set layout object is created using the binding defined before.
+        And finally on line~8, the actual pipeline layout is created using the descriptor set layout.
+
+      \subsubsection{Vertex Input State}
+      \label{sss:VertexInputStateSetup}
+        The pipeline layout in section~\ref{sss:GraphicsPipelineLayout} describes the layout of the different parts in the pipeline, but the graphics pipeline also requires information about the vertex data that is fed to the pipeline initially.
+        The vertex input state effectively controls the number of supported vertex buffers for this pipeline as well as information about how vertex data is to be interpreted from an individual buffer.
+
+        \lstinputlisting[
+          label=lst:VertexBindingSetup,
+          caption={Defining a vertex binding with the size of a vertex specified as $(3+2)*sizeof(float)=20$ bytes.},
           style=MyCppFloat,
           firstline=15,
-          lastline=34,
+          lastline=17,
           float
         ]
         {Main/Listings/GraphicsPipelineSetup.cpp}
+
+        Listing~\ref{lst:VertexBindingSetup} shows the definition of a vertex binding.
+        On line~2, the binding ID of that vertex buffer is specified to be~0.
+        This binding ID is important when specifying vertex attributes which is done later in this section.
+        On line~3, the stride of the data is specified.
+        This defines the size of an individual element in the vertex buffer.
+        Vulkan uses this value to advance from one vertex to the next.
+
+        \lstinputlisting[
+          label=lst:VertexAttributeSetup,
+          caption={Defining a vertex attribute},
+          style=MyCppFloat,
+          firstline=19,
+          lastline=23,
+          float
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
+
+        In addition to the information about how to interpret the vertex buffer as a whole, Vulkan also needs to know how to interpret individual vertex attributes.
+        This is set up in listing~\ref{lst:VertexAttributeSetup}.
+        On line~2 the binding ID of the input vertex buffer is defined.
+        This corresponds directly to the binding ID specified before in listing~\ref{lst:VertexBindingSetup}.
+        The location attribute on line~3 refers to the layout location specified in the shader layout for the \lstinline{Pos} input attribute, which can be seen in section~\ref{sss:GraphicsPipelineShaderStages}.
+        On line~4, the format of this vertex attribute is defined.
+        Vulkan uses \lstinline{VkFormat} as the type of the vertex attribute format.
+        This enumeration is typically only used for images, which is why the format typically reads as if color channel encodings are specified.
+        For example, \lstinline{R8G8B8}\footnote{Full name: \lstinline{VK_FORMAT_R8G8B8_UNORM}} a color encoding that used red, green, and blue channels with 8 bit precision, respectively.
+        Because the only input vertex attribute is a three-dimensional vector of floating point values, the format \lstinline{R32G32B32}\footnote{Full name: \lstinline{VK_FORMAT_R32G32B32_SFLOAT}} is specified which corresponds to three floating point components with 32 bit precision.
+        It must be noted that the format may not be chosen arbitrarily.
+        Allowed formats need to be queried using the Vulkan \gls{api} call \lstinline{vkGetPhysicalDeviceFormatProperties}.
+
+        \lstinputlisting[
+          label=lst:VertexInputStateSetup,
+          caption={Defining a vertex attribute},
+          style=MyCppFloat,
+          firstline=25,
+          lastline=29,
+          float
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
+
+        Finally in listing~\ref{lst:VertexInputStateSetup}, both the vertex binding and the vertex attribute definitions are combined in the vertex input state that will eventually be passed to the graphics pipeline.
+
+        \todo[inline]{Any concluding words here?}{}
+
+        % \begin{figure}
+        %   \includegraphics[width=\textwidth]{Main/Images/VertexInputLayoutVariants}
+        %   \centering
+        %   \caption{Layout of vertex input data when stored separately in multiple buffers (top) and interleaved in a single buffer (bottom).}
+        %   \label{fig:VertexInputLayoutVariants}
+        % \end{figure}
 
       \subsubsection{Input Assembly State}
         The input-assembly state describes how the input data to the vertex shader is interpreted.
@@ -162,7 +287,7 @@
         In this chapter, only the vertex and fragment shader stages are in use so this state is ignored.
 
       \subsubsection{Viewport State}
-        \label{subsubsec:ViewportState}
+        \label{sss:ViewportState}
         The viewport state specifies how many viewports and scissors are active in a pipeline.
         Both the viewport and scissor define a non-rotated rectangular region within the framebuffer that will be written to by shaders.
         Rendering results that would usually write to the entire extent of the framebuffer will be scaled down and displaced to fit into the viewport and cropped to be inside the scissor.
@@ -170,9 +295,9 @@
         In this chapter, only one of each is used that \todo{encompass?}include the entire framebuffer.
 
         \begin{figure}
-          \includegraphics[width=0.8\textwidth]{Main/Images/ViewportScissorSample}
+          \includegraphics[width=0.666\textwidth]{Main/Images/ViewportScissorSample}
           \centering
-          \caption{Framebuffer {\large$f_A$} has a viewport and scissor that contain the entire framebuffer. No transformation or cropping is performed. In framebuffer {\large$f_B$}, the viewport {\large$v$} causes the contents to be displaced and scaled down while scissor {\large$s$} causes the remaining contents to be cropped.}
+          \caption{Framebuffer {\large$f_A$} has a viewport and scissor that contain the entire framebuffer. No transformation or cropping is performed. Framebuffer {\large$f_B$} has a viewport {\large$v$} that causes the contents to be displaced and scaled down as well as a scissor {\large$s$} that causes the remaining contents to be cropped.}
           \label{fig:ViewportScissorSample}
         \end{figure}
 
@@ -239,7 +364,7 @@
         In listing~\ref{lst:RasterizationStateSetup}, the rasterizer is configured to produce densely filled polygons and does not perform any culling operations on the fragments.
 
       \subsubsection{Multisample State}
-        \label{subsubsec:MultisampleState}
+        \label{sss:MultisampleState}
         Multisampling is used to perform anti-aliasing, achieving a smoother appearance of jagged edges, and can be configured in the Multisample state.
         Disabling multisampling is not simply a matter of specifying the default value for all options.
         This state controls how many times the fragment shader is invoked and if a value of zero is passed as the number of samples, the fragment shader will never be invoked.
@@ -301,7 +426,7 @@
         \todo[inline]{Give an example (transparent vs. non-transparent) if there is enough time.}
 
       \subsubsection{Render Pass}
-        \label{subsubsec:RenderPassSetup}
+        \label{sss:RenderPassSetup}
         Each graphics pipeline has exactly one render pass in Vulkan.
         A render pass consists of multiple subpasses and stores information about the flow of data between subpasses and the execution of rendering commands.
         It stores framebuffer attachment and information about layout transitions at the beginning and the end of the render pass as well as between subpasses.
@@ -326,7 +451,7 @@
         In listing~\ref{lst:RenderPassAttachmentsSetup}, the attachments for the render pass are being set up.
         The first attachment, attachment 0, is the render target which is actually a swapchain image.
         The format of that attachment is set to the same format as the surface.
-        Like before in section~\ref{subsubsec:MultisampleState}, the sampling count is set to 1, i.e. multisampling is not used.
+        Like before in section~\ref{sss:MultisampleState}, the sampling count is set to 1, i.e. multisampling is not used.
         On line~4, the render pass is configured to clear the contents of the first attachment at load-time.
         The value to clear the contents with is defined in the render pass instance.
         Once the render pass has finished executing, the \lstinline{storeOp} determines what happens to this attachment.
@@ -387,9 +512,10 @@
         And finally, the attachment and subpass information defined previously are combined and passed to the appropriate Vulkan command on line~8 in listing~\ref{lst:RenderPassCreation} to create the actual render pass object.
 
     \subsection{Creating Scene Objects}
-      \label{subsubsec:CreatingSceneObjects}
+      \label{sss:CreatingSceneObjects}
       \todo[inline]{Create renderable objects. Needs sampled image, geometry. Mention push constants.}
       \todo[inline]{Mention the transformation matrix being in a uniform buffer.}
+      \todo[inline]{Descriptor set LAYOUT has already been created for the pipeline layout. Explain and show the actual descriptor set here.}
       \tbd
 
   \section{Command Buffer Recording}
@@ -414,7 +540,7 @@
 
     For the purposes of this chapter, command buffers will only be recorded once and submitted in the render loop in section~\ref{sec:RenderLoop}.
     The framework defined before allows this to be possible because all objects in the scene are static in terms of rendering commands.
-    However, this is only true because per-object shader data is stored in uniform buffer objects as established in section~\ref{subsubsec:CreatingSceneObjects}.
+    However, this is only true because per-object shader data is stored in uniform buffer objects as established in section~\ref{sss:CreatingSceneObjects}.
     Uniform buffers are independent of the rendering commands and can be updated directly using memory mapping operations.
     Alternatively to uniform buffers, \textit{push constants} may be used to supply data to be used in shaders.
     Compared to uniform buffer objects, push constants have certain limitations that need to be considered.
@@ -463,7 +589,7 @@
       {Main/Listings/CommandBufferRecording.cpp}
 
       Once the command buffer is \textit{recording}, the dynamic state can be set.
-      As defined in section~\ref{subsubsec:ViewportState} and shown in listing~\ref{lst:DynamicStateSetup}, the dynamic state to update include the viewport and scissor.
+      As defined in section~\ref{sss:ViewportState} and shown in listing~\ref{lst:DynamicStateSetup}, the dynamic state to update include the viewport and scissor.
       \todo{Highlight vkCmdSet* in the listings?}
       The commands for updating this state are shown in listing~\ref{lst:DynamicStateUpdate}.
       The viewport is set to include the entire framebuffer on lines~2--3 as well as the entire depth buffer extent on lines~4--5.
@@ -489,7 +615,7 @@
 
       In the next step, a render pass is started which results in the creation of a \textit{render pass instance}.
       This render pass instance is associated with a specific framebuffer on line~7 and clear values on line~10~and~11 that are used to clear attachment contents if their \lstinline{loadOp} is set to \lstinline{CLEAR}\footnote{Full name: \lstinline{VK_ATTACHMENT_LOAD_OP_CLEAR}}.
-      The \lstinline{loadOp} settings were specified for each attachment in section~\ref{subsubsec:RenderPassSetup}.
+      The \lstinline{loadOp} settings were specified for each attachment in section~\ref{sss:RenderPassSetup}.
       Another property of the render pass instance is the render area on line~8.
       As can be seen, it set to the same value as the scissor that was set before.
       The render area is used to control which pixels of the framebuffer are affected in the active render pass.
@@ -576,8 +702,6 @@
     \todo[inline]{Sync for submission and presenting (render semaphore, present semaphore) so swapchain image isn't used for rendering while presenting and vice versa. Also image layout transition happens with commands, meaning sync is necessary!}
     \tbd
 
-    \lipsum
-
     \lstinputlisting[
       label=lst:RenderLoop_SemaphoreCreation,
       caption={Creation of two semaphores used in the render loop.},
@@ -587,8 +711,6 @@
       float
     ]
     {Main/Listings/RenderLoop.cpp}
-
-    \lipsum
 
     \lstinputlisting[
       label=lst:RenderLoop_ShaderDataUpload,
@@ -600,8 +722,6 @@
     ]
     {Main/Listings/RenderLoop.cpp}
 
-    \lipsum
-
     \lstinputlisting[
       label=lst:RenderLoop_AcquireNextImage,
       caption={Creation of two semaphores used in the render loop.},
@@ -611,8 +731,6 @@
       float
     ]
     {Main/Listings/RenderLoop.cpp}
-
-    \lipsum
 
     \lstinputlisting[
       label=lst:RenderLoop_QueueSubmission,
@@ -626,8 +744,6 @@
 
     \todo[inline]{Next action is command buffer submission. Mention that it must be re-recorded here is push constants would be used.}
 
-    \lipsum
-
     \lstinputlisting[
       label=lst:RenderLoop_QueuePresent,
       caption={Creation of two semaphores used in the render loop.},
@@ -638,8 +754,6 @@
     ]
     {Main/Listings/RenderLoop.cpp}
 
-    \lipsum
-
     \lstinputlisting[
       label=lst:RenderLoop_QueueWaitIdle,
       caption={Creation of two semaphores used in the render loop.},
@@ -649,8 +763,6 @@
       float
     ]
     {Main/Listings/RenderLoop.cpp}
-
-    \lipsum
 
   \section{Window Resizing}
     \todo[inline]{Should I actually add this section? (Only if there's enough time.)}
