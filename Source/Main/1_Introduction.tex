@@ -29,7 +29,7 @@
     On desktop systems, on the other hand, the situation is very different.
     Hardware configurations are rarely the same and change with each release of new graphics hardware, which typically happens more frequently than new gaming consoles are released.
     The situtation for mobile devices is quite similar.
-    On such systems, the \glspl{api} tend to create more a abstract model for the application to create programs for.
+    On such systems, the \glspl{api} tend to define more abstract models that applications will be based on.
     These abstract models are then translated, or mapped, to the actual hardware by the \textit{driver}.
     The relationship between an application and graphics hardware is depicted in figure~\ref{fig:AppApiDriverOverview}.
 
@@ -101,12 +101,12 @@
 
     Modern hardware design tends to be more suitable for general purpose computing compared to traditional hardware design.
     Graphics hardware consisted of many special purpose components in the past that have largely been replaced by general purpose memory and programmable processing cores that perform work in a massively parallel manner.
-    Designing an abstraction that is much closer to modern hardware design allows drivers to drivers to work more directly with the hardware and reduce the aforementioned cost of mapping the driver model to the actual hardware.
+    Designing an abstraction that is much closer to modern hardware design allows drivers to work more directly with the hardware and reduce the aforementioned cost of mapping the driver model to the actual hardware.
     This is arguably the main motivation for new graphics \glspl{api} such as Vulkan and \gls{d3d12}.
 
     Another aspect of modern graphics \glspl{api} is the level of control that is given to the application.
     \glspl{api} such as OpenGL did not allow much control of the hardware itself but rather provided a very abstract model of it.
-    Modern \glspl{api}, on the hand, expose the hardware a lot more.
+    Modern \glspl{api}, on the other hand, expose the hardware a lot more.
     The fact that modern graphics hardware has become more general purpose is certainly a factor in this.
     Designing general purpose hardware only to be constrained by \glspl{api} that do not provide ways to leverage it would be a waste of resources.
     % \todo{References??}
@@ -130,14 +130,14 @@
 
   \section{The Vulkan Graphics and Compute API}
     The Vulkan \gls{api} was designed by the \gls{khronos} in collaboration with many industry representatives, including Valve Corporation, \gls{amd}, and \gls{nvidia}\cite{vkspec}.
-    Version 1.0 of the Vulkan specification was released on the 16th February in 2016\cite{vkrelease1dot0}.
+    Version 1.0 of the Vulkan specification was released on February 16th, 2016\cite{vkrelease1dot0}.
     It was designed to provide low-level control to the developer when interacting with graphics and compute hardware.
 
     Vulkan was designed with a variety of goals in mind.
 
     \begin{description}
       \item[Cross-Platform] Vulkan is supposed to run on multiple platforms that are equipped with different kinds of hardware.
-      \item[Reduce Driver Complexity] By relaying more responsibility to the application, drivers.
+      \item[Reduce Driver Complexity] By relaying more responsibility to the application, driver implementations can be simpler.
       \item[Reduce Driver Overhead] Less driver-side \gls{cpu} overhead.
       \item[Low-level Control] Allow developers a lot of control over the hardware.
       \item[Consistent API] Reduce the amount of new concepts an application developer has to learn when using the \gls{api}.
@@ -160,7 +160,7 @@
 
 
     \subsection{Related APIs}
-      There are several other graphics \glspl{api} that can be used.
+      There are several other graphics \glspl{api} available for using graphics and compute hardware.
       \gls{opengl} is Vulkans predecessor and provides a higher level of abstraction from the hardware.
       It is a very successful API running on several different platforms with varying hardware configurations.
       Due to its level of abstraction, \gls{opengl} drivers are very complex and do a significant amount of work on the \gls{cpu} in order to match abstract commands to the hardware.
@@ -174,9 +174,8 @@
       \gls{d3d12}, the latest revision of the \gls{d3d} specification released in 2015, is comparable to Vulkan in terms of of hardware abstraction.
       It provides much more control to the developer over the hardware.
 
-      There is also Metal, a graphics \gls{api} developed by \gls{apple}.
+      Apple developed its own graphics \gls{api} called Metal, which is exclusively available on iOS and Mac OSX platforms.
       Similar to Vulkan and \gls{d3d12}, Metal also offers more direct control over the hardware.
-      It is exclusively available on \gls{apple} platforms.
 
-      Another \gls{api} is OpenCL also by the \gls{khronos}.
-      OpenCL only offers a compute \gls{api} and no graphics \gls{api}.
+      % Another \gls{api} is OpenCL also developed by the \gls{khronos}.
+      % OpenCL only offers a compute \gls{api} and no graphics \gls{api}.

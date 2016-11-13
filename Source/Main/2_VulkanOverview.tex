@@ -37,7 +37,26 @@
   \label{sec:WorkflowAndPatterns}
     The Vulkan API was designed to be consistent and explicit. Many patterns can be found in the Vulkan code style that make it easier for the \gls{application} to use the API effectively. This section is a walkthrough of the basic steps that needed to set up a Vulkan graphics pipeline to present an image to a display.
 
-    Vulkan makes use of \textit{handle} types allowing the \gls{application} to track objects created with the API. The first object that has to be created is a Vulkan instance. The Vulkan instance can be used to query available physical \glspl{device} that provide Vulkan support. These physical \glspl{device} can be queried for certain capabilities, such as supported image formats and hardware features, to aid in deciding which physical device to use for the \gls{application}. A physical device can subsequently be used to create a logical device, or just device. The number of \glspl{device} created from a physical device is not limited. When a device is created, all queues associated with it are created as well. This is why there is no \lstinline{vkCreateQueue} but rather \lstinline{vkGetQueue} command. Among other things, \glspl{device} are used to allocate Vulkan objects or GPU memory. Changes made on Vulkan objects do not have global side-effect observable with the regular Vulkan API\todo{Elaborate. Contrast with OpenGL}. However, \glspl{driver} and Vulkan layers or extensions are free to modify their own state across Vulkan object boundaries.\todo{Redundant sentence? This should be a given.}
+    Vulkan makes use of \textit{handle} types allowing the \gls{application} to track objects created with the API.
+    The first object that has to be created is a Vulkan instance.
+    The Vulkan instance can be used to query available physical \glspl{device} that provide Vulkan support.
+    These physical \glspl{device} can be queried for certain capabilities, such as supported image formats and hardware features, to aid in deciding which physical device to use for the \gls{application}.
+    A physical device can subsequently be used to create a logical device, or just device.
+    The number of \glspl{device} created from a physical device is not limited.
+
+    Each logical device is associated with a number of device queues.
+    A device queue, or just queue, is used to submit work to the \gls{gpu}.
+    They are logical instances of what is called a queue family.
+    Each queue family has certain properties that have to be considered by the application.
+    For example, if the queue is supposed to accept submissions of rendering commands, the application needs to ensure the queue actually has graphics capabilities.
+    Some queues might only accept copy commands.
+
+    When creating a logical device, all queues associated with it are created as well.
+    This is why there is no \lstinline{vkCreateQueue} but rather \lstinline{vkGetQueue} command.
+    Among other things, \glspl{device} are used to allocate Vulkan objects or GPU memory.
+    Changes made on Vulkan objects do not have global side-effect observable with the regular Vulkan API\todo{Elaborate.
+    Contrast with OpenGL}.
+    However, \glspl{driver} and Vulkan layers or extensions are free to modify their own state across Vulkan object boundaries.\todo{Redundant sentence? This should be a given.}
 
     \todo[inline]{Describe/mention GPU queues in the introduction chapter.}
 
@@ -88,7 +107,12 @@
   \label{sec:MemoryManagement}
     Memory in Vulkan is categorized in either \gls{host} memory or \gls{device} memory.
 
-    Host memory is used by the \gls{driver} for data that is not visible to the device. The \gls{application} has the option to supply memory allocators to the \gls{driver} to control how \gls{host} memory is allocated. Host memory allocations are not \todo{conducted => made?}conducted in performance critical code paths. In general, supplying custom memory allocators may not significantly affect efficiency of the \gls{application}. Instead, it is an opportunity for \glspl{host} on embedded systems to control memory allocations or for informational purposes such as logging memory allocations done by the \gls{driver}.
+    Host memory is used by the \gls{driver} for data that is not visible to the device.
+    \glspl{application} have the option to supply memory allocators to \glspl{driver} in order to control how \gls{host} memory is allocated.
+    Host memory allocations are not conducted in performance critical code paths.
+    In general, supplying custom memory allocators may not significantly affect efficiency of the \gls{application}.
+    Instead, it is an opportunity for \glspl{host} on embedded systems to control memory allocations or for informational purposes such as logging memory allocations done by the \gls{driver}.
+    Especially on gaming consoles, where memory typically is a scarce resource, this kind of control will be beneficial to applications.
 
     The physical storage of a device is called device memory. Device memory is separated into different types of heaps. Each of these heaps has a defined size and a combination of flags. The flags indicate whether memory from that heap is visible to the \gls{host}, for example, or whether the memory is completely local to the device. In order for the allocated memory to be useful, the \gls{application} has to bind it to a resource.
 
@@ -99,7 +123,7 @@
         A buffer is treated as a one-dimensional, unformatted, contiguous block of memory that can be used by the \gls{application} to upload general purpose data to the device. This data may then be used during shader execution, for example, or may be copied and transformed on the GPU to another buffer or even an image.
 
       \item[Images]
-        As opposed to buffer resources, an image contains more information about how the underlying memory is used. For example, an image has a particular format, such as having red-green-blue channels, each channel using 8 bits of memory. An image may also be in a particular layout, e.g. in \textit{shader read-only} layout which is required when the image is supposed to be used by a shader. Another important image property is the image tiling. An image may either exist in linear tiling or optimal tiling. Linear tiling means that the underlying data of the image is layed out in memory in a linear fashion. The data will be in the same memory layout as it was when it was uploaded. The memory layout of the image data in optimal tiling, however, is not specified by Vulkan. The \gls{driver} is free to lay out the data in memory as it sees fit. This is done in order to improve performance. Parts of the actual physical device may process an image faster in certain circumstances when the image data is not layed out linearly in memory.
+        As opposed to buffer resources, an image contains more information about how the underlying memory is used. For example, an image has a particular format, such as having red-green-blue channels, each channel using 8 bits of memory. An image may also be in a particular layout, e.g. in \textit{shader read-only} layout which is required when the image is supposed to be used by a shader. Another important image property is the image tiling. An image may either exist in linear tiling or optimal tiling. Linear tiling means that the underlying data of the image is laid out in memory in a linear fashion. The data will be in the same memory layout as it was when it was uploaded. The memory layout of the image data in optimal tiling, however, is not specified by Vulkan. The \gls{driver} is free to lay out the data in memory as it sees fit. This is done in order to improve performance. Parts of the actual physical device may process an image faster in certain circumstances when the image data is not laid out linearly in memory.
     \end{description}
 
     \todo[inline]{Describe buffer views and image views.}

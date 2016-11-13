@@ -9,3 +9,34 @@
   \todo[inline]{Mention Valve's plans for pipeline caches? Download pipeline caches when installing games.}
   \tbd
 
+  In this chapter, I am giving some insight into my thoughts about Vulkan, the problems I had with it, as well as the future I see for it.
+
+  With rising driver complexity and OpenGL expanding to support new interfaces, becoming more confusing from an \gls{api} usage point of view, seeing Vulkan as a cross-platform successor to OpenGL is good.\todo{Rephrase.}{}
+  Vulkan is created by industry professionals who work closely with related technology all the time.
+  Providing more control to the application is generally good but it also increases complexity of the application itself.
+  This might not be feasible for some applications.
+  Another aspect is driver support for Vulkan.
+  The prototype referred to in appendix~\ref{apx:PrototypeSource} was developed on a system that was specfically acquired for the purpose of developing a Vulkan application because the system I owned previously mounted an NVIDIA GeForce GTX 560Ti, which is not supported by NVIDIA drivers to this date.
+
+  The development of the prototype
+
+  Vulkan is a modern api.
+  It supports desktop and mobile platforms.
+  Development has improved drastically since release.
+
+  Future of Vulkan.
+    - Multi-GPU
+    - Pipeline cache: grab from server when installing a game.
+
+  Khronos is very actively involving the community.
+  Many things open-source on GitHub.
+
+  An exciting feature about Vulkan is the pipeline cache.
+  Creating a graphics pipeline in Vulkan is quite expensive because it does optimizations do the shaders in use and to the entire pipeline as a whole.
+  The pipeline cache can be used to speed up this process.
+  In the Vulkan session part II at GDC 2016\cite{vksessiongdc16} Dan Ginsburg, one of the speakers at this talk, described a scenario where the online game distribution platform \textit{steam} could be used to pull pipeline caches from a server for a particular game at the time it is installed.
+  This would improve performance of that game at the time it is run for the first time.
+
+  The Vulkan specification~1.0 is only the beginning.
+  It is missing features like support for copying device memory from one GPU directly to another without involving the hosti as well as an API for high performance and high-quality 2D rendering, like Direct2D.
+  It remains to be seen how Vulkan, and the industry around it, will evolve in the future.
