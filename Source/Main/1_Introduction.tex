@@ -2,95 +2,71 @@
 
 \chapter{Introduction}
 \label{cha:Introduction}
-  \todo[inline]
-  {
-    Brief introduction of computer graphics. One of the biggest problems: Performance. Especially on mobile and with virtual reality.
+  Computer graphics are part of most consumer computer systems, such as mobile devices or \glspl{pc}.
+  Special purpose hardware, known as \gls{gpu}, is used to accelerate computations related to computer graphics.
+  Graphics hardware designs have changed considerably over time.
+  In the past, graphics hardware consisted only of fixed-function components that performed necessary computations in a massively parallel manner to transform three-dimensional data to an image that is supposed to be displayed on a screen.
+  At the same time, \glspl{api} for this kind of hardware were developed.
+  Many modern graphics devices have become more general since then, making them more suitable and accessible to other kinds of computational tasks not directly related to computer graphics.
+  Traditional \glspl{api} had to adjust to these changes while maintaining compatibility to previously supported hardware at the same time.
+  The result of this is an increase in driver implementation complexity that negatively affects performance at least on the \gls{cpu}.
+  New graphics \glspl{api} were designed to match recent hardware more closely.
+  One such \gls{api} is the Vulkan graphics API by the \gls{khronos}, which is presented here\todo{``In this work/document/thesis''?}.
 
-    Maybe mention the author's (that's me!) bias towards game development.
-
-    Mention target audience requirements?
-
-    Explain shader stages of modern graphics hardware somewhere in this chapter.
-  }
-
-  \todo[inline]{Mention the terms \gls{cpu} and \gls{gpu} here somewhere.}
-
-  % The field of computer graphics poses many challenges.
-
-  % Data is consumed by a pipeline and transformed by complex algorithms, resulting in another set of data that is used in further processing. This transformation process is usually referred to as ``rendering''. In its most simple form, the output of the rendering process is used to present a graphical representation of the input data to the user, typically via a computer monitor peripheral device.
-
-  % Computer graphics is an area of computer science that has many disciplines. Examples are \glspl{gui}, computer vision, sprite graphics, and \gls{3d} modelling. Most relevant to this paper is \gls{3d} computer graphics. \todo{Mention how Vulkan is not only suited for \gls{3d} graphics?} The most typical use case in \gls{3d} computer graphics is to process data, usually three-dimensional geometric data, in order to produce a 2D image which is then presented to the user with the help of a computer monitor. This processing of data is referred to as \textit{3D rendering} or simply \textit{rendering}.
-
-  % While 3D rendering can be implemented in software, special hardware called a \gls{gpu} can be used instead to achieve better performance. The need for such hardware already indicates one of the greatest challenges in 3D computer graphics: performance. The amount of data involved in 3D rendering can become quite large. As an example, assume the following:
-
-  % \todo{Explain what a Vertex is and how graphics hardware produces faces etc.}
-
-  % The aforementioned three-dimensional geometric data can be given in many different ways. The ideal way of representing specific data depends on the use case and the entire 3D graphics pipeline.
-
-  % For the sake of illustration, let's assume a data set that consists only of 3D vertices. In this example, each vertex only has a position defining the absolute location of the vertex in 3D space. This position value is stored as a vector of three floating point numbers. Typically, such floating point numbers are standard IEEE floating point numbers (as per IEEE 754), taking up 32 bits or 4 bytes of memory. Thus, each vertex takes up $3*4 = 12$ bytes of memory.
-
-  % On desktop systems, applications typically don't access the graphics hardware directly. They instead communicate with a driver that manages hardware access. Communication between an applicatin and the driver is done via an \gls{api}. Figure \ref{fig:AppApiDriverOverview} visualizes this relationship. Ideally, the application does not need to know which specific driver it is communicating with as long as the driver is compliant to the \gls{api} specification. This abstraction decouples the application from the hardware and enables it to run on systems with different hardware configurations without altering the application itself. It also enables hardware vendors to manipulate or even reject operations requested by the application, typically to enforce some user-specified global settings. \todo{Explain what kind of settings? Maybe give an example?}
-
-  \begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{Main/Images/Application_API_Driver_Overview}
-    \caption{Interaction between the application and the hardware via the API.}
-    \label{fig:AppApiDriverOverview}
-  \end{figure}
-
-  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-  tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-  quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-  consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-  cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-  proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-  tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-  quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-  consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-  cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-  proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-  \todo[inline]{Talk about different kinds of graphics \glspl{api} on different systems (D3D, OpenGL on desktop, maybe Metal for OSX, and special \glspl{api} on consoles.)}
 
   \section{Document Structure}
     Chapter~\ref{cha:Introduction} is the introduction to the topics discussed within this document.
     In chapter~\ref{cha:VulkanOverview}, an overview of the Vulkan graphics \gls{api} is given in terms of its components and features.
     Chapter~\ref{cha:EnvSetup} is a guide for setting up Vulkan for application development with a bias towards \gls{windows} platforms.
-    Chapter~\ref{cha:RenderPipeline} sets up a simple rendering scenario and explains it step by step.
+    Chapter~\ref{cha:RenderPipeline} sets up a simple rendering scenario and explains it by showing relevant steps in the form of code samples.
     And finally, chapter~\ref{cha:Conclusion} concludes this document and provides insight to thoughts of the author about the topics discussed.
+  \section{Interaction With Graphics Hardware}
+  \label{sec:HardwareInteraction}
+    Because \glspl{gpu} are a distinct hardware component in a computer system, \glspl{api} are used to communicate with the \gls{gpu}.
+    The level of abstraction an \gls{api} provides varies and depends on the platform and hardware vendor.
+    On gaming consoles, for instance, it is common to use graphics \glspl{api} that do not put any abstraction layer between the application and the \gls{gpu}, allowing application to take full control of the hardware.
+    This is most suitable to systems with a fixed configuration of hardware components.
+    On desktop systems, on the other hand, the situation is very different.
+    Hardware configurations are rarely the same and change with each release of new graphics hardware, which typically happens more frequently than new gaming consoles are released.
+    The situtation for mobile devices is quite similar.
+    On such systems, the \glspl{api} tend to create more a abstract model for the application to create programs for.
+    These abstract models are then translated, or mapped, to the actual hardware by the \textit{driver}.
+    The relationship between an application and graphics hardware is depicted in figure~\ref{fig:AppApiDriverOverview}.
+
+    \begin{figure}
+      \label{fig:AppApiDriverOverview}
+      \centering
+      \includegraphics[width=\textwidth]{Main/Images/Application_API_Driver_Overview}
+      \caption{Interaction between the application and graphics hardware via an API.}
+    \end{figure}
 
 
   \section{High Level Graphics Workflow}
     \label{sec:GraphicsWorkflow}
-    \todo[inline]
-    {
-      General overview of the stages several resources (vertices, textures, etc.) have to go through.
+    Generally speaking, graphics hardware is built like a pipeline that is made up of several components called pipeline stages.
+    Each of these stages is processing data that is provided by the host application, before being passed on to the next stage in the pipeline.
+    The pipeline stages can generally be categorized into fixed-function stages and shader stages.
+    Control over the operation of a fixed-function stage is limited, but in many cases they can be configured to some extent.
+    Shader stages accept application-defined programs, called \textit{shaders}, that are run in order to process incoming data.
+    The terminology used to describe these stages varies between platforms and \glspl{api}.
+    In this section, the terms coined by the \gls{khronos} will be used as they are the same as the terms used in the Vulkan specification.
 
-      Explain the fixed function stages.
-
-      Mention that this is simplified!!! Mention there are more stages.
-    }
-
-    \todo[inline]{Change the text ``Vertex Data'' to ``Input Data'' in figure~\ref{fig:Rendering_Pipeline_Overview}.}
     \begin{figure}
+      \label{fig:Rendering_Pipeline_Overview}
       \includegraphics[width=\textwidth]{Main/Images/Rendering_Pipeline_Overview}
       \centering
-      \caption{Fixed-function stages are depicted with solid, rounded outlines and shader stages with dashed outlines.}
-      \label{fig:Rendering_Pipeline_Overview}
+      \caption{Simplified overview of a graphics pipeline. Fixed-function stages are depicted with solid, rounded outlines and shader stages with dashed outlines.}
     \end{figure}
 
-    Generally speaking, graphics hardware is built like a pipeline that is made up of several components called pipeline stages.
-    Each of these stages is processing data that is provided by the \textit{host application}, before being passed on to the next stage in the pipeline.
-    The pipeline stages can generally be categorized into fixed-function stages and shader stages.
-    Fixed-function stages perform the same kind of operation on incoming data.
-    Control over the operation is limited, but in many cases a fixed-function stage can be configured to some extent.
-    Shader stages accept application-defined programs, called \textit{shaders}, that are run in order to process incoming data.
-    \todo{...}Overview of the rendering pipeline on modern graphics hardware.
-    The available shader stages are the vertex, tessellation, geometry, and fragment shader stages.
+    Overview of the rendering pipeline on modern graphics hardware is outlined in figure~\ref{fig:Rendering_Pipeline_Overview}.
+    It shows all programmable shader stages as well as some fixed-function stages and the flow between them.
+    As for the fixed-function stages, only the input assembly and the rasterizer are depicted.
+    The input assembly is responsible for assembling vertex data and translating them into primitives such as triangles.
+    The rasterizer transforms incoming primitive data in order to produces fragments that will will be processed by the fragment shader to produce pixel values.
+    It must be noted that these are just two out of many fixed-function stages.
 
-    % The input assembly, for example, is responsible for producing primitives from the input data for the vertex shader to consume.
+    The available shader stages are the vertex, tessellation, geometry, and fragment shader stages.
+    Basic functionality and purpose of the shader stages are explained below.
 
     \begin{description}
       \item[Vertex Shader]
@@ -98,8 +74,10 @@
         This stage is typically used to transform vertices to different coordinate systems.
 
       \item[Tessellation Shader]
-        Tessellation shaders are generally used to turn coarse geometry into smoother geometry by adding more detail.
-        \todo[inline]{Used for water, e.g. or to create a mathematical ...}
+        Tessellation shaders are used to subdivide geometry using a mathematical function as part of the graphics pipeline.
+        This allows applications to reduce the amount of data that is required to be uploaded to the \gls{gpu}.
+        For example, this can be used to produce smoother geometry for water surfaces.
+        \todo{mention that the tessellation stage consists of two programmable stages and one fixed-function stage in-between?}{}
 
       \item[Geometry Shader]
         Geometry shaders are used to generate new geometry from existing primitives.
@@ -110,78 +88,60 @@
         In other words, this is the stage where the actual pixel colors are produced, optionally by sampling textures and applying lighting computations.
     \end{description}
 
-    \todo[inline]{Is this enough for the \underline{high level} graphics workflow?}
 
   \section{Motivation for a new Graphics API}
-    \todo[inline]{Hardware abstraction of old APIs based on old hardware design.
-    \todo[inline]{Check for repetition.}
-    Hardware design changed a lot (much more general purpose).
-    Old APIs need to perform a lot of work to maintain the illusion of old hardware design.
-    Special purpose hardware is largely replaced by general purpose memory and massively parallel processors for crunching data.}
-    \todo[inline]{Different Formulation. Graphics hardware changes rapidly, etc...}
-    Old graphics \glspl{api} were designed for old graphics hardware designs.
-    However, hardware design has changed significantly over time.
-    The model older graphics \glspl{api} are based on no longer reflects modern hardware design.
-    In order to remain compatible, these \glspl{api} need to perform a mapping of their model to modern hardware design.
-    This mapping may come at a significant cost in terms of performance.
+    When traditional graphics \glspl{api} were created, they were designed to match hardware architectures that existed at the time.
+    However, hardware has changed significantly over time.
+    The models employed by traditional graphics \glspl{api} no longer match modern hardware design as closely.
+    In order to remain compatible, these \glspl{api} need to perform a mapping of their model to modern hardware design, which may come at a significant cost in terms of performance.
 
-    In practice, this often means that the hardware driver, implementing an old graphics \gls{api}, wastes a considerable amount of time that could be used by the host application to perform useful \todo{Use `operations' instead?}computations.
-    For some applications, this \todo{``may be acceptible...'' is clearer}overhead caused by the driver is not very significant.
-    Applications like these may not gain much by the new \glspl{api} other than lower power consumption due to reduced \gls{cpu} usage, which might be important on mobile platforms.
+    In practice, this often means that the hardware driver, implementing a traditional graphics \gls{api}, wastes a considerable amount of time that could be used by the host application to perform useful computations.
+    For some applications, the additional \gls{cpu} overhead may be acceptable.
+    Applications such as these may not gain much by the new \glspl{api} other than lower power consumption due to reduced \gls{cpu} usage, which might be important on mobile platforms.
 
-    Modern hardware design tends to be more suitable for general purpose computing compared to old hardware design.
-    Older hardware consisted of many special purpose components that have largely been replaced by general purpose memory and programmable processing cores that perform work in a massively parallel manner.
-
-    \todo[inline]{Main goal of modern APIs is to match modern hardware design. Enables drivers to work more directly with the hardware instead of perform a mapping between the abstract model and the actual hardware.}
-
-    Modern graphics \glspl{api} match their abstraction closer to modern hardware design.
-    This enables drivers to work more directly with the hardware and reduce the aforementioned cost of mapping the driver model to the actual hardware.
-    This is arguably the main motivation for new graphics \glspl{api}.
+    Modern hardware design tends to be more suitable for general purpose computing compared to traditional hardware design.
+    Graphics hardware consisted of many special purpose components in the past that have largely been replaced by general purpose memory and programmable processing cores that perform work in a massively parallel manner.
+    Designing an abstraction that is much closer to modern hardware design allows drivers to drivers to work more directly with the hardware and reduce the aforementioned cost of mapping the driver model to the actual hardware.
+    This is arguably the main motivation for new graphics \glspl{api} such as Vulkan and \gls{d3d12}.
 
     Another aspect of modern graphics \glspl{api} is the level of control that is given to the application.
-    \todo{Don't be abstract: Mention directX, opengl, i.e. the established apis}Modern \glspl{api} tend to design their model much closer to the current hardware, exposing it a lot more than older \glspl{api} did.
+    \glspl{api} such as OpenGL did not allow much control of the hardware itself but rather provided a very abstract model of it.
+    Modern \glspl{api}, on the hand, expose the hardware a lot more.
     The fact that modern graphics hardware has become more general purpose is certainly a factor in this.
     Designing general purpose hardware only to be constrained by \glspl{api} that do not provide ways to leverage it would be a waste of resources.
-    \todo{References??}Additionally, having more control of the hardware has been the desire of many developers in the past.
-    On gaming consoles, for example, working closely with graphics hardware has been always possible\footnote{Except on \gls{ms} platforms where \gls{d3d} technology is used.}.
-    A game ported from a console to a platform \todo{``such as''?}like the \gls{pc} would often run less optimal in comparison in terms of the most optimal use of available resources.
+    % \todo{References??}
+    % Additionally, having more control of the hardware has been the desire of many developers in the past.
+    On gaming consoles, for example, working closely with graphics hardware has always been possible\footnote{Except on \gls{ms} platforms where \gls{d3d} technology is used.}.
+    A game ported from a console to a platform like the \gls{pc} would often run less optimal in comparison in terms of the most optimal use of available resources.
 
     Providing more control to the application also means that drivers have to do less guess-work to figure out what the application wants to do.
-    This makes driver implementations simpler and easier to maintain, reducing the possibility for \glspl{bug}.
-    \todo{Application developers have a better chance to optimize for different hardware.}
-    \todo[inline]{The following sentence is not correct. Reformulate.}
-    It also reduces the gap between different driver implementations, making applications work more consistently across hardware from different vendors.
+    This makes driver implementations simpler and easier to maintain, reducing the possibility for \glspl{bug}, but it also makes application code more complicated at the same time.
+    However, this allows application developers to optimize for different hardware independently of the actual driver implementation.
 
-    \todo[inline]{Secondary goal is to make drivers simpler at the cost of making applications more complicated. This is not necessarily bad because the application has control over how hardware is utilized. Drivers don't need to guess user intent as much anymore. Also, less complex driver means better maintainability and fewer bugs.}
-
-    Multithreading is also a concern for modern graphics applications.
-    With older graphics \glspl{api} it was usually much harder, if not impossible, to utilize multiple threads in terms of rendering.
+    Multi-threading is also a concern for modern graphics applications.
+    With traditional graphics \glspl{api} it was usually much harder, if not impossible, to utilize multiple threads in terms of rendering.
     At the time these \glspl{api} were designed, applications were usually running only in a single thread.
     Modern graphics \glspl{api}, on the other hand, have been designed with multi-core processing in mind.
 
-    \todo[inline]{Mention CPU overhead of GPU instructions, especially on mobile.}
+    % \todo[inline]{Mention CPU overhead of GPU instructions, especially on mobile.}
 
-    \todo[inline]{Talk about new APIs such as D3D12, Mantle, Metal, and also talk about consoles (no specs) that all adress these problems.}
+    % \todo[inline]{Talk about new APIs such as D3D12, Mantle, Metal, and also talk about consoles (no specs) that all address these problems?}
 
 
   \section{The Vulkan Graphics and Compute API}
-    \todo[inline]{What does it do. Where does it come from. What are people expecting from it. Cross-platform nature (in comparison maybe to PS4's libGNM made specifically for PS4 hardware).}
-
-    \todo[inline]{Insert missing references.}
-    The Vulkan \gls{api} was designed by the Khronos Group in collaboration with many industry representatives, including Valve Corporation, \gls{amd}, and \gls{nvidia}.
-    Version 1.0 of the Vulkan specification was released on the 16th February in 2016.
+    The Vulkan \gls{api} was designed by the \gls{khronos} in collaboration with many industry representatives, including Valve Corporation, \gls{amd}, and \gls{nvidia}\cite{vkspec}.
+    Version 1.0 of the Vulkan specification was released on the 16th February in 2016\cite{vkrelease1dot0}.
     It was designed to provide low-level control to the developer when interacting with graphics and compute hardware.
 
     Vulkan was designed with a variety of goals in mind.
 
-    \todo[inline]{Will this stay a list?}
-    \begin{itemize}
-      \item Cross-platform
-      \item Keep driver complexity at a minimum
-      \item Less driver-side \gls{cpu} overhead
-      \item Allow developers a lot of control over the hardware
-      \item Consistent API
-    \end{itemize}
+    \begin{description}
+      \item[Cross-Platform] Vulkan is supposed to run on multiple platforms that are equipped with different kinds of hardware.
+      \item[Reduce Driver Complexity] By relaying more responsibility to the application, drivers.
+      \item[Reduce Driver Overhead] Less driver-side \gls{cpu} overhead.
+      \item[Low-level Control] Allow developers a lot of control over the hardware.
+      \item[Consistent API] Reduce the amount of new concepts an application developer has to learn when using the \gls{api}.
+    \end{description}
 
     There are many different kinds of hardware configurations today, ranging from high-end gaming systems to mobile platforms such as smartphones.
     Vulkan is designed to be used with all of these systems.
@@ -193,17 +153,14 @@
     This way the driver only does as much work as it needs to function properly and less power will be consumed.
     Hardware vendors will also have an easier time providing robust drivers with less bugs due to reduced complexity.
 
-    Another advantage of Vulkan, being a new API built without worrying about backwards compatability, is the chance of designing a new and consistent API so developers will have an easier time creating applications.
+    Another advantage of Vulkan being a new API built without worrying about backwards compatibility, is the chance of designing a new and consistent API so developers will have an easier time creating applications.
     For more information about the API structure and common patterns in Vulkan, see chapter~\ref{cha:VulkanOverview}.
 
-    Version 1.0 of Vulkan was not entirely built in-house at Khronos Group but is in part based on components of AMD's Mantle API, which was donated to the Khronos Group.
+    Version 1.0 of Vulkan was not entirely built in-house at \gls{khronos} but is in part based on components of AMD's Mantle API, which was donated to the \gls{khronos}\cite{vksessiongdc15}.
 
 
-    \subsection{Vulkan Competitors}
-      \todo[inline]{OpenGL, Direct3D11, Direct3D12, libGNM (PS4), OpenCL}
-
-      Other \glspl{api} exist that are direct competitors to Vulkan.
-
+    \subsection{Related APIs}
+      There are several other graphics \glspl{api} that can be used.
       \gls{opengl} is Vulkans predecessor and provides a higher level of abstraction from the hardware.
       It is a very successful API running on several different platforms with varying hardware configurations.
       Due to its level of abstraction, \gls{opengl} drivers are very complex and do a significant amount of work on the \gls{cpu} in order to match abstract commands to the hardware.
@@ -211,14 +168,15 @@
       Special flavors of \gls{opengl} exist, such as \gls{gles}, which is a subset of \gls{opengl} to enable hardware-accelerated graphics processing on embedded systems such as smartphones and tablets.
 
       The \gls{d3d} family of \glspl{api} is developed by Microsoft and only supports Microsoft platforms such as the Windows operating system or the Xbox gaming console.
-      The most recent versions of \gls{d3d} are \acrlong{d3d11} and \acrlong{d3d12}.
-      \acrlong{d3d11} provides a \todo{Compared to what? Make this un-ambiguous}higher level of abstraction from the hardware, similar to \gls{opengl}.
+      The most recent versions of \gls{d3d} are \gls{d3d11} and \gls{d3d12}.
+      \gls{d3d11} provides a higher level of abstraction from the hardware than \gls{d3d12}, similar to the relationship between \gls{opengl} and Vulkan.
       It has been around since the release of Windows 7 in 2009.
-      \acrlong{d3d12}, the latest revision of the \gls{d3d} specification released in 2015, is comparable to Vulkan in terms of of hardware abstraction.
+      \gls{d3d12}, the latest revision of the \gls{d3d} specification released in 2015, is comparable to Vulkan in terms of of hardware abstraction.
       It provides much more control to the developer over the hardware.
 
-      \todo[inline]{Mac OS X: Metal}
+      There is also Metal, a graphics \gls{api} developed by \gls{apple}.
+      Similar to Vulkan and \gls{d3d12}, Metal also offers more direct control over the hardware.
+      It is exclusively available on \gls{apple} platforms.
 
-      \todo[inline]{Gaming console graphics libraries?}
-
-      \todo[inline]{OpenCL as compute API}
+      Another \gls{api} is OpenCL also by the \gls{khronos}.
+      OpenCL only offers a compute \gls{api} and no graphics \gls{api}.
