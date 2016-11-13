@@ -15,6 +15,36 @@
 \chapter*{Abstract}
 \label{Abstract}
 
-This is the abstract.
+% \todo[inline]
+% {
+%   New Hardware $\rightarrow$ new APIs.
 
-\lipsum[1-2]
+%   More control of the hardware.
+
+%   Setup of Vulkan dev env.
+
+%   walkthrough of rendering.
+
+%   In the last years graphics hardware changed drastically becoming more and more generalized.
+%   [...]
+%   Traditional graphics APIs were build with the old systems in mind, not considering things like multi-threading, and don't fit the new technological designs, which has massive impact on performance.
+%   [...]
+%   From this the need for newly designed graphics APIs arose.
+%   [...]
+%   One of these is the graphics API Vulkan.
+%   This work gives an overview of the Vulkan graphics API, presents general instructions on how to set up a development environment, and finally analyzes the major features of Vulkan using prototypical programming examples showing the use of the API itself.
+%   [...]
+% }
+
+In recent years, consumer graphics hardware has changed considerably.
+In the past, the hardware consisted only of fixed-function components that performed the necessary computations in a massively parallel manner to transform three-dimensional data to an image displayed on a screen.
+At the same time, APIs to graphics hardware were developed.
+As hardware design changed over the years, mainly to improve on performance, it has also become more generalized and accessible to other kinds of computational tasks\todo{Add ``than computer graphics''?}.
+Traditional APIs had to adjust to these design changes while maintaining compatibility to previously supported designs at the same time.
+This led to an increase in driver complexity ultimately impacting performance in a negative way.
+New graphics APIs were designed to match recent hardware more closely, one of which is the Vulkan graphics API.
+
+In this work, the Vulkan graphics API is presented in three stages.
+At first, an overview of the API itself is provided.
+Afterwards, general instructions on how to set up an environment for developing Vulkan applications are given.
+And finally, the fundamentals of rendering an image using Vulkan are presented with the aid of simplified, prototypical examples.
