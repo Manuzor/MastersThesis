@@ -7,9 +7,11 @@ DescSetLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 VkDescriptorSetLayoutCreateInfo DescLayoutInfo{};
 DescLayoutInfo.bindingCount = 1;
 DescLayoutInfo.pBindings = &DescSetLayoutBinding;
-vkCreateDescriptorSetLayout(Device, &DescLayoutInfo, NULL, &DescriptorSet);
+VkDescriptorSetLayout DescriptorSetLayout;
+vkCreateDescriptorSetLayout(Device, &DescLayoutInfo, NULL, &DescriptorSetLayout);
 
 VkPipelineLayoutCreateInfo PipelineLayoutInfo{};
 PipelineLayoutInfo.setLayoutCount = 1;
-PipelineLayoutInfo.pSetLayouts = DescriptorSet;
+PipelineLayoutInfo.pSetLayouts = DescriptorSetLayout;
+VkPipelineLayout PipelineLayout;
 vkCreatePipelineLayout(Device, &PipelineLayoutInfo, NULL, &PipelineLayout);

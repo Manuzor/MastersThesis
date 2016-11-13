@@ -1,11 +1,11 @@
+VkSemaphore PresentedSemaphore;
+VkSemaphore RenderedSemaphore;
 VkSemaphoreCreateInfo SemaphoreInfo{};
 vkCreateSemaphore(Device, &SemaphoreInfo, nullptr, &PresentedSemaphore);
 vkCreateSemaphore(Device, &SemaphoreInfo, nullptr, &RenderedSemaphore);
 
 while(/* application is running */) {
-  /* Window event handling */
-  /* Input handling */
-  /* Camera update */
+  /* Window event handling, Input handling, Camera update, ... */
   mat4x4 ViewProjectionMatrix = /* ... */;
   for(auto Obj : /* List of objects */)
   {
@@ -18,9 +18,11 @@ while(/* application is running */) {
   /* ... */
 }
 
+uint32_t PresentIndex;
 while(/* application is running */) {
   /* ... */
-  vkAcquireNextImageKHR(Device, Swapchain, -1,
+  uint32_t Timeout = UINT_MAX;
+  vkAcquireNextImageKHR(Device, Swapchain, Timeout,
                         PresentedSemaphore, VK_NULL_HANDLE,
                         &PresentIndex);
   /* ... */
@@ -29,9 +31,9 @@ while(/* application is running */) {
 // Submit command buffer
 while(/* application is running */) {
   /* ... */
-  VkPipelineStageFlags SubmitPipelineStages = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-  auto SubmitInfo = InitStruct<VkSubmitInfo>();
-  SubmitInfo.pWaitDstStageMask = &SubmitPipelineStages;
+  VkSubmitInfo SubmitInfo{};
+  VkPipelineStageFlags DestStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  SubmitInfo.pWaitDstStageMask = &DestStage;
   SubmitInfo.waitSemaphoreCount = 1;
   SubmitInfo.pWaitSemaphores = &PresentedSemaphore;
   SubmitInfo.signalSemaphoreCount = 1;

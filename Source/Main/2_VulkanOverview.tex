@@ -144,15 +144,15 @@
     % If the \lstinline{RESET_COMMAND_BUFFER}\footnote{Full name: \lstinline{VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT}} flag has been set on the pool, an \textit{executable} command buffer may be individually reset by calling \lstinline{vkResetCommandBuffer} without the need to reset the entire pool.
     In addition, with that flag present, a command buffer may even be brought to the \textit{recording} state directly by simply calling \lstinline{vkBeginCommandBuffer} again, discarding all internally buffered commands up to that point.
 
+    There are two types of command buffers called \textit{primary} and \textit{secondary} command buffers.
+    Primary command buffers may be submitted to device queues and are able to execute secondary command buffers.
+    Secondary command buffers can not be submitted directly to device queues, they can only be executed by primary command buffers.
+    Secondary command buffers are also unable to execute other command buffers.
+
   \section{Render Passes}
   \label{sec:RenderPassesOverview}
-    \todo[inline]
-    {
-      Explain subpasses and their relationship with framebuffers, and pipelines.
-      Mention render pass instances that contain other state.
-      Check ``Vulkan in 30 Minutes'' for brief explanations.
-    }
-    \tbd
+    Vulkan defines the concept of \textit{render passes} that describe the kinds of data that are involved when rendering is performed on the \gls{gpu}.
+    It consists of multiple subpasses, descriptions of dependencies between these subpasses, as well as a specification of all targets, called \textit{attachments}, that are involved in the rendering process. Figure~\ref{fig:RenderPassOverview} provides an overview how subpasses are referencing the attachments in the render pass, each requiring the referenced attachment to be in different kinds of formats.
 
     \begin{figure}
       \centering
@@ -162,13 +162,20 @@
       \label{fig:RenderPassOverview}
     \end{figure}
 
+    A render pass is required when recording commands to a command buffer.
+    At some point during command buffer recording, the application calls \lstinline{vkBeginRenderPass} which creates an \textit{instance} of the render pass.
+    This instance stores several other information, such as clearing values, the framebuffer used for rendering, the area on the framebuffer to render to, and more.
+    Command buffer recording is performed on a per-subpass basis, hence each render pass needs at least one subpass, otherwise it would not be possible to record rendering commands.
+
+    Subpasses provide a way to connect different pipelines, which are presented in the next section, in such a way that the output of one subpass may be used as input by another subpass.
+    This can be useful for post-processing, for example.
+    However, in many circumstances, a single subpass is sufficient.
+
   \section{Pipelines}
   \label{sec:Pipelines}
     \todo[inline]
     {
       Describe descriptor-sets, descriptor-pools, etc?
-
-      Also describe uniform buffers and render targets in framebuffer?
 
       Shader stages in general should have been described in chapter 1.
 

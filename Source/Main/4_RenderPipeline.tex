@@ -2,6 +2,7 @@
 
 \chapter{Vulkan Rendering}
 \label{cha:RenderPipeline}
+  \todo[inline, color=red!60]{Rename chapter? Current name matches with the names of the previous chapters.}
   \todo[inline]
   {
     Possible titles:
@@ -13,8 +14,8 @@
     Specific/Concrete Example of a Rendering Pipeline
   }
 
-  \todo[inline]{Image tiling and layout}
-  \todo[inline]{Resource transformations.}
+  \todo[inline]{Image tiling and layout?}
+  \todo[inline]{Resource transformations?}
 
   This chapter provides an overview of the steps required to render an image using the Vulkan graphics \gls{api}.
   Because there are many ways to perform rendering with Vulkan, a framework is defined that constrains the actual work that needs to be done to a comprehensible amount.
@@ -27,6 +28,7 @@
 
   Throughout this chapter, listings are presented that show the usage of select Vulkan commands and data structures that are required for rendering.
   It must be noted, however, that these listings are simplified in order to improve legibility.
+  Tasks that need to be performed, such as memory allocation, may be shown in an abridged form.
 
   \section{Framework}
   \label{sec:Framework}
@@ -64,19 +66,62 @@
       In order for a rendered image to be presented to a window, the swapchain extension\footnote{Full name: \lstinline{VK_KHR_swapchain}} needs to be activated.
       This can be done when creating the device.
       Without this extension, no swapchain can be created for this device, which is necessary to present a rendered image in Vulkan.
-      Note, however, that the swapchain is not created at this point.
+      Note, however, that the swapchain is not automatically created at this point.
       This has to be done explicitly by the application and is explained later.
+
+      \lstinputlisting[
+        label=lst:FindQueueFamilyIndex,
+        caption={Finding a queue family index with both graphics and present capabilities.},
+        style=MyCppFloat,
+        firstline=1,
+        lastline=8,
+        float
+      ]
+      {Main/Listings/CreateDeviceAndQueue.cpp}
 
       In Vulkan, rendering commands are submitted to a device queue.
       For the purposes of this chapter, queues with two specific capabilities are required.
       These capabilities are called the \textit{graphics capability} and the \textit{present capability}.
-      The first specifies whether the queue supports graphics commands such as \lstinline{vkCmdDraw}\todo{Is it important \textbf{how} to get the info about the capabilities? Might be too much detail.}.
+      The first specifies whether the queue supports graphics commands such as \lstinline{vkCmdDraw}.
       The second capability specifies whether \lstinline{vkQueuePresentKHR} is supported on that queue.
       Without both of these capabilities, rendering and presenting an image is not possible.
-      A queue might support both of these capabilities but it is also possible that two separate queues are used for graphics and presenting, respectively\todo{Rephrase?}.
-      Once proper queues have been chosen, a logical device can be created.
-      This logical device will be used for all subsequent Vulkan operations.
-      The queues that were created along with the logical device will be used to submit rendering commands to the \gls{gpu} and to trigger the presentation engine.
+      A queue might support both of these capabilities but it is also possible that two separate queues are used for graphics and presenting, respectively.
+      In this chapter, a single queue with both capabilities is assumed.
+
+      \lstinputlisting[
+        label=lst:DefineQueueCreateInfo,
+        caption={Definition of a queue create info.},
+        style=MyCppFloat,
+        firstline=10,
+        lastline=14,
+        float
+      ]
+      {Main/Listings/CreateDeviceAndQueue.cpp}
+
+      Once a queue with both capabilities has been found, information about an instance of this queue is defined as shown in listing~\ref{lst:DefineQueueCreateInfo}.
+      The index of that queue is used on line~2 to specify which queue to create an instance from.
+      This index will be used throughout this chapter for other kinds of operations.
+      On line~4, the priority of this queue instance is set.
+      Because only a single queue is used in this case, the priority is set to the highest value.
+      Queues are not created explicitly by the application.
+      Instead, queues are created along with the device they belong to.
+
+      \lstinputlisting[
+        label=lst:DeviceCreation,
+        caption={Creation of a device with the swapchain extension as well as the retrieval of a queue from that device.},
+        style=MyCppFloat,
+        firstline=16,
+        lastline=25,
+        float
+      ]
+      {Main/Listings/CreateDeviceAndQueue.cpp}
+
+      Listing~\ref{lst:DeviceCreation} shows the creation of the logical device that will be used for all subsequent Vulkan operations.
+      On lines~1~and~6, the swapchain extension is requested for this device.
+      On line~4, the queue create info is passed.
+      And finally on line~8, the logical device and the queue are created.
+      Line~10 shows how the queue is retrieved from the created device.
+      This queue will be used to submit rendering commands to the \gls{gpu} and for interaction with the presentation engine.
 
     \subsection{Creating a Surface and a Swapchain}
       Now that a device with the enabled swapchain extension is in place, a swapchain can actually be created.
@@ -89,6 +134,9 @@
       A swapchain consists of multiple images.
       These images are managed by the presentation engine.
       The application may require the swapchain to create a certain number of images constrained to a range defined by the surface.
+
+      The exact settings of a swapchain or a surface are not relevant for the purposes of this chapter.
+      Because of that, no listings about the details of creating these objects are presented in this chapter.
 
       \todo[inline]{Move this either to chapter 2 or 3. In this chapter, we mainly care about setting up the swapchain for the framework defined above.}
       The reason why an application may care about the number of swapchain images is rather straight-forward.
@@ -187,9 +235,9 @@
           caption={Creation of the pipeline layout and a descriptor set layout using a previously defined descriptor set layout binding.},
           style=MyCppFloat,
           firstline=7,
-          lastline=15,
+          lastline=17,
           float,
-          emph={vkCreateDescriptorSetLayout, vkCreatePipelineLayout}
+          emph={DescriptorSetLayout, PipelineLayout}
         ]
         {Main/Listings/GraphicsPipelineLayout.cpp}
 
@@ -239,8 +287,8 @@
         On line~4, the format of this vertex attribute is defined.
         Vulkan uses \lstinline{VkFormat} as the type of the vertex attribute format.
         This enumeration is typically only used for images, which is why the format typically reads as if color channel encodings are specified.
-        For example, \lstinline{R8G8B8}\footnote{Full name: \lstinline{VK_FORMAT_R8G8B8_UNORM}} a color encoding that used red, green, and blue channels with 8 bit precision, respectively.
-        Because the only input vertex attribute is a three-dimensional vector of floating point values, the format \lstinline{R32G32B32}\footnote{Full name: \lstinline{VK_FORMAT_R32G32B32_SFLOAT}} is specified which corresponds to three floating point components with 32 bit precision.
+        For example, \lstinline{R8G8B8}\footnote{Full name: \lstinline{VK_FORMAT_R8G8B8_UNORM}} a color encoding that used red, green, and blue channels with 8~bit precision, respectively.
+        Because the only input vertex attribute is a three-dimensional vector of floating point values, the format \lstinline{R32G32B32}\footnote{Full name: \lstinline{VK_FORMAT_R32G32B32_SFLOAT}} is specified which corresponds to three floating point components with 32~bit precision.
         It must be noted that the format may not be chosen arbitrarily.
         Allowed formats need to be queried using the Vulkan \gls{api} call \lstinline{vkGetPhysicalDeviceFormatProperties}.
 
@@ -511,22 +559,132 @@
 
         And finally, the attachment and subpass information defined previously are combined and passed to the appropriate Vulkan command on line~8 in listing~\ref{lst:RenderPassCreation} to create the actual render pass object.
 
-    \subsection{Creating Scene Objects}
-      \label{sss:CreatingSceneObjects}
-      \todo[inline]{Create renderable objects. Needs sampled image, geometry. Mention push constants.}
-      \todo[inline]{Mention the transformation matrix being in a uniform buffer.}
-      \todo[inline]{Descriptor set LAYOUT has already been created for the pipeline layout. Explain and show the actual descriptor set here.}
-      \tbd
+      \subsection{Creating Framebuffers}
+      \label{subsec:CreatingFramebuffers}
+        A framebuffer defines the actual attachments that will be written to during a render pass.
+        For the purposes of this chapter, each framebuffer references a swapchain image and a depth buffer image.
+        Because there is usually more than one swapchain image, more than one framebuffer is required.
+        Otherwise the framebuffer would need to be recreated every time a new swapchain image was acquired.
+        A framebuffer also has dimensions that are defined when creating that framebuffer as shown below.
+        These dimensions usually correspond to the dimensions of the referenced swapchain image.
+
+        \lstinputlisting[
+          label=lst:CreatingFramebuffers,
+          caption={Creation of a set of framebuffers, one for each swapchain image.},
+          style=MyCppFloat,
+          float,
+          emph={Framebuffers}
+        ]
+        {Main/Listings/CreatingFramebuffers.cpp}
+
+        The process of creating the required framebuffers is shown in listing~\ref{lst:CreatingFramebuffers}.
+        At first, a plain array of framebuffer handles is allocated using host memory.
+        This array contains as many elements as there are swapchain images.
+        Line~2 is the beginning of a loop that produces an index for every swapchain image with each iteration.
+        On lines~4--6 the attachments of the framebuffer are defined.
+        The first attachment is an image view to the swapchain image with the given index.
+        The second attachment is the depth buffer that is the same for each framebuffer.
+        It should be noted that the attachments are image \textit{views}, not plain images.
+        Images are typically never used directly in Vulkan but rather referenced via image views that control which portion of the underlying image is used and how it is accessed.
+        The image views used in this chapter all encompass the entirety of the images they reference.
+
+        Following the attachment setup, the actual framebuffer info is constructed starting on line~8.
+        It contains the attachments that were just specified, the render pass this framebuffer will be used for, the dimensions of the framebuffer in terms of a width, height, and layer count.
+        Specifying the render pass at this point is not a hard restriction, it defines the types of render passes this framebuffer will be compatible with.
+        And finally on line~15, a framebuffer is created and stored in the array created before.
+
+      \subsection{Creating Scene Objects}
+        \label{sss:CreatingSceneObjects}
+        \todo[inline]{Mention push constants?}
+
+        When creating scene objects, there are certain facilities that need to be set up on a per-object basis.
+        In the example used throughout this chapter, every object needs to know how it can be translated from an application-specific space to clip space.
+        Using this information, objects may be placed in different locations in the scene.
+        The shader used for rendering them reflects this and is shown in section~\ref{sss:GraphicsPipelineShaderStages}.
+        The descriptor set layout of the vertex shader, explained in section~\ref{sss:GraphicsPipelineLayout}, consists of only a single uniform buffer that contains information specific to an individual scene object.
+        If a single instance of this information was shared among all scene object, they would appear in the same location at once.
+        Thus, a descriptor set, which adheres to the aforementioned descriptor set \textit{layout}, has to be created for each rendered object in the scene.
+
+        The listings presented in this section are specific to each scene object.
+        These listings may be thought of as depicting code inside of a loop that iterates all objects.
+
+        \lstinputlisting[
+          label=lst:AllocateUniformBuffer,
+          caption={Allocation of a buffer object that will only be used as uniform buffer. Details about memory allocation are omitted.},
+          style=MyCppFloat,
+          firstline=1,
+          lastline=9,
+          float,
+          emph={UniformBufferMemory, UniformBuffer}
+        ]
+        {Main/Listings/CreateSceneObjects.cpp}
+
+        The first action to perform is to allocate a buffer for each object.
+        This is shown in listing~\ref{lst:AllocateUniformBuffer}.
+        When creating a buffer, Vulkan needs to know what the buffer will be used for.
+        In this case the buffer will only be used as a uniform buffer object as specified on line~2.
+        Details of allocating the memory for this buffer are omitted.
+        However, for the purposes of this chapter, it is required that the memory is host-visible.
+        Host-visible memory is needed in order to update the data without involving a separate command buffer that would upload and copy data on the device to the target buffer.
+        This is important in the render loop discussed in section~\ref{sec:RenderLoop}.
+        In order to make this buffer available during rendering, it needs to be bound to proper facilities that because buffer objects do not provide information about where or how they are used in a shader.
+        This information is provided by descriptor sets.
+        Every descriptor set is tied to a one or more descriptor set layouts.
+        Only a single layout is used in this case which has been defined in section~\ref{sss:GraphicsPipelineLayout}.
+        Descriptor sets can be bound to a command buffer to be used for a specific graphics pipeline, which is shown later when rendering commands are recorded in section~\ref{sec:BuildCommandBuffers}.
+
+        \lstinputlisting[
+          label=lst:DescriptorPoolCreation,
+          caption={Creation of a descriptor pool which only supports allocating a single uniform buffer descriptor.},
+          style=MyCppFloat,
+          firstline=11,
+          lastline=19,
+          float,
+          emph={DescriptorPool}
+        ]
+        {Main/Listings/CreateSceneObjects.cpp}
+
+        \lstinputlisting[
+          label=lst:DescriptorSetAllocation,
+          caption={Allocation of a descriptor set.},
+          style=MyCppFloat,
+          firstline=21,
+          lastline=26,
+          float,
+          emph={DescriptorSet}
+        ]
+        {Main/Listings/CreateSceneObjects.cpp}
+
+        Descriptor sets are allocated from descriptor pools which also manage the underlying memory used by descriptor sets.
+        The relationship between a descriptor pool and descriptor sets is similar to command pools and command buffers.
+        Compared to command pools, however, descriptor pools are limited to a certain number of descriptor types that can be allocated from it.
+        These limits are defined by the application when a descriptor pool is created as shown in listing~\ref{lst:DescriptorPoolCreation}.
+        On lines~2~and~3, the limit for uniform buffer descriptors is set to allow only a single allocation of that type.
+        This limitation information is then used on line~8 to create the descriptor pool on line~9.
+        The allocation of the descriptor set is shown in listing~\ref{lst:DescriptorSetAllocation}.
+        Tying the descriptor set to a descriptor set layout is shown on line~4.
+
 
   \section{Command Buffer Recording}
   \label{sec:BuildCommandBuffers}
-    \todo[inline]{Command buffer submission. Mention out-of-order execution. Analogous to CPU instruction dispatch.}
-
     Rendering in Vulkan is done by issuing rendering commands.
     These commands are not dispatched to the \gls{gpu} directly but recorded into a \textit{command buffer} which is submitted to a device queue for execution.
+    Submitted commands may be executed out-of-order, i.e. in a different order than they were recorded, if rearranging commands does not affect the resulting data.
+    The \gls{driver} may do this in order to improve performance.
+    This is analogous to how a compiler may rearrange instructions when performing optimizations to the code if this operation produces compatible results.
     Command buffers have been introduced in chapter~\ref{cha:VulkanOverview}, specifically section~\ref{sec:CommandBuffers}.
 
-    Command buffer objects are created using \textit{command pools}.
+    \lstinputlisting[
+      label=lst:CreateCommandBuffer,
+      caption={Creation of a command pool and allocation of a command buffer.},
+      style=MyCppFloat,
+      firstline=1,
+      lastline=9,
+      float
+    ]
+    {Main/Listings/CreateCommandBuffer.cpp}
+
+    Command buffer objects are created using \textit{command pools} as shown in listing~\ref{lst:CreateCommandBuffer}.
     Command pools manage the memory of the command buffers created from them.
     A command buffer is either in the \textit{initial}, \textit{recording}, or \textit{executable} state.
     The contents of a command buffer are immutable for as long as that command buffer is \textit{executable}.
@@ -558,8 +716,9 @@
     This means that these values may be different for each recorded command buffer.
     If values are stored in the push constant block that change every frame, such as the model-view-projection matrix of a scene object, command buffers need to be recorded every frame.
 
-    \subsection{Rendering a Scene Object}
-      In this section, the necessary steps to record rendering commands for all scene objects are shown and explained.
+    \todo[inline]{Put a subsection here?}
+    % \subsection{Rendering a Scene Object}
+      % In this section, the necessary steps to record rendering commands for all scene objects are shown and explained.
 
       \lstinputlisting[
         label=lst:BeginCommandBuffer,
@@ -624,7 +783,8 @@
       A render area that is larger than the framebuffer is invalid.
 
       When beginning a render pass, Vulkan also needs to be told about whether secondary command buffers will be used or not.
-      For the purposes of this chapter, only a single primary command buffer is used in a single subpass, which is why the render pass is instructed to inline render commands directly in the primary command buffer, disallowing execution of secondary command buffer.\todo{Refer to where primary and secondary command buffers are explained.}{}
+      For the purposes of this chapter, only a single primary command buffer is used in a single subpass, which is why the render pass is instructed to inline render commands directly in the primary command buffer, disallowing execution of secondary command buffer.
+      More information about command buffers was given in section~\ref{sec:CommandBuffers}.
 
       \todo[inline]
       {
@@ -690,6 +850,10 @@
       The command buffer is now ready for submission to a queue and execution on the \gls{gpu}.
       This is covered in section~\ref{sec:RenderLoop}.\todo{More verbose conclusion paragraph? Or remove it?}{}
 
+      In the process presented above, only a single command buffer was recorded.
+      For small amounts of commands like in this case, it might be beneficial to allocate a command buffer for each framebuffer and perform the recording for each of them.
+      This avoids re-recording of command buffers every time a new swapchain image is acquired.
+
 
   \section{Rendering Loop}
   \label{sec:RenderLoop}
@@ -707,7 +871,7 @@
       caption={Creation of two semaphores used in the render loop.},
       style=MyCppFloat,
       firstline=1,
-      lastline=3,
+      lastline=5,
       float
     ]
     {Main/Listings/RenderLoop.cpp}
@@ -716,31 +880,64 @@
       label=lst:RenderLoop_ShaderDataUpload,
       caption={Creation of two semaphores used in the render loop.},
       style=MyCppFloat,
-      firstline=5,
-      lastline=19,
+      firstline=7,
+      lastline=22,
       float
     ]
     {Main/Listings/RenderLoop.cpp}
+
+    After the camera has been updated, the uniform buffers of each object in the scene have to be updated as well.
+    Listing~\ref{lst:RenderLoop_ShaderDataUpload} shows the loop in which this is done.
+    For each object, the model-view-projection (MVP) is computed.
+    Afterwards, the buffer memory is mapped to an actual memory location in \gls{cpu} accessible \gls{ram}.
+    The computed MVP matrix is then copied to the mapped memory region on line~12.
+    On line~13, the memory mapping is undone to allow the \gls{driver} to reuse the memory region.
 
     \lstinputlisting[
       label=lst:RenderLoop_AcquireNextImage,
       caption={Creation of two semaphores used in the render loop.},
       style=MyCppFloat,
       firstline=21,
-      lastline=27,
+      lastline=29,
       float
     ]
     {Main/Listings/RenderLoop.cpp}
 
+    The following step is to acquire the next free image from the presentation engine to be used for rendering.
+    The necessary function call is shown in listing~\ref{lst:RenderLoop_AcquireNextImage}.
+    Because this function may potentially block for as long as no swapchain image is available, it accepts a timeout argument.
+    In this case, the maximum value for an unsigned 32~bit integer is passed, effectively waiting as long as possible for the function to return.
+    This function also accepts a semaphore as fourth argument.
+    This semaphore is needed because the presentation engine might not be finished reading from the image yet.
+    Once the presentation engine is done processing the image, the semaphore is signaled.
+
     \lstinputlisting[
       label=lst:RenderLoop_QueueSubmission,
-      caption={Creation of two semaphores used in the render loop.},
+      caption={Submission of a command buffer to the device queue for rendering. Several semaphore are installed to ensure proper synchronization between the host and the device.},
       style=MyCppFloat,
-      firstline=30,
-      lastline=43,
+      firstline=32,
+      lastline=45,
       float
     ]
     {Main/Listings/RenderLoop.cpp}
+
+    The next task depends on the exact setup of the system.
+    If command buffers were created, one for each framebuffer, then the one corresponding to the acquired image may directly be submitted.
+    This is assumed in listing~\ref{lst:RenderLoop_QueueSubmission}.
+    If, on the other hand, only a single command buffer was allocated, it needs to be re-recorded at this point.
+    Ideally, the application has put everything that is described in section~\ref{sec:BuildCommandBuffers} into a function which could now be called.
+    However, this means that the \gls{driver} has to evaluate and upload the command buffer all over again.
+    That is why pre-recording command buffers per framebuffer might be beneficial.
+    The best course of action may vary and is a matter of performance evaluations on a per-application and possibly even per-platform basis.
+
+    The command buffer that is in \textit{executable} state is now submitted to the queue for execution in listing~\ref{lst:RenderLoop_QueueSubmission}.
+    When submitted command buffers, a number of semaphores may be passed that are used to ensure proper synchronization between the device and the host.
+    On line~7, the semaphore that was used when the current swapchain image was acquired is used.
+    This semaphore will be waited on in the stages specified on line~5.
+    In this particular case it is set up so that color attachment writes are only performed after the presentation engine no longer reads from the image, thus properly synchronizing read and write access to the image.
+    The semaphore on line~9 will be signaled once submitted command buffers have finished execution.
+    This semaphore is used when presenting the image, which is explained next.
+
 
     \todo[inline]{Next action is command buffer submission. Mention that it must be re-recorded here is push constants would be used.}
 
@@ -748,25 +945,37 @@
       label=lst:RenderLoop_QueuePresent,
       caption={Creation of two semaphores used in the render loop.},
       style=MyCppFloat,
-      firstline=45,
-      lastline=55,
+      firstline=47,
+      lastline=57,
       float
     ]
     {Main/Listings/RenderLoop.cpp}
 
-    \lstinputlisting[
-      label=lst:RenderLoop_QueueWaitIdle,
-      caption={Creation of two semaphores used in the render loop.},
-      style=MyCppFloat,
-      firstline=57,
-      lastline=61,
-      float
-    ]
-    {Main/Listings/RenderLoop.cpp}
+    Once command buffers have been submitted, the image they produce is presented to the application window.
+    This process is shown in listing~\ref{lst:RenderLoop_QueuePresent}.
+    First, the swapchain to perform the presentation with is specified on line~5.
+    On line~6, the index of the image to present is given.
+    Afterwards, on line~8, a semaphore is supplied.
+    This semaphore will be waited on by the presentation engine before performing any reads on the specified image.
+    It is the same semaphore shown earlier that is signaled once the submitted command buffers finished execution.
+    In other words, the presentation engine waits until the \gls{gpu} has finished writing to the image before reading from the image in order to present it.
+    On line~9, the actual present call is performed.
 
-  \section{Window Resizing}
-    \todo[inline]{Should I actually add this section? (Only if there's enough time.)}
-    \tbd
+    % \lstinputlisting[
+    %   label=lst:RenderLoop_QueueWaitIdle,
+    %   caption={Creation of two semaphores used in the render loop.},
+    %   style=MyCppFloat,
+    %   firstline=59,
+    %   lastline=63,
+    %   float
+    % ]
+    % {Main/Listings/RenderLoop.cpp}
+
+
+
+  % \section{Window Resizing}
+  %   \todo[inline]{Should I actually add this section? (Only if there's enough time.)}
+  %   \tbd
 
   \section{Multi-threaded Rendering}
   \label{sec:MultithreadedRendering}
