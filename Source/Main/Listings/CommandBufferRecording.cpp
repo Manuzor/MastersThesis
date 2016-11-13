@@ -13,7 +13,7 @@ Scissor.extent = { Viewport.width, Viewport.height };
 vkCmdSetScissor(CmdBuffer, 0, 1, &Scissor);
 
 VkClearValue ClearValues[2]{};
-ClearValues[0].color.float32 = { 1.0f, 0.0f, 0.0f, 1.0f }; // Solid red
+ClearValues[0].color.float32 = { 0.3f, 0.3f, 0.3f, 1.0f }; // Solid dark gray
 ClearValues[1].depthStencil.depth = 1.0f;
 
 VkRenderPassBeginInfo PassBeginInfo{};

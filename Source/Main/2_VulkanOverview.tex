@@ -39,14 +39,6 @@
 
     Vulkan makes use of \textit{handle} types allowing the \gls{application} to track objects created with the API. The first object that has to be created is a Vulkan instance. The Vulkan instance can be used to query available physical \glspl{device} that provide Vulkan support. These physical \glspl{device} can be queried for certain capabilities, such as supported image formats and hardware features, to aid in deciding which physical device to use for the \gls{application}. A physical device can subsequently be used to create a logical device, or just device. The number of \glspl{device} created from a physical device is not limited. When a device is created, all queues associated with it are created as well. This is why there is no \lstinline{vkCreateQueue} but rather \lstinline{vkGetQueue} command. Among other things, \glspl{device} are used to allocate Vulkan objects or GPU memory. Changes made on Vulkan objects do not have global side-effect observable with the regular Vulkan API\todo{Elaborate. Contrast with OpenGL}. However, \glspl{driver} and Vulkan layers or extensions are free to modify their own state across Vulkan object boundaries.\todo{Redundant sentence? This should be a given.}
 
-    % \begin{figure}
-    %   % \includegraphics{Main/Images/VulkanInitialization}
-    %   \missingfigure{Initializing a Vulkan device and retrieving the queue to support the previous paragraph.}
-    %   \centering
-    %   \caption{}
-    %   \label{fig:VulkanInitialization}
-    % \end{figure}
-
     \todo[inline]{Describe/mention GPU queues in the introduction chapter.}
 
     Once a device handle has been acquired, the \gls{application} can create a swapchain to establish a connection between a specific queue on the device and a platform specific presentation engine. A swapchain contains a number of \textit{presentation images}. Usually, these images are used to store the results of the graphics pipelines. At the time these images are presented, they have to be in a special layout reserved for presentation purposes.
@@ -70,14 +62,6 @@
     Vulkan is designed to be extensible by thirdparty \glspl{application}. The two mechanisms provided are called layers and extensions.
 
     A layer in Vulkan can be thought of as an observer to the API calls done by the \gls{application}. It does not add new types or commands the \gls{application} can use directly.\todo{Elaborate more to make it crystal clear. Make sure to mention no layers are required to be active for Vulkan to work properly.}
-
-    % \begin{figure}
-    %   \centering
-    %   % \includegraphics{Main/Images/VulkanLayers}
-    %   \missingfigure{Illustration of Vulkan with some layers between it and the application.}
-    %   \caption{Illustration of the presentation engine being connected to a device using a swapchain.}
-    %   \label{fig:VulkanLayers}
-    % \end{figure}
 
     The \todo{Reference}LunarG SDK, for example, comes with a set of layers to validate usage of the Vulkan API. This is extremely useful during development as it allows the \gls{application} to focus on their code rather than the perfect use of the Vulkan API. It should also be noted that bare Vulkan, without any validation layers enabled, does not do any error checking. When the \gls{application} passes an invalid combination of flags to some Vulkan function, it is undefined behavior and has to be corrected by the \gls{application}.
 
@@ -156,7 +140,6 @@
 
     \begin{figure}
       \centering
-      % \missingfigure{Main/Images/RenderPassOverview}
       \includegraphics[width=\textwidth]{Main/Images/RenderPassOverview}
       \caption{Overview of a render pass that consists of multiple attachments and subpasses that reference these attachments.}
       \label{fig:RenderPassOverview}
@@ -182,15 +165,17 @@
       Explain "Binding Points" somewhere.
     }
 
-    \begin{figure}
+    % \begin{figure}
+    \begin{wrapfigure}{r}{0.45\textwidth}
       \centering
-      \missingfigure{Main/Images/GraphicsPipeline}
-      % \includegraphics[width=\textwidth]{Main/Images/GraphicsPipeline}
-      \caption{Overview of the components of a graphics pipeline.}
+      \includegraphics[width=0.43\textwidth]{Main/Images/GraphicsPipeline}
+      \caption{Overview of some of the components of a graphics pipeline.}
       \label{fig:GraphicsPipeline}
-    \end{figure}
+    \end{wrapfigure}
+    % \end{figure}
 
-    Vulkan uses the concept of pipelines to describe how work is performed on the GPU. It supports compute and graphics pipelines. The compute pipeline consists only of a single programmable stage. The graphics pipeline, however, is considerably more complex. \todo{What are the fixed function stages?}It has multiple fixed function stages and five programmable stages, called shader stages. Some of the fixed-function stages have a configurable state that can be manipulated by the \gls{application}. For example, the rasterization stage can be configured to interpret incoming vertex data as either a list of points, lines, or filled polygons with more than two sides.
+    Vulkan uses the concept of pipelines to describe how work is performed on the GPU. It supports compute and graphics pipelines. The compute pipeline consists only of a single programmable stage. The graphics pipeline, however, is considerably more complex. \todo{What are the fixed function stages?}It has multiple fixed function stages and five programmable stages, called shader stages. Some of the fixed-function stages have configurable state that can be manipulated by the \gls{application}. For example, the rasterization stage can be configured to interpret incoming vertex data as either a list of points, lines, or filled polygons with more than two sides.
+    Figure~\ref{fig:GraphicsPipeline} provides an overview of some of the components of the graphics pipeline.
 
     Programs that are designed for use in shader stages are called shaders. Shaders are supplied to Vulkan in \gls{spirv} format. \gls{spirv} is a high-level graphics and parallel compute programming language provided in \todo{Mention need to convert from GLSL or others to SPIR-V}binary form. The specification of \gls{spirv} is entirely maintained by the the Khronos Group \cite{spirvspecprov}. The five shader stages are listed below.
 
@@ -221,14 +206,6 @@
 
       \todo[inline]{Describe driver syncing the pipeline cache. Ref to GDC talk if it's not in the vkspec?}
 
-      % \begin{figure}
-      %   \centering
-      %   % \includegraphics{Main/Images/PipelineCache}
-      %   \missingfigure{Illustration of how an \gls{application} creates a bunch of pipelines using a pipeline cache, saves that cache to disk, terminates, and loads that cache the next time the \gls{application} is started again, feeding that cache to Vulkan in order to create pipelines from it.}
-      %   \caption{Example of an \gls{application} using the pipeline cache.}
-      %   \label{fig:PipelineCache}
-      % \end{figure}
-
       Creating pipeline objects is a fairly heavyweight operation.
       To speed up pipeline creation, Vulkan provides what is called a pipeline cache.
       When creating a pipeline, such a pipeline cache object can be supplied by the \gls{application}.
@@ -237,7 +214,6 @@
       If no such pipeline is found in the pipeline cache, a new pipeline is created and written to the pipeline cache.
       Vulkan provides a command to retrieve the serialized pipeline cache, which can be saved by the \gls{application} in whatever location is most convenient to it.
       This serialized pipeline cache can then be fed back to Vulkan at a later time.
-      % See figure~\ref{fig:PipelineCache} for an illustration of this process.
 
   \section{Synchronization}
     \todo[inline]{Maybe reduce the use of `Vulkan was designed to' throughout the document?}
