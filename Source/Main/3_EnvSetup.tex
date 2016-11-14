@@ -2,7 +2,7 @@
 
 \chapter{Vulkan Development Environment}
 \label{cha:EnvSetup}
-  \todo[inline]{Proper introduction to the chapter}
+  % \todo[inline]{Proper introduction to the chapter}
 
   % This chapter is a guide to setting up a Vulkan development environment in the context of \gls{ccpp} on a \gls{windows} operating system.
 
@@ -23,8 +23,6 @@
     In order to support Vulkan, hardware vendors have to provide driver implementations for the platform the user is targeting.
     These driver implementations are called \acrfullpl{icd}.
     How an \gls{icd} is chosen by the application is described in section~\ref{sec:VulkanLoader}.
-
-    \todo[inline]{Check the following par.}
 
     At the time of writing, \gls{amd}, \gls{nvidia}, as well as \gls{intel} are known to provide Vulkan-enabled hardware and drivers for several operating systems~\cite{practicalvkgdc16}.
     In the early days of Vulkan, \gls{amd} and \gls{nvidia} only provided beta-quality \glspl{driver} but have released consumer-grade versions by now.
@@ -206,7 +204,7 @@
     \todo{Describe what exactly is required. layout=N, binding=N, set=N, \#extensionm, ...}
     It requires the \gls{glsl} source code to be written in a specific way in order to be converted to \gls{spirv}.
 
-    \todo[inline]{explain that shaders can be converted in different shader stages, e.g. vertex-, fragment-stage, hence the file endings and filenames}
+    % \todo[inline]{explain that shaders can be converted in different shader stages, e.g. vertex-, fragment-stage, hence the file endings and filenames}
 
     \lstinputlisting[
       label=lst:glslangcmd,
@@ -236,7 +234,8 @@
     It also provides a layer which combines all debugging layers in one layer in an optimal order called \lstinline{standard_validation}\footnote{Full name: \lstinline{VK_LAYER_LUNARG_standard_validation}}.
     All these debugging layers, including the standard validation layer, are explicit layers that have to be activated when creating a Vulkan instance.
     Layers have been described in section~\ref{sec:LayersAndExtensions} and the careful reader might have noticed that layers do not get back in touch with the Vulkan application directly.
-    \todo{Find out where this extension is coming from? i.e. from which layer. Seems like all layers provide it?!}For this purpose the \lstinline{VK_EXT_debug_report} extension is used.
+    % \todo{Find out where this extension is coming from? i.e. from which layer. Seems like all layers provide it?!}
+    For this purpose the \lstinline{VK_EXT_debug_report} extension is used.
     This extension provides additional Vulkan commands that can be used to supply a callback that will be triggered whenever a layer, that supports the debugging interface, needs to communicate back to the Vulkan application.
     For example, when a validation layer detects erroneous input, it will invoke the supplied debug callback and inform the application of invalid behavior.
 
@@ -248,7 +247,7 @@
     This layer is used to capture \gls{api} calls and track state in that way.
     In order for RenderDoc to work, it has to be hooked up with the Vulkan application that is to be inspected.
     Once hooked up, RenderDoc is rendering a small amount of statistics, such as current framerate, in the upper left corner of the applications window.
-    It also shows which button to press to instruct RenderDoc to \todo{elaborate on the term "capture" and what it actually does}capture a frame.
+    It also shows which button to press to instruct RenderDoc to capture a frame.
     Once a frame was captured it can be inspected inside of the RenderDoc UI.
     This captured frame contains, among other things, the state of the frame buffers but also records \gls{api} calls, shows their \gls{cpu} execution time, shows bound textures for active shaders, and more.
 
@@ -273,7 +272,7 @@
     The Vulkan \gls{api} itself also provides so-called \textit{timestamp queries}.
     These queries can be used to insert special query commands into a command buffer to write a timestamp value into a \textit{query pool}.
     The results recorded in the query pool can then be read from the host at certain times.
-    \todo{Is this comprehensive enough?}This enables application developers to implement their own internal \acrshort{gpu} profiling system by taking time samples at application-defined points within command buffers.
+    This enables application developers to implement their own internal \acrshort{gpu} profiling system by taking time samples at application-defined points within command buffers.
     See section~16.5 of the Vulkan specification~\cite{vkspec} for details.
 
     % \todo{Better phrasing? Make it more formal.}Vulkan has only been around for a short while now.

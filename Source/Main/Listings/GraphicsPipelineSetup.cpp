@@ -141,6 +141,6 @@ GraphicsPipelineInfo.pDynamicState = &DynamicState;
 GraphicsPipelineInfo.layout = PipelineLayout;
 GraphicsPipelineInfo.RenderPass = RenderPass;
 GraphicsPipelineInfo.subpass = 0;
-vkCreateGraphicsPipelines(Device, nullptr,
+vkCreateGraphicsPipelines(Device, VK_NULL_HANDLE,
                           1, &GraphicsPipelineCreateInfo,
                           nullptr, &GraphicsPipeline);

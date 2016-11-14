@@ -2,17 +2,14 @@
 
 \chapter{Vulkan API Overview/Workflow}
 \label{cha:VulkanOverview}
-  \todo[inline]
-  {
-    Also mention that many details are being omitted in this work/paper because it would be too much information. So make it clear this is not a comprehensive documentation of the API.
-  }
-
-  This chapter provides an overview of the Vulkan \gls{api} and explains some concepts in greater detail. Most of the information provided in this chapter are based on the Vulkan 1.0 specification~\cite{vkspec}.
+  This chapter provides an overview of the Vulkan \gls{api} and explains some concepts in greater detail.
+  It does not cover the entire feature set of Vulkan.
+  Most of the information provided in this chapter are based on the Vulkan 1.0 specification~\cite{vkspec}.
 
   The Vulkan \gls{api}, at its core, is agnostic of the operating system it runs on.
   However, an interface for extending Vulkan is provided that can be leveraged to provide additional functionality to perform platform specific tasks. This is explained in more detail later in this chapter as well as in chapter~\ref{cha:EnvSetup}.
 
-  There are certains terms used throughout this document that refer to specific things in the context of Vulkan development.
+  There are certain terms used throughout this document that refer to specific things in the context of Vulkan development.
   The application that interacts with Vulkan, for instance, is commonly referred to as the \textit{host} or the \textit{host-application}.
   The term \textit{device} referes to the \gls{gpu} and is represented in Vulkan by an object of the same name, which is explained later in this chapter.
   The term \textit{\gls{driver}} refers to the implementation of the Vulkan \gls{api} the application interacts with and is responsible for executing Vulkan \gls{api} commands.
@@ -86,15 +83,13 @@
 
   \section{Layers and Extensions}
   \label{sec:LayersAndExtensions}
-    \todo[inline]{Layers are instance-only, extensions are both on the instance-level as well as the device-level.}
-
     Vulkan is designed to be extensible by thirdparty \glspl{application}. The two mechanisms provided are called layers and extensions.
 
-    A layer in Vulkan can be thought of as an observer to the API calls done by the \gls{application}. It does not add new types or commands the \gls{application} can use directly.\todo{Elaborate more to make it crystal clear. Make sure to mention no layers are required to be active for Vulkan to work properly.}
+    A layer in Vulkan can be thought of as an observer to the API calls done by the \gls{application}.
+    It does not add new types or commands the \gls{application} can use directly.
+    Layers are not required for Vulkan to function properly, they add to and observe existing functionality instead.
 
-    The \todo{Reference}LunarG SDK, for example, comes with a set of layers to validate usage of the Vulkan API. This is extremely useful during development as it allows the \gls{application} to focus on their code rather than the perfect use of the Vulkan API. It should also be noted that bare Vulkan, without any validation layers enabled, does not do any error checking. When the \gls{application} passes an invalid combination of flags to some Vulkan function, it is undefined behavior and has to be corrected by the \gls{application}.
-
-    \todo[inline]{Maybe rephrase the paragraphs above by first explaining the concepts and then giving examples in a separate paragraphs.}
+    The LunarG SDK~\cite{lunargvulkansdk}, for example, comes with a set of layers to validate usage of the Vulkan API. This is extremely useful during development as it allows the \gls{application} to focus on their code rather than the perfect use of the Vulkan API. It should also be noted that bare Vulkan, without any validation layers enabled, does not do any error checking. When the \gls{application} passes an invalid combination of flags to some Vulkan function, it is undefined behavior and has to be corrected by the \gls{application}.
 
     As opposed to layers, extensions are able to provide new or add to existing functionality. The motivation for extensions is to keep the Vulkan core functionality small and provide specific functionality via such extensions. In fact, the Khronos Group provides built-in extensions for both common and platform specific functionality.
 
@@ -259,8 +254,6 @@
       \caption{Overview of a render pass instance with a framebuffer and bound pipelines.}
     \end{figure}
 
-    \todo[inline]{Describe figure~\ref{fig:RenderPassInstanceSample} here. This mixes the render pass topic in a bit but that should be ok.}
-
     Pipelines are tightly connected to render passes.
     In fact, when creating a pipeline, the index of the subpass the pipeline will be executed in has to be known already.
     Render pass objects, as explained earlier in section~\ref{sec:RenderPassesOverview}, contain information about the dependencies between pipelines as well as information about the framebuffer attachments.
@@ -341,8 +334,6 @@
 
     \subsection{Barriers}
     \label{sub:Barriers}
-      \todo[inline]{Restructure paragraphs.
-      Maybe use \textit{description} environment.}
       Barriers are used exclusively with commands recorded to command buffers.
       There are two kinds of barriers in Vulkan.
       The first kind is called an execution barrier which are used to create explicit dependencies on the completion of specific commands.
@@ -382,7 +373,8 @@
       \subsubsection{Image Memory Barriers}
         Image memory barriers are similar to buffer memory barriers.
         They can be used to transfer ownership of image regions to another queue family, modify access flags, and change the image layout.
-        An image region is specified differently from a buffer region because of the fact that images need not be stored linearly in \gls{device} memory\todo{Refer to wherever image tiling is explained}.
+        An image region is specified differently from a buffer region because of the fact that images need not be stored linearly in \gls{device} memory.
+        More information about images is provided in section~\ref{sec:MemoryManagement}.
 
         Transferring ownership of an image region is only possible if the image was set up accordingly at creation time.
         Modifying access flags has the same effect as with modifying access flags on a buffer region.

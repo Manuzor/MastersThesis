@@ -21,7 +21,7 @@
 
   \section{Framework}
   \label{sec:Framework}
-    \todo{Make sure to explain that the image is created only in a single step.}A simple forward renderer is assumed which means that rendering is performed to an image that is presented as soon as possible.
+    A simple forward renderer is assumed which means that rendering is performed in a way that produces the presenteable image in a single step.
     A camera is used to observe the scene.
     This camera is not fixed which means it may change position or rotation over time, changing how the scene is portrayed.
     The rendered scene will contain a fixed number of objects.
@@ -328,7 +328,7 @@
         Both the viewport and scissor define a non-rotated rectangular region within the framebuffer that will be written to by shaders.
         Rendering results that would usually write to the entire extent of the framebuffer will be scaled down and displaced to fit into the viewport and cropped to be inside the scissor.
         See figure~\ref{fig:ViewportScissorSample} for an illustration of this.
-        In this chapter, only one of each is used that \todo{encompass?}include the entire framebuffer, respectively.
+        In this chapter, only one of each is used that include the entire framebuffer, respectively.
 
         \begin{figure}
           \includegraphics[width=0.666\textwidth]{Main/Images/ViewportScissorSample}
@@ -548,7 +548,7 @@
 
     \subsection{Creating the Graphics Pipeline}
     \label{sub:ActualGraphicsPipelineCreation}
-      In the previous section\todo{`sections' if they are moved up by a level}, the graphics pipeline was prepared to be created.
+      In the previous section, the graphics pipeline was prepared to be created.
       Listing~\ref{lst:FinallyCreatingTheGraphicsPipeline} shows how all prepared data is combined in a single struct to finally produce a graphics pipeline object on line~16.
 
       \lstinputlisting[
@@ -563,7 +563,7 @@
       {Main/Listings/GraphicsPipelineSetup.cpp}
 
       The second parameter passed to \lstinline{vkCreateGraphicsPipelines} is the pipeline cache that was mentioned in section~\ref{subsec:PipelineCache}.
-      In this case a \lstinline{nullptr} value is passed, thus no pipeline cache is used.
+      In this case a \lstinline{VK_NULL_HANDLE} value is passed, thus no pipeline cache is used.
       If a valid pipeline cache object is passed, Vulkan would first check this cache for existing pipelines that match the input configuration.
       This is very likely to be faster than creating an entirely new pipeline.
       The exact algorithms and data structures used for managing pipeline caches are not defined by the Vulkan specification which means that \glspl{driver} are free to employ their own processing schemes.
@@ -903,7 +903,7 @@
     The necessary function call is shown in listing~\ref{lst:RenderLoop_AcquireNextImage}.
     Because this function may potentially block for as long as no swapchain image is available, it accepts a timeout argument.
     In this case, the maximum value for an unsigned 32~bit integer is passed, effectively waiting as long as possible for the function to return.
-    \todo[fancyline]{Show how semaphores are created? It's not really relevant...}
+    \todo[fancyline]{Show how semaphores are created? It's neither particularly relevant nor very interesting...}
     This function also accepts a semaphore as fourth argument.
     This semaphore is needed because the presentation engine might not be finished reading from the image yet.
     Once the presentation engine is done processing the image, the semaphore is signaled.
