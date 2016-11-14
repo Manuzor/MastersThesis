@@ -26,9 +26,9 @@
 
     \todo[inline]{Check the following par.}
 
-    At the time of writing, \gls{amd} and \gls{nvidia} are known to provide hardware and compatible drivers supporting Vulkan for use on \gls{windows}.
-    In the early days of Vulkan, these companies only provided beta-quality \glspl{driver} but have released consumer-grade versions by now.
-    \gls{intel} also provides beta-quality drivers for Windows but does not intend to release consumer-grade \glspl{driver} for the time being~\cite{intelvulkandriversonwindows}.
+    At the time of writing, \gls{amd}, \gls{nvidia}, as well as \gls{intel} are known to provide Vulkan-enabled hardware and drivers for several operating systems~\cite{practicalvkgdc16}.
+    In the early days of Vulkan, \gls{amd} and \gls{nvidia} only provided beta-quality \glspl{driver} but have released consumer-grade versions by now.
+    \gls{intel}, on the other hand, only provides beta-quality \glspl{driver} for Windows operating systems and does not intend to release consumer-grade \glspl{driver} on that platform for the time being~\cite{intelvulkandriversonwindows}, although drivers for Linux are available.
 
   \section{Vulkan Header}
   \label{sec:VulkanHeader}
@@ -61,7 +61,7 @@
     This additional layer of abstraction is useful to generate the Vulkan API in different ways.
     For example, when using \gls{cpp}, structures and functions may be reorganized into classes and methods instead, resulting in a code style that is more common in \gls{cpp}.
     It also makes it easier to generate native bindings for other programming languages, such as \gls{csharp} or \gls{python}.
-    Line 10 of listing~\ref{lst:VkFenceCreateInfo_vkxml} shows the xml attribute \lstinline{optional="true"}.
+    Line~10 of listing~\ref{lst:VkFenceCreateInfo_vkxml} shows the xml attribute \lstinline{optional="true"}.
     It basically states that it is allowed to pass a flags value of zero, i.e. no flags are set.
     Such an annotation would not be possible in regular C code.
     This is the main advantage of expressing the Vulkan API in this abstract format.
@@ -69,8 +69,6 @@
 
   \section{Vulkan Common Loader}
   \label{sec:VulkanLoader}
-    \todo[inline]{How to handle overlapping topics discussed earlier, e.g. layers and extensions? Shorten in chapter 2 to minimize redundancy}
-
     \begin{figure}
       \includegraphics[width=\textwidth]{Main/Images/VulkanLoaderInstanceLayers}
       \centering
@@ -90,7 +88,7 @@
     It can be found in the Khronos Vulkan Registry~\cite{vulkanregistry}.
     It is written in \gls{c} and can be used by application developers either as a statically or dynamically linked library.
     It ensures that multiple \glspl{icd} can be installed on the same system without interfering with each other.
-    It is also responsible for managing optional modules, called \textit{layers}.
+    It is also responsible for managing optional modules, called \textit{layers} which have been introduced in chapter~\ref{cha:VulkanOverview}.
     These layers are implemented as software libraries.
     There are explicit and implicit layers.
     Explicit layers can only be enabled when the Vulkan application requests these layers explicitly.
@@ -99,88 +97,88 @@
 
     \subsection{Interaction with an ICD}
 
-    As explained in section~\ref{sec:WorkflowAndPatterns}, the first Vulkan object that has to be created by every application is the Vulkan instance.
-    This instance can be used to query all layers that are available for that Vulkan instance.
-    In this section, the process of loading Vulkan commands and interacting with the \gls{driver} and all layers in-between is looked at in more detail.
+      As explained in section~\ref{sec:WorkflowAndPatterns}, the first Vulkan object that has to be created by every application is the Vulkan instance.
+      This instance can be used to query all layers that are available for that Vulkan instance.
+      In this section, the process of loading Vulkan commands and interacting with the \gls{driver} and all layers in-between is looked at in more detail.
 
-    \lstinputlisting[
-      label=lst:VulkanFunctionLoading,
-      caption={Pseudocode for loading different Vulkan functions using the common loader module on a Win32 platform.},
-      style=MyCppFloat,
-      float,
-      emph={vkGetInstanceProcAddr, vkGetDeviceProcAddr}
-    ]
-    {Main/Listings/VulkanFunctionLoading.txt}
+      \lstinputlisting[
+        label=lst:VulkanFunctionLoading,
+        caption={Pseudocode for loading different Vulkan functions using the \gls{vkloader} module on a Win32 platform.},
+        style=MyCppFloat,
+        float,
+        emph={vkGetInstanceProcAddr, vkGetDeviceProcAddr}
+      ]
+      {Main/Listings/VulkanFunctionLoading.txt}
 
-    \lstinputlisting[
-      label=lst:VkInstanceCreateInfo,
-      caption={Definition of the \lstinline{VkInstanceCreateInfo} structure.},
-      style=MyCppFloat,
-      float,
-      emph={ppEnabledLayerNames, ppEnabledExtensionNames}
-    ]
-    {Main/Listings/VkInstanceCreateInfo.txt}
+      \lstinputlisting[
+        label=lst:VkInstanceCreateInfo,
+        caption={Definition of the \lstinline{VkInstanceCreateInfo} structure.},
+        style=MyCppFloat,
+        float,
+        emph={ppEnabledLayerNames, ppEnabledExtensionNames}
+      ]
+      {Main/Listings/VkInstanceCreateInfo.txt}
 
-    \lstinputlisting[
-      label=lst:VkDeviceCreateInfo,
-      caption={Definition of the \lstinline{VkDeviceCreateInfo} structure.},
-      style=MyCppFloat,
-      float,
-      emph={ppEnabledExtensionNames}
-    ]
-    {Main/Listings/VkDeviceCreateInfo.txt}
+      \lstinputlisting[
+        label=lst:VkDeviceCreateInfo,
+        caption={Definition of the \lstinline{VkDeviceCreateInfo} structure.},
+        style=MyCppFloat,
+        float,
+        emph={ppEnabledExtensionNames}
+      ]
+      {Main/Listings/VkDeviceCreateInfo.txt}
 
-    In addition to what has been described so far, a layer is also able to provide several Vulkan \textit{extensions}.
-    These extensions may define additional Vulkan commands that can be queried via the common loader using \lstinline{vkGetInstanceProcAddr} and \lstinline{vkGetDeviceProcAddr}, which are Vulkan commands to retrieve addresses of functions that are identified by their name.
-    Usage of these Vulkan commands, in the context of a \gls{windows} operating system platform, is demonstrated in listing \ref{lst:VulkanFunctionLoading} as pseudocode.
+      In addition to what has been described so far, a layer is also able to provide several Vulkan \textit{extensions}.
+      These extensions may define additional Vulkan commands that can be queried via the \gls{vkloader} using \lstinline{vkGetInstanceProcAddr} and \lstinline{vkGetDeviceProcAddr}, which are Vulkan commands to retrieve addresses of functions that are identified by their name.
+      Usage of these Vulkan commands, in the context of a \gls{windows} operating system platform, is demonstrated in listing \ref{lst:VulkanFunctionLoading} as pseudocode.
 
-    On the first line, the \gls{winapi} is used to load the \gls{vkloader}, simply called \lstinline{Loader} in the sample.
-    On this platform, the \gls{vkloader} for Vulkan specification 1.0 and above is a \gls{dll} and is called \textit{vulkan-1.dll}.
+      On the first line, the \gls{winapi} is used to load the \gls{vkloader}, simply called \lstinline{Loader} in the sample.
+      On this platform, the \gls{vkloader} for Vulkan specification 1.0 and above is a \gls{dll} and is called \textit{vulkan-1.dll}.
 
-    Continuing in the sample, the next step is to acquire the function \lstinline{vkGetInstanceProcAddr} from the Loader module.
-    The \lstinline{vkGetInstanceProcAddr} function is used to load function addresses from the Loader module that are tied to a specific Vulkan instance.
-    This Vulkan instance is passed to the \lstinline{vkGetInstanceProcAddr} function as the first argument.
-    The second argument is the name of the function to load.
+      Continuing in the sample, the next step is to acquire the function \lstinline{vkGetInstanceProcAddr} from the Loader module.
+      The \lstinline{vkGetInstanceProcAddr} function is used to load function addresses from the Loader module that are tied to a specific Vulkan instance.
+      This Vulkan instance is passed to the \lstinline{vkGetInstanceProcAddr} function as the first argument.
+      The second argument is the name of the function to load.
 
-    On line 3 in the sample, \lstinline{NULL} is passed as the Vulkan instance.
-    This is only allowed for a small set of functions that are not directly tied to a specific Vulkan instance.
-    \lstinline{vkCreateInstance} is one such function, which is subsequently used to create a Vulkan instance on line 4.
-    The first argument to \lstinline{vkCreateInstance} is an instance of the \lstinline{VkInstanceCreateInfo} structure.
-    Among other things, this structure is used to enable a set of layers and extensions.
-    The underlined elements in listing~\ref{lst:VkInstanceCreateInfo} show the relevant fields in order to enable the respective layers and extensions.
+      On line 3 in the sample, \lstinline{NULL} is passed as the Vulkan instance.
+      This is only allowed for a small set of functions that are not directly tied to a specific Vulkan instance.
+      \lstinline{vkCreateInstance} is one such function, which is subsequently used to create a Vulkan instance on line 4.
+      The first argument to \lstinline{vkCreateInstance} is an instance of the \lstinline{VkInstanceCreateInfo} structure.
+      Among other things, this structure is used to enable a set of layers and extensions.
+      The underlined elements in listing~\ref{lst:VkInstanceCreateInfo} show the relevant fields in order to enable the respective layers and extensions.
 
-    In line 5 the address of the Vulkan command \lstinline{vkCreateDevice} is acquired.
-    Instead of passing \lstinline{NULL}, this time the actual Vulkan instance is passed.
-    This is done in order for the loader to know which active layers have to be notified about this call since they might have registered hooks to intercept the calls when creating a Vulkan device.
+      On line~5 of listing~\ref{lst:VulkanFunctionLoading} the address of the Vulkan command \lstinline{vkCreateDevice} is acquired.
+      Instead of passing \lstinline{NULL}, this time the actual Vulkan instance is passed.
+      This is done in order for the loader to know which active layers have to be notified about this call since they might have registered hooks to intercept the calls when creating a Vulkan device.
 
-    In the next line, a Vulkan device is created using the previously fetched Vulkan command.
-    During this call, all active and relevant layers, meaning all those layers that registered a hook for this case, are traversed and notified about this call.
-    Similar to the process of creating a Vulkan instance, when creating a device, the application can request certain \textit{device extensions} to be activated.
-    As can be seen in listing~\ref{lst:VkDeviceCreateInfo}, the process of requesting these extensions is the very similar to requesting instance-level extensions.
+      In the next line, a Vulkan device is created using the previously fetched Vulkan command.
+      During this call, all active and relevant layers, meaning all those layers that registered a hook for this case, are traversed and notified about this call.
+      Similar to the process of creating a Vulkan instance, when creating a device, the application can request certain \textit{device extensions} to be activated.
+      As can be seen in listing~\ref{lst:VkDeviceCreateInfo}, the process of requesting these extensions is the very similar to requesting instance-level extensions.
 
-    Line 7 acquires the address to the Vulkan command called \lstinline{vkGetDeviceProcAddr} which is used to acquire function addresses from a specific \gls{icd}.
-    This way, the Vulkan application can get the implementation of a command directly from the \gls{icd}.
-    This alleviates the work required from the \gls{vkloader} as it does no longer have to look up the correct \gls{icd} for the context of the current call.
+      Line~7 of listing~\ref{lst:VulkanFunctionLoading} shows acquiring the address to the Vulkan command called \lstinline{vkGetDeviceProcAddr} which is used to acquire function addresses from a specific \gls{icd}.
+      This way, the Vulkan application can get the implementation of a command directly from the \gls{icd}.
+      This alleviates the work required from the \gls{vkloader} as it does no longer have to look up the correct \gls{icd} for the context of the current call.
 
-    Lines 8 and 9 are just examples of how a device-specific command is queried and executed.
-    Just like before, the \gls{vkloader} will make sure all relevant layers are notifed about this call, even though this time it is a device-specific call as opposed to an instance-specific call.
+      Lines~8~and~9 are just examples of how a device-specific command is queried and executed.
+      Just like before, the \gls{vkloader} will make sure all relevant layers are notifed about this call, even though this time it is a device-specific call as opposed to an instance-specific call.
 
-    In performance-critical applications care must be taken when activating layers in a production scenario.
-    Because every layer is called in order, every layer introduces additional overhead per \gls{api} call.
-    Validation layers, for example, are typically not desired in a production scenario.
-    At the time of writing there is no standard way to get \gls{icd} modules using the \gls{vkloader}.
-    However, because of the \gls{vkloader} being open-source software, a developer is able to extract the relevant loader logic, customizing it to their specific needs.
-    This should only be done if absolutely necessary because it requires the developer to maintain their port of the \gls{vkloader} in case future revisions of the original \gls{vkloader} change internal behavior or layer and extension conventions crucial for proper execution of the application.
-    Otherwise the developer risks that their application stops working because of incompatibilities.
-    After all, internals or conventions introduced by the original \gls{vkloader} are not standardized or specified by Vulkan.
+      In performance-critical applications care must be taken when activating layers in a production scenario.
+      Because every layer is called in order, every layer introduces additional overhead per \gls{api} call.
+      Validation layers, for example, are typically not desired in a production scenario.
+      At the time of writing there is no standard way to get \gls{icd} modules using the \gls{vkloader}.
+      However, because of the \gls{vkloader} being open-source software, a developer is able to extract the relevant loader logic, customizing it to their specific needs.
+      This should only be done if absolutely necessary because it requires the developer to maintain their port of the \gls{vkloader} in case future revisions of the original \gls{vkloader} change internal behavior or layer and extension conventions crucial for proper execution of the application.
+      Otherwise the developer risks that their application stops working because of incompatibilities.
+      After all, internals or conventions introduced by the original \gls{vkloader} are not standardized or specified by Vulkan.
 
-    \todo[inline]{Device extensions are for vendor-specific extensions, such as NV\_glsl that support loading glsl shader code. For more on shaders see sec:EnvShaders.}
+      % \todo[inline]{Device extensions are for vendor-specific extensions, such as NV\_glsl that support loading glsl shader code. For more on shaders see sec:EnvShaders.}
 
-    \todo[inline]{Layers are discovered by the loader via the registry on Windows and in special directories on Unix based platforms. Files discovered there are always in JSON format and provide information about the library location and more. \lstinline{HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan}}
+      \todo[inline]{Layers are discovered by the loader via the registry on Windows and in special directories on Unix based platforms. Files discovered there are always in JSON format and provide information about the library location and more. \lstinline{HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan}}
 
-    \todo[inline]{Dissect an example JSON file and explain the parts here?}
+      \todo[inline]{Dissect an example JSON file and explain the parts here?}
 
-    \todo[inline]{Mention that the order in which layers are activated matters?}
+      \todo[inline]{Mention that the order in which layers are activated matters?}
 
 
   \section{LunarG Vulkan SDK}
@@ -191,12 +189,12 @@
     The first version of the LunarG \gls{sdk} was released at the same time as version 1.0 of the Vulkan specification.
 
     Developing a Vulkan application does not require the LunarG \gls{sdk} to be installed.
-    For that, only the Vulkan header and common loader are required.
+    For that, only the Vulkan header and \gls{vkloader} are required.
     However, the LunarG \gls{sdk} includes these two components and a number of additional components.
     These components are meant to help making it easier to develop Vulkan applications.
-    Aside from the Vulkan header and the common loader, the \gls{sdk} also includes several Vulkan layers, debugging tools, tools that aid in creating shader modules compatible with Vulkan, the Vulkan API documentation, and a range of Vulkan samples and demos as well as a sample-driven tutorial.
+    Aside from the Vulkan header and the \gls{vkloader}, the \gls{sdk} also includes several Vulkan layers, debugging tools, tools that aid in creating shader modules compatible with Vulkan, the Vulkan API documentation, and a range of Vulkan samples and demos as well as a sample-driven tutorial.
 
-    \todo[inline]{Introduce the \lstinline{vulkaninfo} command.}
+    \todo[inline]{Mention the \lstinline{vulkaninfo} command?}
 
 
   \section{Shaders}
@@ -204,8 +202,9 @@
     As mentioned in section~\ref{sec:Pipelines}, Vulkan expects shaders to be in \gls{spirv} format.
     \gls{spirv} is a binary format and is not meant to be human-reabable.
     Instead of writing shaders directly in \gls{spirv} format, they are usually written in \gls{glsl} and converted to \gls{spirv} in a subsequent step.
-    This tool is called \textit{glslangValidator}~\cite{glslangrepo} and is a command-line based tool that is able to validate \gls{glsl} code and to convert it into other representations.
-    \todo{Describe what exactly is required. layout=N, binding=N, set=N, \#extensionm, ...}It requires the \gls{glsl} source code to be written in a specific way in order to be converted to \gls{spirv}.
+    The most commonly used tool for this purpose is called \textit{glslangValidator}~\cite{glslangrepo} and is a command-line based tool that is able to validate \gls{glsl} code and to convert it into other representations, specifically \gls{spirv}.
+    \todo{Describe what exactly is required. layout=N, binding=N, set=N, \#extensionm, ...}
+    It requires the \gls{glsl} source code to be written in a specific way in order to be converted to \gls{spirv}.
 
     \todo[inline]{explain that shaders can be converted in different shader stages, e.g. vertex-, fragment-stage, hence the file endings and filenames}
 
@@ -277,8 +276,8 @@
     \todo{Is this comprehensive enough?}This enables application developers to implement their own internal \acrshort{gpu} profiling system by taking time samples at application-defined points within command buffers.
     See section~16.5 of the Vulkan specification~\cite{vkspec} for details.
 
-    \todo[inline]{Omit the following paragraph?}
     % \todo{Better phrasing? Make it more formal.}Vulkan has only been around for a short while now.
+    \todo{Omit this paragraph?}
     Vulkan is still relatively new technology.
     Existing tools for other graphics \glspl{api} will most likely be extended to also support Vulkan.
-    It is also possible that new tools dedicated to Vulkan may be developed by \glspl{ihv}.
+    It is also possible that new tools dedicated to Vulkan may be developed by \acrlongpl{ihv}.

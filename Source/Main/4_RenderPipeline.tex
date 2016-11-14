@@ -2,18 +2,7 @@
 
 \chapter{Vulkan Rendering}
 \label{cha:RenderPipeline}
-  \todo[inline, color=red!60]{Rename chapter? Current name matches with the names of the previous chapters.}
-  \todo[inline]
-  {
-    Possible titles:
-    Rendering Workflow,
-    Applying the Rendering Pipeline,
-    Rendering in Vulkan,
-    Rendering Commands and Resource Handling/Management,
-    Rendering Walkthrough/Guide,
-    Specific/Concrete Example of a Rendering Pipeline
-  }
-
+  \todo[inline, color=red!60]{Rename chapter? Current name matches with the names of the previous chapters but may be too general.}
   \todo[inline]{Image tiling and layout?}
   \todo[inline]{Resource transformations?}
 
@@ -21,9 +10,9 @@
   Because there are many ways to perform rendering with Vulkan, a framework is defined that constrains the actual work that needs to be done to a comprehensible amount.
 
   First, the aforementioned framework is defined.
-  Subsequently, the necessary Vulkan \gls{api} calls are show and explained in order to prepare for rendering.
-  Following these preparations, recording of the actual rendering commands is shown.
-  And finally, in the render loop.
+  Subsequently, the necessary Vulkan \gls{api} calls are shown and explained that are used to prepare for rendering.
+  Following these preparations, recording of the actual rendering commands is presented.
+  And finally, in the render loop, shader data is updated and rendering commands are submitted to the \gls{gpu}.
   Section~\ref{sec:MultithreadedRendering} at the end of this chapter provides additional information about multi-threaded rendering in Vulkan.
 
   Throughout this chapter, listings are presented that show the usage of select Vulkan commands and data structures that are required for rendering.
@@ -34,10 +23,10 @@
   \label{sec:Framework}
     \todo{Make sure to explain that the image is created only in a single step.}A simple forward renderer is assumed which means that rendering is performed to an image that is presented as soon as possible.
     A camera is used to observe the scene.
-    This camera is not fixed, i.e. it may change position or rotation over time.
+    This camera is not fixed which means it may change position or rotation over time, changing how the scene is portrayed.
     The rendered scene will contain a fixed number of objects.
     Each object has fixed geometry and is assigned a position in an application-defined coordinate space.
-    The shaders used to render each object is kept very simple.
+    The shaders used to render each object are kept very simple.
     Objects do not have textures or other color information and are rendered in a solid color.
     Lighting is restricted to only produce flat shaded surfaces.
     The actual layout of these shaders is shown in section~\ref{subsec:GraphicsPipelineSetup}.
@@ -56,11 +45,10 @@
   \section{Setup}
   \label{sec:RenderingSetup}
     Before it is possible to start rendering an image, proper Vulkan facilities need to be set up.
-    \todo{Complete the sentence.}These are discussed in section.
-    The setup here adheres to the framework defined in section~\ref{sec:Framework}.
+    Most of these facilities have been presented in chapter~\ref{cha:VulkanOverview}.
+    In the following sections, these facilities are set up in the context of the framefork defined in section~\ref{sec:Framework}.
 
     \subsection{Device and Queue Setup}
-      \todo[inline]{Listings for this section?}
       The Vulkan device to be used for rendering needs to support both the swapchain extension as well as queues with graphics and present capabilities.
 
       In order for a rendered image to be presented to a window, the swapchain extension\footnote{Full name: \lstinline{VK_KHR_swapchain}} needs to be activated.
@@ -127,7 +115,7 @@
       Now that a device with the enabled swapchain extension is in place, a swapchain can actually be created.
       Creating a swapchain requires what is called a Vulkan \textit{surface} to be created first.
       This surface is specific to the operating system and represents the connection to the actual window.
-      It is also the target of the presentation engine, i.e. that surface is used to present a rendered image.
+      It is also the target of the presentation engine which means that this surface is used to present a rendered image.
 
       \todo[inline]{Number, format, extent, colorspace of swapchain images.}
       \todo[inline]{Present modes / VSync.}
@@ -136,15 +124,14 @@
       The application may require the swapchain to create a certain number of images constrained to a range defined by the surface.
 
       The exact settings of a swapchain or a surface are not relevant for the purposes of this chapter.
-      Because of that, no listings about the details of creating these objects are presented in this chapter.
+      Because of that, no listings about the details of creating these objects are presented.
 
-      \todo[inline]{Move this either to chapter 2 or 3. In this chapter, we mainly care about setting up the swapchain for the framework defined above.}
       The reason why an application may care about the number of swapchain images is rather straight-forward.
       From the point of view of the presentation engine, a swapchain image passes several stages until it is presented eventually.
       Initially the image is free and can be acquired by the application.
       Once an application acquires the image it is considered to be in use by the application and no longer free.
       At some point, the application hands back the image to the presentation engine, requesting that image to be presented.
-      \todo{Explain more presentation modes?}In the \gls{fifo} presentation mode, the image will be put into a queue to be processed by the presentation engine at a convenient time.
+      In the \gls{fifo} presentation mode, the image will be put into a queue to be processed by the presentation engine at a convenient time\todo{Explain more presentation modes?}.
       Once that time has come, the image will actually be presented on the surface.
       While an image is either currently presented or still pending presentation in the queue, it cannot be acquired by the application for rendering.
       When there is no free swapchain image, and the application tries to acquire one, the application will be stalled until a swapchain image is available.
@@ -153,11 +140,12 @@
 
       Swapchain images will be used exclusively as color attachments for the framebuffer in this chapter.
 
-    \subsection{Creating a Graphics Pipeline}
+    \subsection{Preparing the Graphics Pipeline}
     \label{subsec:GraphicsPipelineSetup}
-      \todo[inline]{Create framebuffer for each swapchain image, a render pass, and graphics pipeline. }
-      The graphics pipeline controls the data flow on the \gls{gpu}.
-      Every graphics pipeline must be bound to a render subpass in order to be used, as shown later in chapter.
+      The graphics pipeline controls how data is processed on the \gls{gpu}.
+      It has many components that need to be intialized.
+      The process of preparing for the creation of a graphics pipeline is demonstrated in the following sections.
+      Furthermore, the creation of an actual graphics pipeline object is shown section~\ref{sub:ActualGraphicsPipelineCreation}.
 
       \subsubsection{Shader Stages}
       \label{sss:GraphicsPipelineShaderStages}
@@ -178,7 +166,7 @@
         Listing~\ref{lst:ShaderStageSetup} shows how information about the shader stages is specified.
         This information will be supplied to the graphics pipeline later.
         The types of the used shader stages is set on line~2 for the vertex shader and on line~5 for the fragment shader.
-        Both shaders are loaded from a file on lines~3~and~6.
+        Both shaders are loaded from a file on lines~3~and~6, respectively.
         As specified by the framework in section~\ref{sec:Framework}, shaders are kept very simple.
         The contents of these shaders are examined below.
 
@@ -192,7 +180,7 @@
         ]
         {Main/Listings/PerObjectShader.glsl}
 
-        Listing shows the vertex shader that is used.
+        Listing~\ref{lst:VertexShader} shows the vertex shader that is used.
         It simply takes the vertex position and transforms it into clip space using the \gls{mvpmatrix} matrix supplied as a uniform value.
         As can be seen in listing~\ref{lst:VertexShader}, the layout of the shader is not very complicated.
         It only consists of a single uniform buffer object, containing a four by four\todo{Write 4x4 instead?}{} matrix, as well as the vertex input specification.
@@ -218,7 +206,7 @@
         The graphics pipeline requires information about the layout of the shaders shown in section~\ref{sss:GraphicsPipelineShaderStages}.
         The information about uniform buffers, push constants, and samplers are all part of what is called the \textit{pipeline layout}.
         The pipeline layout is defined in terms of \textit{descriptor set layouts}, which describe the layout of actual descriptor sets.
-        Descriptor sets are part of the actual rendered objects which and are covered later in section~\ref{sss:CreatingSceneObjects}\todo{Make sure this is actually the section where it is covered.}, but the layout of these descriptors is important for the pipeline specification.
+        Descriptor sets are part of the actual rendered objects which and are covered later in section~\ref{sss:CreatingSceneObjects}, but the layout of these descriptors is important for the pipeline specification.
 
         \lstinputlisting[
           label=lst:DescriptorSetLayoutBinding,
@@ -317,7 +305,7 @@
         The input-assembly state describes how the input data to the vertex shader is interpreted.
         The most important parameter to set is the primitive topology.
         This is where the \gls{gpu} is told what kind of primitives the input data represents.
-        For the purposes of this chapter, the chosen primitive topology is \lstinline{TRIANGLE_LIST}\footnote{Full name: \lstinline{VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}}.
+        For the purposes of this chapter, the chosen primitive topology is \lstinline{TRIANGLE_LIST}\footnote{Full name: \lstinline{VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}} as shown in listing~\ref{lst:InputAssemblyStateSetup}.
 
         \lstinputlisting[
           label=lst:InputAssemblyStateSetup,
@@ -330,17 +318,17 @@
         {Main/Listings/GraphicsPipelineSetup.cpp}
 
       \subsubsection{Tessellation State}
-        \todo[inline]{Just omit this state and subsubsection? It's nullptr in the graphics pipeline.}
+        \todo[inline]{Just omit this state and subsubsection? It's ignored when creating the graphics pipeline.}
         This state is only useful for the tessellation shader stage.
         In this chapter, only the vertex and fragment shader stages are in use so this state is ignored.
 
       \subsubsection{Viewport State}
-        \label{sss:ViewportState}
+      \label{sss:ViewportState}
         The viewport state specifies how many viewports and scissors are active in a pipeline.
         Both the viewport and scissor define a non-rotated rectangular region within the framebuffer that will be written to by shaders.
         Rendering results that would usually write to the entire extent of the framebuffer will be scaled down and displaced to fit into the viewport and cropped to be inside the scissor.
         See figure~\ref{fig:ViewportScissorSample} for an illustration of this.
-        In this chapter, only one of each is used that \todo{encompass?}include the entire framebuffer.
+        In this chapter, only one of each is used that \todo{encompass?}include the entire framebuffer, respectively.
 
         \begin{figure}
           \includegraphics[width=0.666\textwidth]{Main/Images/ViewportScissorSample}
@@ -349,9 +337,8 @@
           \label{fig:ViewportScissorSample}
         \end{figure}
 
-        There are two ways to specify the actual viewport and scissor data.\todo{Explain briefly what viewport and scissors actually do.}{}
-        The simplest way is to specify it at this point directly, \todo{Try reducing the use of i.e.}i.e. when creating the graphics pipeline.
-
+        There are two ways to specify the actual viewport and scissor data.
+        The simplest way is to specify it at this point directly, i.e. when creating the graphics pipeline.
         However, this also means that the viewport and scissor data may never change during the lifetime of the pipeline.
         Changing the viewport and scissor data is necessary when the dimension of the render targets change.
         For example, when the application window is resized, the swapchain along with all swapchain images typically need to be re-created with dimensions matching the new window size, thus the viewport and scissor need to be updated as well.
@@ -389,11 +376,10 @@
         It is also used to control how primitves are rasterized.
         For example, given a triangle primitve, there are three ways for the rasterizer to produce fragments: Densely fill the entire rectangle, only produce fragments for the outline of the triangle, or just produce a fragment for each of the vertices, respectively.
 
-        The rasterizer can also be configured to perform face culling, i.e. discarding fragments that are facing in a certain direction.
+        The rasterizer can also be configured to perform face culling, discarding fragments that are facing in a certain direction.
         Without this option, fragments are produced regardless of the direction they are facing.
-        However, it is common to enable back-face culling, i.e. discarding fragments that would be viewed from ``behind'', for triangle meshes that form a closed object.
-
-        In order to perform culling, the rasterizer needs to know the facing direction of a triangle.
+        However, it is common to enable back-face culling which causes the rasterizer to discard fragments that would be viewed from ``behind''.
+        In order to determine when a fragment is viewed from behind, the rasterizer needs to know the facing direction of a triangle\todo{Is it really just triangles? Use ``[...] facing direction of a (rendering) primitive'' instead?}.
         This facing direction is also configurable in the rasterizer state.
         It is defined by the winding order of the vertices, which is considered to be either \textit{clockwise} or \textit{counter-clockwise}.
 
@@ -412,12 +398,10 @@
         In listing~\ref{lst:RasterizationStateSetup}, the rasterizer is configured to produce densely filled polygons and does not perform any culling operations on the fragments.
 
       \subsubsection{Multisample State}
-        \label{sss:MultisampleState}
+      \label{sss:MultisampleState}
         Multisampling is used to perform anti-aliasing, achieving a smoother appearance of jagged edges, and can be configured in the Multisample state.
         Disabling multisampling is not simply a matter of specifying the default value for all options.
         This state controls how many times the fragment shader is invoked and if a value of zero is passed as the number of samples, the fragment shader will never be invoked.
-
-        Multisampling is not being used in this chapter so the number of samples is set to one.
 
         \lstinputlisting[
           label=lst:MultisampleStateSetup,
@@ -429,14 +413,13 @@
         ]
         {Main/Listings/GraphicsPipelineSetup.cpp}
 
+        Multisampling is not being used in this chapter so the number of samples is set to one as shown in listing~\ref{lst:MultisampleStateSetup}.
+
       \subsubsection{Depth Stencil State}
         Depth and stencil tests are controlled in this state.
         Individual control is provided to enable depth testing, depth writing, depth bounds testing, as well as stencil testing.
         Depth bounds and comparison operations as well as stencil operations can be configured in this state.
         The comparison operation during depth tests can also be controlled.
-
-        In this chapter, stencil tests are disabled.
-        Depth testing, on the other hand, is enabled with depth bounds of $[0, 1]$ and with the typical less-or-equal comparison operation.
 
         \lstinputlisting[
           label=lst:DepthStencilStateSetup,
@@ -448,10 +431,13 @@
         ]
         {Main/Listings/GraphicsPipelineSetup.cpp}
 
+        In this chapter, stencil tests are disabled.
+        Depth testing, on the other hand, is enabled with the typical less-or-equal comparison operation as shown in listing~\ref{lst:DepthStencilStateSetup}.
+
       \subsubsection{Color Blend State}
         The color blend state controls how color values produced by the fragment shader are combined, or blended, with the color that is already in the framebuffer.
-        \todo{Mention `logicOp' and `blendConstants'?}
-        The blend operations need to be specified for each render target individually.\todo{Mention that a pipeline is needed for each material.}{}
+        The blend operations need to be specified for each render target individually.
+        \todo{Mention that a pipeline is needed for each material.}{}
         Blend operations may also be turned off which simply replaces whatever was in the framebuffer with the output of the fragment shader.
 
         In addition to controlling blending, a color mask can be set that controls which components of the resulting color values are written to the framebuffer.
@@ -469,13 +455,13 @@
         ]
         {Main/Listings/GraphicsPipelineSetup.cpp}
 
-        In this chapter, blending is turned off and a color mask is chosen so all color components are copied to the framebuffer.
+        In this chapter, blending is turned off and a color mask is chosen so all color components are copied to the framebuffer as shown in listing~\ref{lst:ColorBlendStateSetup}.
 
         \todo[inline]{Give an example (transparent vs. non-transparent) if there is enough time.}
 
       \subsubsection{Render Pass}
-        \label{sss:RenderPassSetup}
-        Each graphics pipeline has exactly one render pass in Vulkan.
+      \label{sss:RenderPassSetup}
+        In Vulkan, each graphics pipeline object is associated with a render pass.
         A render pass consists of multiple subpasses and stores information about the flow of data between subpasses and the execution of rendering commands.
         It stores framebuffer attachment and information about layout transitions at the beginning and the end of the render pass as well as between subpasses.
         Framebuffer attachments are images such as a swapchain image or a depth-buffer.
@@ -499,7 +485,7 @@
         In listing~\ref{lst:RenderPassAttachmentsSetup}, the attachments for the render pass are being set up.
         The first attachment, attachment 0, is the render target which is actually a swapchain image.
         The format of that attachment is set to the same format as the surface.
-        Like before in section~\ref{sss:MultisampleState}, the sampling count is set to 1, i.e. multisampling is not used.
+        Like before in section~\ref{sss:MultisampleState}, the sampling count is set to 1, effectively disabling multisampling.
         On line~4, the render pass is configured to clear the contents of the first attachment at load-time.
         The value to clear the contents with is defined in the render pass instance.
         Once the render pass has finished executing, the \lstinline{storeOp} determines what happens to this attachment.
@@ -509,15 +495,15 @@
         The subsequent settings are used to control the image layout at the beginning and the end of a render pass, respectively.
         On line~6, the initial layout of the attachment is specified to be undefined.
         This tells the \gls{driver} that it may discard the contents if it sees fit.
-        The previous contents of the attachment are not relevant for this render pass because the attachment is cleared as the first operation when loaded by this render pass.
+        The previous contents of the attachment are not relevant for this render pass because the attachment is cleared then loaded by this render pass.
         On line~7, the render pass is configured to ensure that the image layout state of the attachment is \lstinline{PRESENT_SRC}\footnote{Full name: \lstinline{VK_IMAGE_LAYOUT_PRESENT_SRC_KHR}}.
-        This way no further transformations to the undrelying swapchain image have to be performed before it can be presented.
+        This way no further transformations to the underlying swapchain image have to be performed before it can be presented.
 
         On lines 9--14, the depth buffer attachment is configured.
         The format of this attachment is set to the format of the actual depth buffer.
         Similarly to the first attachment, the depth buffer is cleared at the beginning of the render pass.
         The \lstinline{storeOp} is set to \lstinline{DONT_CARE}\footnote{Full name: \lstinline{VK_ATTACHMENT_STORE_OP_DONT_CARE}} because the depth buffer is not used outside the render pass.
-        This is also the reason why both the inital and the final layout are simply set to \lstinline{DEPTH_STENCIL_ATTACHMENT}\footnote{Full name: \lstinline{VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}}.
+        This is also the reason why both the initial and the final layout are simply set to \lstinline{DEPTH_STENCIL_ATTACHMENT}\footnote{Full name: \lstinline{VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}}.
 
         \lstinputlisting[
           label=lst:RenderPassSubpassSetup,
@@ -560,110 +546,136 @@
 
         And finally, the attachment and subpass information defined previously are combined and passed to the appropriate Vulkan command on line~8 in listing~\ref{lst:RenderPassCreation} to create the actual render pass object.
 
-      \subsection{Creating Framebuffers}
-      \label{subsec:CreatingFramebuffers}
-        A framebuffer defines the actual attachments that will be written to during a render pass.
-        For the purposes of this chapter, each framebuffer references a swapchain image and a depth buffer image.
-        Because there is usually more than one swapchain image, more than one framebuffer is required.
-        Otherwise the framebuffer would need to be recreated every time a new swapchain image was acquired.
-        A framebuffer also has dimensions that are defined when creating that framebuffer as shown below.
-        These dimensions usually correspond to the dimensions of the referenced swapchain image.
+    \subsection{Creating the Graphics Pipeline}
+    \label{sub:ActualGraphicsPipelineCreation}
+      In the previous section\todo{`sections' if they are moved up by a level}, the graphics pipeline was prepared to be created.
+      Listing~\ref{lst:FinallyCreatingTheGraphicsPipeline} shows how all prepared data is combined in a single struct to finally produce a graphics pipeline object on line~16.
 
-        \lstinputlisting[
-          label=lst:CreatingFramebuffers,
-          caption={Creation of a set of framebuffers, one for each swapchain image.},
-          style=MyCppFloat,
-          float,
-          emph={Framebuffers}
-        ]
-        {Main/Listings/CreatingFramebuffers.cpp}
+      \lstinputlisting[
+        label=lst:FinallyCreatingTheGraphicsPipeline,
+        caption={Combining all pipeline setup information to create a graphics pipeline object.},
+        style=MyCppFloat,
+        firstline=129,
+        % lastline=101,
+        float,
+        emph={GraphicsPipeline}
+      ]
+      {Main/Listings/GraphicsPipelineSetup.cpp}
 
-        The process of creating the required framebuffers is shown in listing~\ref{lst:CreatingFramebuffers}.
-        At first, a plain array of framebuffer handles is allocated using host memory.
-        This array contains as many elements as there are swapchain images.
-        Line~2 is the beginning of a loop that produces an index for every swapchain image with each iteration.
-        On lines~4--6 the attachments of the framebuffer are defined.
-        The first attachment is an image view to the swapchain image with the given index.
-        The second attachment is the depth buffer that is the same for each framebuffer.
-        It should be noted that the attachments are image \textit{views}, not plain images.
-        Images are typically never used directly in Vulkan but rather referenced via image views that control which portion of the underlying image is used and how it is accessed.
-        The image views used in this chapter all encompass the entirety of the images they reference.
+      The second parameter passed to \lstinline{vkCreateGraphicsPipelines} is the pipeline cache that was mentioned in section~\ref{subsec:PipelineCache}.
+      In this case a \lstinline{nullptr} value is passed, thus no pipeline cache is used.
+      If a valid pipeline cache object is passed, Vulkan would first check this cache for existing pipelines that match the input configuration.
+      This is very likely to be faster than creating an entirely new pipeline.
+      The exact algorithms and data structures used for managing pipeline caches are not defined by the Vulkan specification which means that \glspl{driver} are free to employ their own processing schemes.
+      It should be noted that the pipeline cache is one of the rare cases where Vulkan guarantees internal synchronization, thus it is safe to use the same pipeline cache object across multiple threads.
 
-        Following the attachment setup, the actual framebuffer info is constructed starting on line~8.
-        It contains the attachments that were just specified, the render pass this framebuffer will be used for, the dimensions of the framebuffer in terms of a width, height, and layer count.
-        Specifying the render pass at this point is not a hard restriction, it defines the types of render passes this framebuffer will be compatible with.
-        And finally on line~15, a framebuffer is created and stored in the array created before.
 
-      \subsection{Creating Scene Objects}
-        \label{sss:CreatingSceneObjects}
-        \todo[inline]{Mention push constants?}
+    \subsection{Creating Framebuffers}
+    \label{subsec:CreatingFramebuffers}
+      A framebuffer defines the actual attachments that will be written to during a render pass.
+      For the purposes of this chapter, each framebuffer references a swapchain image and a depth buffer image.
+      Because there is usually more than one swapchain image, more than one framebuffer is required.
+      Otherwise the framebuffer would need to be recreated every time a new swapchain image was acquired.
+      A framebuffer also has dimensions that are defined when creating that framebuffer as shown below.
+      These dimensions usually correspond to the dimensions of the referenced swapchain image.
 
-        When creating scene objects, there are certain facilities that need to be set up on a per-object basis.
-        In the example used throughout this chapter, every object needs to know how it can be translated from an application-specific space to clip space.
-        Using this information, objects may be placed in different locations in the scene.
-        The shader used for rendering them reflects this and is shown in section~\ref{sss:GraphicsPipelineShaderStages}.
-        The descriptor set layout of the vertex shader, explained in section~\ref{sss:GraphicsPipelineLayout}, consists of only a single uniform buffer that contains information specific to an individual scene object.
-        If a single instance of this information was shared among all scene object, they would appear in the same location at once.
-        Thus, a descriptor set, which adheres to the aforementioned descriptor set \textit{layout}, has to be created for each rendered object in the scene.
+      \lstinputlisting[
+        label=lst:CreatingFramebuffers,
+        caption={Creation of a set of framebuffers, one for each swapchain image.},
+        style=MyCppFloat,
+        float,
+        emph={Framebuffers}
+      ]
+      {Main/Listings/CreatingFramebuffers.cpp}
 
-        The listings presented in this section are specific to each scene object.
-        These listings may be thought of as depicting code inside of a loop that iterates all objects.
+      The process of creating the required framebuffers is shown in listing~\ref{lst:CreatingFramebuffers}.
+      At first, a plain array of framebuffer handles is allocated using host memory.
+      This array contains as many elements as there are swapchain images.
+      Line~2 is the beginning of a loop that produces an index for every swapchain image with each iteration.
+      On lines~4--6 the attachments of the framebuffer are defined.
+      The first attachment is an image view to the swapchain image with the given index.
+      The second attachment is the depth buffer that is the same for each framebuffer.
+      It should be noted that the attachments are image \textit{views}, not plain images.
+      Images are typically never used directly in Vulkan but rather referenced via image views that control which portion of the underlying image is used and how it is accessed.
+      The image views used in this chapter all encompass the entirety of the images they reference.
 
-        \lstinputlisting[
-          label=lst:AllocateUniformBuffer,
-          caption={Allocation of a buffer object that will only be used as uniform buffer. Details about memory allocation are omitted.},
-          style=MyCppFloat,
-          firstline=1,
-          lastline=9,
-          float,
-          emph={UniformBufferMemory, UniformBuffer}
-        ]
-        {Main/Listings/CreateSceneObjects.cpp}
+      Following the attachment setup, the actual framebuffer info is constructed starting on line~8.
+      It contains the attachments that were just specified, the render pass this framebuffer will be used for, the dimensions of the framebuffer in terms of a width, height, and layer count.
+      Specifying the render pass at this point is not a hard restriction, it defines the types of render passes this framebuffer will be compatible with.
+      And finally on line~15, a framebuffer is created and stored in the array created before.
 
-        The first action to perform is to allocate a buffer for each object.
-        This is shown in listing~\ref{lst:AllocateUniformBuffer}.
-        When creating a buffer, Vulkan needs to know what the buffer will be used for.
-        In this case the buffer will only be used as a uniform buffer object as specified on line~2.
-        Details of allocating the memory for this buffer are omitted.
-        However, for the purposes of this chapter, it is required that the memory is host-visible.
-        Host-visible memory is needed in order to update the data without involving a separate command buffer that would upload and copy data on the device to the target buffer.
-        This is important in the render loop discussed in section~\ref{sec:RenderLoop}.
-        In order to make this buffer available during rendering, it needs to be bound to proper facilities that because buffer objects do not provide information about where or how they are used in a shader.
-        This information is provided by descriptor sets.
-        Every descriptor set is tied to a one or more descriptor set layouts.
-        Only a single layout is used in this case which has been defined in section~\ref{sss:GraphicsPipelineLayout}.
-        Descriptor sets can be bound to a command buffer to be used for a specific graphics pipeline, which is shown later when rendering commands are recorded in section~\ref{sec:BuildCommandBuffers}.
+    \subsection{Creating Scene Objects}
+    \label{sss:CreatingSceneObjects}
+      \todo[inline]{Mention push constants?}
 
-        \lstinputlisting[
-          label=lst:DescriptorPoolCreation,
-          caption={Creation of a descriptor pool which only supports allocating a single uniform buffer descriptor.},
-          style=MyCppFloat,
-          firstline=11,
-          lastline=19,
-          float,
-          emph={DescriptorPool}
-        ]
-        {Main/Listings/CreateSceneObjects.cpp}
+      When creating scene objects, there are certain facilities that need to be set up on a per-object basis.
+      In the example used throughout this chapter, every object needs to know how it can be translated from an application-specific space to clip space.
+      Using this information, objects may be placed in different locations in the scene.
+      The shader used for rendering them reflects this and is shown in section~\ref{sss:GraphicsPipelineShaderStages}.
+      The descriptor set layout of the vertex shader, explained in section~\ref{sss:GraphicsPipelineLayout}, consists of only a single uniform buffer that contains information specific to an individual scene object.
+      If a single instance of this information was shared among all scene object, they would appear in the same location at once.
+      Thus, a descriptor set, which adheres to the aforementioned descriptor set \textit{layout}, has to be created for each rendered object in the scene.
 
-        \lstinputlisting[
-          label=lst:DescriptorSetAllocation,
-          caption={Allocation of a descriptor set.},
-          style=MyCppFloat,
-          firstline=21,
-          lastline=26,
-          float,
-          emph={DescriptorSet}
-        ]
-        {Main/Listings/CreateSceneObjects.cpp}
+      The listings presented in this section are specific to each scene object.
+      These listings may be thought of as depicting code inside of a loop that iterates all objects.
 
-        Descriptor sets are allocated from descriptor pools which also manage the underlying memory used by descriptor sets.
-        The relationship between a descriptor pool and descriptor sets is similar to command pools and command buffers.
-        Compared to command pools, however, descriptor pools are limited to a certain number of descriptor types that can be allocated from it.
-        These limits are defined by the application when a descriptor pool is created as shown in listing~\ref{lst:DescriptorPoolCreation}.
-        On lines~2~and~3, the limit for uniform buffer descriptors is set to allow only a single allocation of that type.
-        This limitation information is then used on line~8 to create the descriptor pool on line~9.
-        The allocation of the descriptor set is shown in listing~\ref{lst:DescriptorSetAllocation}.
-        Tying the descriptor set to a descriptor set layout is shown on line~4.
+      \lstinputlisting[
+        label=lst:AllocateUniformBuffer,
+        caption={Allocation of a buffer object that will only be used as uniform buffer. Details about memory allocation are omitted.},
+        style=MyCppFloat,
+        firstline=1,
+        lastline=9,
+        float,
+        emph={UniformBufferMemory, UniformBuffer}
+      ]
+      {Main/Listings/CreateSceneObjects.cpp}
+
+      The first action to perform is to allocate a buffer for each object.
+      This is shown in listing~\ref{lst:AllocateUniformBuffer}.
+      When creating a buffer, Vulkan needs to know what the buffer will be used for.
+      In this case the buffer will only be used as a uniform buffer object as specified on line~2.
+      Details of allocating the memory for this buffer are omitted.
+      However, for the purposes of this chapter, it is required that the memory is host-visible.
+      Host-visible memory is needed in order to update the data without involving a separate command buffer that would upload and copy data on the device to the target buffer.
+      This is important in the render loop discussed in section~\ref{sec:RenderLoop}.
+      In order to make this buffer available during rendering, it needs to be bound to proper facilities because buffer objects do not provide information about where or how they are used in a shader.
+      This information is provided by descriptor sets.
+      Every descriptor set is tied to one or more descriptor set layouts.
+      Only a single layout is used in this case which has been defined in section~\ref{sss:GraphicsPipelineLayout}.
+      Descriptor sets can be bound to a command buffer to be used for a specific graphics pipeline, which is shown later when rendering commands are recorded in section~\ref{sec:BuildCommandBuffers}.
+
+      \lstinputlisting[
+        label=lst:DescriptorPoolCreation,
+        caption={Creation of a descriptor pool which only supports allocating a single uniform buffer descriptor.},
+        style=MyCppFloat,
+        firstline=11,
+        lastline=19,
+        float,
+        emph={DescriptorPool}
+      ]
+      {Main/Listings/CreateSceneObjects.cpp}
+
+      \lstinputlisting[
+        label=lst:DescriptorSetAllocation,
+        caption={Allocation of a descriptor set.},
+        style=MyCppFloat,
+        firstline=21,
+        lastline=26,
+        float,
+        emph={DescriptorSet}
+      ]
+      {Main/Listings/CreateSceneObjects.cpp}
+
+      Descriptor sets are allocated from descriptor pools which also manage the underlying memory used by descriptor sets.
+      The relationship between a descriptor pool and descriptor sets is similar to command pools and command buffers.
+      Compared to command pools, however, descriptor pools are limited to a certain number of descriptor types that can be allocated from are.
+      These limits are defined by the application when a descriptor pool is created as shown in listing~\ref{lst:DescriptorPoolCreation}.
+      On lines~2~and~3, the limit for uniform buffer descriptors is set to allow only a single allocation of that type.
+      This limitation information is then used on line~8 to create the descriptor pool on line~9.
+      The allocation of the descriptor set is shown in listing~\ref{lst:DescriptorSetAllocation}.
+      Tying the descriptor set to a descriptor set layout is shown on line~4.
+
+      \todo[inline]{Concluding sentence?}
 
 
   \section{Command Buffer Recording}
@@ -692,10 +704,10 @@
     Resetting a command buffer clears its contents and reverts it to the \textit{initial} state.
     It must be noted that submitting a command buffer also does not clear its contents.
     This means that command buffers may be recorded once and executed multiple times.
-    This can be very useful when recording a series of render commands for state .
+    This can be very useful when recording a series of render commands for static scene geometry.
     It also improves performance insofar that the \gls{driver} is able to keep frequently used command buffers in \gls{gpu} memory, reducing required communication overhead between the \gls{cpu} and the \gls{gpu} and thus, reducing required bandwidth for data transmission.
-    An example for such kinds of command buffers is for rendering static scene geometry.
-    This kind of geometry is does not change with time, hence the commands required for rendering also do not change.
+    Rendering static scene geometry is a good example for these kinds of command buffers.
+    This kind of geometry does not change over time, hence the commands required for rendering also do not change.
 
     For the purposes of this chapter, command buffers will only be recorded once and submitted in the render loop in section~\ref{sec:RenderLoop}.
     The framework defined before allows this to be possible because all objects in the scene are static in terms of rendering commands.
@@ -715,7 +727,7 @@
     The way values are supplied for push constant blocks is different from how a uniform buffer object is updated.
     Push constant values are updated using commands and are recorded to command buffers.
     This means that these values may be different for each recorded command buffer.
-    If values are stored in the push constant block that change every frame, such as the \gls{mvpmatrix} matrix of a scene object, command buffers need to be recorded every frame.
+    If values are stored in the push constant block that changes every frame, such as the \gls{mvpmatrix} matrix of a scene object, command buffers need to be recorded every frame.
 
     \todo[inline]{Put a subsection here?}
     % \subsection{Rendering a Scene Object}
@@ -743,21 +755,19 @@
         style=MyCppFloat,
         firstline=4,
         lastline=13,
-        float,
-        emph={vkCmdSetViewport, vkCmdSetScissor}
+        float
       ]
       {Main/Listings/CommandBufferRecording.cpp}
 
       Once the command buffer is \textit{recording}, the dynamic state can be set.
-      As defined in section~\ref{sss:ViewportState} and shown in listing~\ref{lst:DynamicStateSetup}, the dynamic state to update include the viewport and scissor.
-      \todo{Highlight vkCmdSet* in the listings?}
-      The commands for updating this state are shown in listing~\ref{lst:DynamicStateUpdate}.
+      As defined in section~\ref{sss:ViewportState}, the viewport and scissor data are part of the dynamic state.
+      The commands for updating dynamic state are shown in listing~\ref{lst:DynamicStateUpdate}.
       The viewport is set to include the entire framebuffer on lines~2--3 as well as the entire depth buffer extent on lines~4--5.
       The scissor is set to contain the entire viewport on line~9, effectively disabling cropping of the resulting image.
 
       Dynamic state values are part of the command buffer.
       These values are read by graphics pipelines when executing draw commands without clearing them.
-      This means that dynamic state only has to be set once for every command buffer if the values never change which why dynamic state updates are the first commands recorded in the example of this chapter.
+      This means that dynamic state only has to be set once for every command buffer if the values never change which is why dynamic state updates are the first commands recorded in the example of this chapter.
       These commands may be recorded at a later point if need be, but no later than before the first draw command is recorded.
       Additionally, setting these values is only necessary if the graphics pipeline has been set up to accept viewport and scissor data as dynamic state.
       Graphics pipelines that are not instructed to look for dynamic state will simply ignore the data in the command buffer and instead use the data supplied at pipeline creation.
@@ -773,11 +783,11 @@
       ]
       {Main/Listings/CommandBufferRecording.cpp}
 
-      In the next step, a render pass is started which results in the creation of a \textit{render pass instance}.
+      In the next step, a render pass is started which results in the creation of a \textit{render pass instance} shown in listing~\ref{lst:BeginRenderPass}.
       This render pass instance is associated with a specific framebuffer on line~7 and clear values on line~10~and~11 that are used to clear attachment contents if their \lstinline{loadOp} is set to \lstinline{CLEAR}\footnote{Full name: \lstinline{VK_ATTACHMENT_LOAD_OP_CLEAR}}.
       The \lstinline{loadOp} settings were specified for each attachment in section~\ref{sss:RenderPassSetup}.
       Another property of the render pass instance is the render area on line~8.
-      As can be seen, it set to the same value as the scissor that was set before.
+      As can be seen, it is set to the same value as the scissor that was set before.
       The render area is used to control which pixels of the framebuffer are affected in the active render pass.
       This is used to minimize necessary work for the \gls{gpu}.
       As per the Vulkan specification, a render area that is smaller than the entire framebuffer may affect performance negatively.
@@ -786,15 +796,6 @@
       When beginning a render pass, Vulkan also needs to be told about whether secondary command buffers will be used or not.
       For the purposes of this chapter, only a single primary command buffer is used in a single subpass, which is why the render pass is instructed to inline render commands directly in the primary command buffer, disallowing execution of secondary command buffer.
       More information about command buffers was given in section~\ref{sec:CommandBuffers}.
-
-      \todo[inline]
-      {
-        If the reader is not following carefully, it might seem like scissors do the same thing as the render area, which is not strictly true.
-        First, there may be many scissors but only a single render area at once.
-        Secondly, scissors are specified as part of the pipeline while the render area is part of the render pass \textbf{instance}.
-        Should I mention and explain this?
-        It should be obvious from the text and would be redundant.
-      }
 
       \lstinputlisting[
         label=lst:ObjectRenderingLoop,
@@ -808,14 +809,12 @@
 
       Now that a render pass instance is set up, draw commands can be recorded.
       Because there are multiple objects in the scene that need to be rendered, this will happen in a loop as can be seen on line~1 in listing~\ref{lst:ObjectRenderingLoop}.
-      The first command causes the binding of a descriptor set with a specific pipeline layout.\todo{Reference where descriptor sets and pipeline layouts are first explained.}{}
-      \todo{Explain the other, optional arguments?}
+      The first command causes the binding of a descriptor set with a specific pipeline layout.
 
-      \todo[inline]{Explain why the pipeline is bound later than the render pass. Maybe mention that a render pass may be shared between multiple pipelines.}
       Afterwards, the command to bind the graphics pipeline is recorded on line~9.
       It is explicitly stated that the passed pipeline object is a graphics pipeline.
 
-      \todo{Too informal?}With a pipeline in place, the vertex buffer and index buffer objects are bound.
+      With a pipeline in place, the vertex buffer and index buffer objects are bound.
       In both cases, the entire buffers are used, which is why all offsets are set to zero.
       As can be seen on line~11, multiple vertex buffers can be bound at once.
       Vertex buffers may be bound to different binding locations using the second argument to the depicted Vulkan API call, as long as these locations are valid for the given pipeline layout.
@@ -849,7 +848,7 @@
       For example, the command buffer may run out of memory early on and signal this once recording has ended.
 
       The command buffer is now ready for submission to a queue and execution on the \gls{gpu}.
-      This is covered in section~\ref{sec:RenderLoop}.\todo{More verbose conclusion paragraph? Or remove it?}{}
+      This is covered in section~\ref{sec:RenderLoop}.
 
       In the process presented above, only a single command buffer was recorded.
       For small amounts of commands like in this case, it might be beneficial to allocate a command buffer for each framebuffer and perform the recording for each of them.
@@ -858,36 +857,32 @@
 
   \section{Rendering Loop}
   \label{sec:RenderLoop}
-    \todo[inline]{Rather simple because of pre-recording command buffers.}
-    \todo[inline]{Update shader data (UBOs, dynamic state, etc).}
-    \todo[inline]{Possibly explain push constants.}
-    \todo[inline]{Acquire swapchain image.}
-    \todo[inline]{Submit command buffers.}
-    \todo[inline]{Present swapchain image.}
-    \todo[inline]{Sync for submission and presenting (render semaphore, present semaphore) so swapchain image isn't used for rendering while presenting and vice versa. Also image layout transition happens with commands, meaning sync is necessary!}
-    \tbd
+    This section presents the necessary operations that need to be performed for each rendered frame.
+    It is assumed that the application runs inside of a loop in this section, as can be seen in the presented listings.
 
-    \lstinputlisting[
-      label=lst:RenderLoop_SemaphoreCreation,
-      caption={Creation of two semaphores used in the render loop.},
-      style=MyCppFloat,
-      firstline=1,
-      lastline=5,
-      float
-    ]
-    {Main/Listings/RenderLoop.cpp}
+    % \lstinputlisting[
+    %   label=lst:RenderLoop_SemaphoreCreation,
+    %   caption={Creation of two semaphores used in the render loop.},
+    %   style=MyCppFloat,
+    %   firstline=1,
+    %   lastline=5,
+    %   float
+    % ]
+    % {Main/Listings/RenderLoop.cpp}
 
     \lstinputlisting[
       label=lst:RenderLoop_ShaderDataUpload,
       caption={Creation of two semaphores used in the render loop.},
       style=MyCppFloat,
       firstline=7,
-      lastline=22,
+      lastline=19,
       float
     ]
     {Main/Listings/RenderLoop.cpp}
 
-    After the camera has been updated, the uniform buffers of each object in the scene have to be updated as well.
+    As defined by the framework in section~\ref{sec:Framework}, camera data is not fixed an may change over time.
+    Thus, camera data has to be updated at some point during the rendering loop.
+    After the camera data is updated, the uniform buffers of each object in the scene have to be updated as well.
     Listing~\ref{lst:RenderLoop_ShaderDataUpload} shows the loop in which this is done.
     For each object, the \gls{mvpmatrix} matrix is computed.
     Afterwards, the buffer memory is mapped to an actual memory location in \gls{cpu} accessible \gls{ram}.
@@ -908,6 +903,7 @@
     The necessary function call is shown in listing~\ref{lst:RenderLoop_AcquireNextImage}.
     Because this function may potentially block for as long as no swapchain image is available, it accepts a timeout argument.
     In this case, the maximum value for an unsigned 32~bit integer is passed, effectively waiting as long as possible for the function to return.
+    \todo[fancyline]{Show how semaphores are created? It's not really relevant...}
     This function also accepts a semaphore as fourth argument.
     This semaphore is needed because the presentation engine might not be finished reading from the image yet.
     Once the presentation engine is done processing the image, the semaphore is signaled.
@@ -933,14 +929,12 @@
 
     The command buffer that is in \textit{executable} state is now submitted to the queue for execution in listing~\ref{lst:RenderLoop_QueueSubmission}.
     When submitted command buffers, a number of semaphores may be passed that are used to ensure proper synchronization between the device and the host.
-    On line~7, the semaphore that was used when the current swapchain image was acquired is used.
-    This semaphore will be waited on in the stages specified on line~5.
-    In this particular case it is set up so that color attachment writes are only performed after the presentation engine no longer reads from the image, thus properly synchronizing read and write access to the image.
+    On line~7, a semaphore is supplied that will be waited in the stages specified on line~5.
+    It is the same semaphore that was used when acquiring the current swapchain image.
+    In this particular, case it is set up so that color attachment writes are only performed after the presentation engine no longer reads from the image, thus properly synchronizing read and write access to the image.
     The semaphore on line~9 will be signaled once submitted command buffers have finished execution.
     This semaphore is used when presenting the image, which is explained next.
 
-
-    \todo[inline]{Next action is command buffer submission. Mention that it must be re-recorded here is push constants would be used.}
 
     \lstinputlisting[
       label=lst:RenderLoop_QueuePresent,
@@ -952,6 +946,7 @@
     ]
     {Main/Listings/RenderLoop.cpp}
 
+    \todo{Mention that command buffers need to be re-recorded before this \textbf{if} push constants are used.}
     Once command buffers have been submitted, the image they produce is presented to the application window.
     This process is shown in listing~\ref{lst:RenderLoop_QueuePresent}.
     First, the swapchain to perform the presentation with is specified on line~5.
@@ -980,7 +975,6 @@
 
   \section{Multi-threaded Rendering}
   \label{sec:MultithreadedRendering}
-    \todo[inline]{Introduction to this chapter. Motivation. Additional complexity. Applications must be sure they gain anything from using multi-threading.}
     As mentioned in chapter~\ref{cha:VulkanOverview}, Vulkan API calls are not synchronized implicitly by the \gls{driver} in order to facilitate multi-threaded processing.
     However, this does not mean that multi-threading on the \gls{cpu} has not been taken into account when Vulkan was designed.
     There are actually several ways of utilizing multiple threads for rendering with Vulkan.
@@ -1040,7 +1034,7 @@
 
         % Command buffers need to be kept alive while pending execution.
         Vulkan prohibits modifying submitted command buffers that are pending execution on the device.
-        This includes freeing these command buffers, i.e. the application is responsible for keeping them alive as long as they are pending execution.
+        This includes freeing these command buffers which implies that the application is responsible for keeping them alive as long as they are pending execution.
         In practice, this effectively means command buffers submitted in batches may only be modified or reused once the entire submission has finished execution because it is hard to predict when individual commands are processed if more than one command buffer is submitted.
         Out-of-order execution is one reason for this unpredictability.
         The simplest way to solve this problem is to just use new command buffers for every new batch submission.

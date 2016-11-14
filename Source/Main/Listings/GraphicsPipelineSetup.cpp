@@ -126,18 +126,21 @@ vkCreateRenderPass(Device, &RenderPassCreateInfo, nullptr, &RenderPass);
 //
 // Graphics Pipeline Creation
 //
-VkGraphicsPipelineCreateInfo GraphicsPipeline{};
-GraphicsPipeline.stageCount = 2;
-GraphicsPipeline.pStages = &ShaderStages[0];
-GraphicsPipeline.pVertexInputState = &VertexInputState;
-GraphicsPipeline.pInputAssemblyState = &InputAssemblyState;
-GraphicsPipeline.pTessellationState = &pTessellationState;
-GraphicsPipeline.pViewportState = &ViewportState;
-GraphicsPipeline.pRasterizationState = &RasterizationState;
-GraphicsPipeline.pMultisampleState = &MultisampleState;
-GraphicsPipeline.pDepthStencilState = &DepthStencilState;
-GraphicsPipeline.pColorBlendState = &ColorBlendState;
-GraphicsPipeline.pDynamicState = &DynamicState;
-GraphicsPipeline.layout = PipelineLayout;
-GraphicsPipeline.RenderPass = RenderPass;
-GraphicsPipeline.subpass = 0;
+VkGraphicsPipelineCreateInfo GraphicsPipelineInfo{};
+GraphicsPipelineInfo.stageCount = 2;
+GraphicsPipelineInfo.pStages = &ShaderStages[0];
+GraphicsPipelineInfo.pVertexInputState = &VertexInputState;
+GraphicsPipelineInfo.pInputAssemblyState = &InputAssemblyState;
+GraphicsPipelineInfo.pTessellationState = &pTessellationState;
+GraphicsPipelineInfo.pViewportState = &ViewportState;
+GraphicsPipelineInfo.pRasterizationState = &RasterizationState;
+GraphicsPipelineInfo.pMultisampleState = &MultisampleState;
+GraphicsPipelineInfo.pDepthStencilState = &DepthStencilState;
+GraphicsPipelineInfo.pColorBlendState = &ColorBlendState;
+GraphicsPipelineInfo.pDynamicState = &DynamicState;
+GraphicsPipelineInfo.layout = PipelineLayout;
+GraphicsPipelineInfo.RenderPass = RenderPass;
+GraphicsPipelineInfo.subpass = 0;
+vkCreateGraphicsPipelines(Device, nullptr,
+                          1, &GraphicsPipelineCreateInfo,
+                          nullptr, &GraphicsPipeline);
