@@ -2,41 +2,66 @@
 
 \chapter{Conclusion}
 \label{cha:Conclusion}
-  \todo[inline]{API quality. Explain and discuss why the API is called `modern', `highly efficient', and `explicit'.}
-  \todo[inline]{Highly active development. LunarG provides more and more improved layers with each release.}
-  \todo[inline]{Driver's are slow to keep up. No windows support from Intel for now.}
-  \todo[inline]{Hard to learn, but probably worth it. Validation layers are awesome!}
-  \todo[inline]{Mention Valve's plans for pipeline caches? Download pipeline caches when installing games.}
-  \tbd
+  \todo[inline]{Do I need to reference in the conclusion? Or may I speculate?}
+  \todo[inline]{Is the content of this chapter too informal or is it ok?}
 
   In this chapter, I am giving some insight into my thoughts about Vulkan, the problems I had with it, as well as the future I see for it.
+  During the development of this document, I also developed a Vulkan prototype in order to gain practical experience with the \gls{api}.
+  The source code can be found using appendix~\ref{apx:PrototypeSource}.
+  I have started development of that prototype not long after Vulkan was released, thus I was exposed to Vulkan in a very early state.
 
-  With rising driver complexity and OpenGL expanding to support new interfaces, becoming more confusing from an \gls{api} usage point of view, seeing Vulkan as a cross-platform successor to OpenGL is good.\todo{Rephrase.}{}
-  Vulkan is created by industry professionals who work closely with related technology all the time.
-  Providing more control to the application is generally good but it also increases complexity of the application itself.
-  This might not be feasible for some applications.
-  Another aspect is driver support for Vulkan.
-  The prototype referred to in appendix~\ref{apx:PrototypeSource} was developed on a system that was specfically acquired for the purpose of developing a Vulkan application because the system I owned previously mounted an NVIDIA GeForce GTX 560Ti, which is not supported by NVIDIA drivers to this date.
+  Vulkan is hard to learn and complicated to use.
+  Developing a simple application that only displays a static image of a triangle without a texture already requires hundreds of lines of code.
+  As can be seen throughout chapter~\ref{cha:RenderPipeline}, Vulkan oftentimes requires the application developer to pass a struct that contains information about how to perform a certain action.
+  While this makes the names of the specified settings more explicit to the developer, it also adds a lot of ``noise'' to the code.
+  There are also several ways to fill these structs with invalid combinations of arguments.
+  Luckily, the \gls{khronos} and LunarG provided tools that aid in debugging Vulkan applications at the same time Vulkan was released.
+  However, these tools were quite lacking in the beginning and it was not always easy to understand problems that arose.
 
-  The development of the prototype
+  Vulkan is also not as wide-spread as \gls{d3d} or OpenGL technology both in terms of software and hardware\footnote{I had to use a different hardware setup in order to develop the aforementioned prototype.} support.
+  This is obvious from the fact that it is still very young but this is something to consider nonetheless.
 
-  Vulkan is a modern api.
-  It supports desktop and mobile platforms.
-  Development has improved drastically since release.
+  Another aspect of Vulkan, at least compared to OpenGL, is that it requires rather detailed knowledge of how a \gls{gpu} works.
+  Hardware drivers are known to be complicated software, but with Vulkan the host application is expected to perform some of the work performed by drivers for OpenGL, for example.
+  This is due to the fact that Vulkan does not abstract the hardware as much as OpenGL did.
+  Hence, this is why OpenGL might be better suited for newcomers to graphics programming.
 
-  Future of Vulkan.
-    - Multi-GPU
-    - Pipeline cache: grab from server when installing a game.
+  On the other hand, giving more control to the application, that was previously the domain of the driver, not only adds more opportunities for optimization on a per-application basis but it also shows the actual work that is performed more clearly.
+  This might even improve debugging possibilities.
 
-  Khronos is very actively involving the community.
-  Many things open-source on GitHub.
+  While Vulkan's \gls{api} is more verbose and explicit than OpenGL's, it seems more consistent and less error-prone.
+  Vulkan makes use of the type system of \gls{ccpp} to reduce incorrect \gls{api} usage.
+  For example, instead of defining enumeration values as preprocessor \lstinline{#define} directives, Vulkan makes use of enum types.
+
+  The debugging tools developed by \gls{khronos} and LunarG that were mentioned before have improved a lot since their initial release.
+  Arguably, the most useful of these tools are the validation layers that were presented in chapters~\ref{cha:VulkanOverview}~and~\ref{cha:EnvSetup}.
+  They provide an easy way for applications to make use of \gls{api} validation and injection of third-party tools such as RenderDoc~\cite{renderdoc}.
+  At the time of writing, these tools are still in active development as open-source software on GitHub.
+  Documentation and source code developed and maintained by \gls{khronos} are available on GitHub, even the Vulkan specification itself.
+  Involving the community like this seems like a good way to continue improving Vulkan in the direction that is most useful to its users.
+
+  Furthermore, Vulkan is designed to be a cross-platform solution that offers graphics and compute capabilities.
+  Other \glspl{api} exist, of course, but Vulkan appears to be the most portable solution.
+  Microsoft's \gls{d3d12} and Apple's Metal \glspl{api} solve similar problems than Vulkan, but both are constrained to their particular platforms.
+  I expect Vulkan to become prevalent on Linux and Android platforms.
+
+  Vulkan is often viewed as the successor of OpenGL.
+  While this is certainly true in spirit, OpenGL will not disappear anytime soon just because of Vulkan.
+  The main reason is the aforementioned complexity of Vulkan.
+  Vulkan is simply much harder to use for simple and fast prototyping, especially for newcomers, and sometimes the extra control provided by Vulkan is just not necessary.
+  It remains a tool for professionals and I think it will serve its purpose mainly in graphics or game engine technology.
+  There is one question that arises very often.
+  It is about how to choose between OpenGL and Vulkan.
+  The most common answer is that Vulkan is most suitable for a particular application if it is CPU-bound, mainly referring to driver overhead in OpenGL implementations.
+  It is also recommended to use Vulkan for tile-based rendering systems, which are most common on mobile devices, because Vulkan provides better predictability of the rendering work that has to be performed.
 
   An exciting feature about Vulkan is the pipeline cache.
-  Creating a graphics pipeline in Vulkan is quite expensive because it does optimizations do the shaders in use and to the entire pipeline as a whole.
+  Creating a graphics pipeline in Vulkan is quite expensive because it performs optimizations on the shaders in use and to the entire pipeline as a whole.
   The pipeline cache can be used to speed up this process.
   In the Vulkan session part II at GDC 2016~\cite{vksessiongdc16} Dan Ginsburg, one of the speakers at this talk, described a scenario where the online game distribution platform \textit{steam} could be used to pull pipeline caches from a server for a particular game at the time it is installed.
   This would improve performance of that game at the time it is run for the first time.
 
   The Vulkan specification~1.0 is only the beginning.
-  It is missing features like support for copying device memory from one GPU directly to another without involving the hosti as well as an API for high performance and high-quality 2D rendering, like Direct2D.
+  It is missing features like support for copying device memory from one GPU directly to another without involving the host as well as an API for high performance and high-quality 2D rendering, like Direct2D.
   It remains to be seen how Vulkan, and the industry around it, will evolve in the future.
+  I will certainly follow this development with great interest.
