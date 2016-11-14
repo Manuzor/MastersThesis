@@ -17,7 +17,7 @@
     Using and developing Vulkan applications requires support from the hardware.
     Information about Vulkan support for a particular piece of hardware can usually be found in the manual or on the hardware vendor website.
     There are also third-party resources that can be consulted to check whether a particular piece of hardware provides Vulkan support.
-    The \textit{Vulkan Hardware Database}\cite{vulkangpuinfo} is one such resource.
+    The \textit{Vulkan Hardware Database}~\cite{vulkangpuinfo} is one such resource.
     This database even provides an overview of the supported hardware features and device extensions.
 
     In order to support Vulkan, hardware vendors have to provide driver implementations for the platform the user is targeting.
@@ -28,12 +28,12 @@
 
     At the time of writing, \gls{amd} and \gls{nvidia} are known to provide hardware and compatible drivers supporting Vulkan for use on \gls{windows}.
     In the early days of Vulkan, these companies only provided beta-quality \glspl{driver} but have released consumer-grade versions by now.
-    \gls{intel} also provides beta-quality drivers for Windows but does not intend to release consumer-grade \glspl{driver} for the time being\cite{intelvulkandriversonwindows}.
+    \gls{intel} also provides beta-quality drivers for Windows but does not intend to release consumer-grade \glspl{driver} for the time being~\cite{intelvulkandriversonwindows}.
 
   \section{Vulkan Header}
   \label{sec:VulkanHeader}
     The Vulkan header file is generated from a more abstract representation called the Vulkan API Registry.
-    The most recent version can be found in the Vulkan-Docs repository on GitHub, which can be found in the Khronos Vulkan Registry\cite{vulkanregistry}.
+    The most recent version can be found in the Vulkan-Docs repository on GitHub, which can be found in the Khronos Vulkan Registry~\cite{vulkanregistry}.
     This repository contains the generated \gls{ccpp} header file.
     It also contains the file \lstinline{vk.xml} and a set of tools to generate the Vulkan header from it.
 
@@ -87,7 +87,7 @@
 
     The \gls{vkloader} is the interface between Vulkan applications and \glspl{icd}.
     It is an open source project mainly developed and maintained by the Khronos Group.
-    It can be found in the Khronos Vulkan Registry\cite{vulkanregistry}.
+    It can be found in the Khronos Vulkan Registry~\cite{vulkanregistry}.
     It is written in \gls{c} and can be used by application developers either as a statically or dynamically linked library.
     It ensures that multiple \glspl{icd} can be installed on the same system without interfering with each other.
     It is also responsible for managing optional modules, called \textit{layers}.
@@ -185,7 +185,7 @@
 
   \section{LunarG Vulkan SDK}
   \label{sec:LunarGSDK}
-    The LunarG Vulkan \gls{sdk}\cite{lunargvulkansdk} is a \acrlong{sdk} developed by LunarG.
+    The LunarG Vulkan \gls{sdk}~\cite{lunargvulkansdk} is a \acrlong{sdk} developed by LunarG.
     LunarG is a software company that develops tools and infrastructure for Vulkan development.
     The company itself is sponsored by Valve Corporation.
     The first version of the LunarG \gls{sdk} was released at the same time as version 1.0 of the Vulkan specification.
@@ -204,7 +204,7 @@
     As mentioned in section~\ref{sec:Pipelines}, Vulkan expects shaders to be in \gls{spirv} format.
     \gls{spirv} is a binary format and is not meant to be human-reabable.
     Instead of writing shaders directly in \gls{spirv} format, they are usually written in \gls{glsl} and converted to \gls{spirv} in a subsequent step.
-    This tool is called \textit{glslangValidator}\cite{glslangrepo} and is a command-line based tool that is able to validate \gls{glsl} code and to convert it into other representations.
+    This tool is called \textit{glslangValidator}~\cite{glslangrepo} and is a command-line based tool that is able to validate \gls{glsl} code and to convert it into other representations.
     \todo{Describe what exactly is required. layout=N, binding=N, set=N, \#extensionm, ...}It requires the \gls{glsl} source code to be written in a specific way in order to be converted to \gls{spirv}.
 
     \todo[inline]{explain that shaders can be converted in different shader stages, e.g. vertex-, fragment-stage, hence the file endings and filenames}
@@ -241,7 +241,7 @@
     This extension provides additional Vulkan commands that can be used to supply a callback that will be triggered whenever a layer, that supports the debugging interface, needs to communicate back to the Vulkan application.
     For example, when a validation layer detects erroneous input, it will invoke the supplied debug callback and inform the application of invalid behavior.
 
-    Another tool for debugging, that is also supplied with the LunarG Vulkan \gls{sdk}, is RenderDoc\cite{renderdoc}.
+    Another tool for debugging, that is also supplied with the LunarG Vulkan \gls{sdk}, is RenderDoc~\cite{renderdoc}.
     RenderDoc is a graphics debugging tool that allows the developer to inspect pipeline states at each \gls{api} invocation.
     RenderDoc has provided \gls{d3d} and \gls{opengl} support for quite some time already but also provides Vulkan support since the release of Vulkan 1.0.
     When RenderDoc is installed, it also installs the implicit layer called \lstinline{VK_LAYER_RENDERDOC_Capture}.
@@ -260,22 +260,22 @@
     The LunarG SDK, as described in section~\ref{sec:LunarGSDK}, offers API tracing and playback tools.
     These tools effectively record which commands are performed by an application, measuring the execution time of individual commands.
     This can help in tracking down bottlenecks observed on the host-side.
-    The RenderDoc Graphics Debugging Tool\cite{renderdoc} also has the capability of tracking API calls.
+    The RenderDoc Graphics Debugging Tool~\cite{renderdoc} also has the capability of tracking API calls.
     However, tools of this kind are not capable of capturing how the GPU behaves for a given Vulkan application.
     At the time of writing, no Vulkan-specific GPU profiling tool is available as known to the author.
 
     % For measuring \gls{gpu} behavior on a more general scale, other tools can be used.
-    % One such tool is \gls{nvidia} FCAT\cite{nvidiafcat}.
+    % One such tool is \gls{nvidia} FCAT~\cite{nvidiafcat}.
     % This tool requires a special piece of hardware, called a \textit{capture card}, that captures the output of a graphics card and displays analysis results directly on the attached computer display.
     % Thus, it does not rely on application-specific, internal measurements.
     % Usage of this tool is not wide-spread but
-    % Usage of this tool is note wide-spread, but at least some computer magazines use it for benchmarking when comparing different models of graphics and compute harcware\cite{eurogamer2016:doomvulkan}\todo{citations! At least 2.}.
+    % Usage of this tool is note wide-spread, but at least some computer magazines use it for benchmarking when comparing different models of graphics and compute harcware~\cite{eurogamer2016:doomvulkan}\todo{citations! At least 2.}.
 
     The Vulkan \gls{api} itself also provides so-called \textit{timestamp queries}.
     These queries can be used to insert special query commands into a command buffer to write a timestamp value into a \textit{query pool}.
     The results recorded in the query pool can then be read from the host at certain times.
     \todo{Is this comprehensive enough?}This enables application developers to implement their own internal \acrshort{gpu} profiling system by taking time samples at application-defined points within command buffers.
-    See section~16.5 of the Vulkan specification\cite{vkspec} for details.
+    See section~16.5 of the Vulkan specification~\cite{vkspec} for details.
 
     \todo[inline]{Omit the following paragraph?}
     % \todo{Better phrasing? Make it more formal.}Vulkan has only been around for a short while now.

@@ -193,7 +193,7 @@
         {Main/Listings/PerObjectShader.glsl}
 
         Listing shows the vertex shader that is used.
-        It simply takes the vertex position and transforms it into clip space using the model view projection (MVP) matrix supplied as a uniform value.
+        It simply takes the vertex position and transforms it into clip space using the \gls{mvpmatrix} matrix supplied as a uniform value.
         As can be seen in listing~\ref{lst:VertexShader}, the layout of the shader is not very complicated.
         It only consists of a single uniform buffer object, containing a four by four\todo{Write 4x4 instead?}{} matrix, as well as the vertex input specification.
         Vertex data is limited to a single three-dimensional vector storing the position of the associated vertex in an application-specific space.
@@ -694,7 +694,7 @@
     This means that command buffers may be recorded once and executed multiple times.
     This can be very useful when recording a series of render commands for state .
     It also improves performance insofar that the \gls{driver} is able to keep frequently used command buffers in \gls{gpu} memory, reducing required communication overhead between the \gls{cpu} and the \gls{gpu} and thus, reducing required bandwidth for data transmission.
-    An example for such kinds of command buffers is for rendering state scene geometry.
+    An example for such kinds of command buffers is for rendering static scene geometry.
     This kind of geometry is does not change with time, hence the commands required for rendering also do not change.
 
     For the purposes of this chapter, command buffers will only be recorded once and submitted in the render loop in section~\ref{sec:RenderLoop}.
@@ -715,7 +715,7 @@
     The way values are supplied for push constant blocks is different from how a uniform buffer object is updated.
     Push constant values are updated using commands and are recorded to command buffers.
     This means that these values may be different for each recorded command buffer.
-    If values are stored in the push constant block that change every frame, such as the model-view-projection matrix of a scene object, command buffers need to be recorded every frame.
+    If values are stored in the push constant block that change every frame, such as the \gls{mvpmatrix} matrix of a scene object, command buffers need to be recorded every frame.
 
     \todo[inline]{Put a subsection here?}
     % \subsection{Rendering a Scene Object}
@@ -889,9 +889,9 @@
 
     After the camera has been updated, the uniform buffers of each object in the scene have to be updated as well.
     Listing~\ref{lst:RenderLoop_ShaderDataUpload} shows the loop in which this is done.
-    For each object, the model-view-projection (MVP) is computed.
+    For each object, the \gls{mvpmatrix} matrix is computed.
     Afterwards, the buffer memory is mapped to an actual memory location in \gls{cpu} accessible \gls{ram}.
-    The computed MVP matrix is then copied to the mapped memory region on line~12.
+    The computed \gls{mvpmatrix} matrix is then copied to the mapped memory region on line~12.
     On line~13, the memory mapping is undone to allow the \gls{driver} to reuse the memory region.
 
     \lstinputlisting[
@@ -990,7 +990,7 @@
       A naive approach to utilize multi-threading is to create several command buffers and assign them to multiple threads.
       These threads would then record commands to their assigned command buffers and submit them to a device queue.
       Unfortunately, there are some problems with this approach.
-      According to sections~5.3~and~5.4 of the Vulkan specification\cite{vkspec}, the host application is responsible for synchronizing interactions with command buffers and submitting them to device queues.
+      According to sections~5.3~and~5.4 of the Vulkan specification~\cite{vkspec}, the host application is responsible for synchronizing interactions with command buffers and submitting them to device queues.
 
       % Problem with command buffers and multi-threaded access.
       Command buffer access is not thread-safe.
@@ -1021,9 +1021,9 @@
       % Let main thread submit command buffers by sharing a datastructure with synchronized access.
       In order for command buffers allocated on other threads to be submitted to the device queue, the main thread may provide a shared datastructure that is capable of containing command buffer objects.
       Access to this shared container would be synchronized using traditional synchronization methods.
-      % Turns the initial problem into well-understood producer-consumer problem\cite{EWD:EWD329}.
+      % Turns the initial problem into well-understood producer-consumer problem~\cite{EWD:EWD329}.
       % Solves the inital queue submission problem.
-      This effectively creates the well-understood producer-consumer scenario\cite{EWD:EWD329} and solves the initial queue submission problem.
+      This effectively creates the well-understood producer-consumer scenario~\cite{EWD:EWD329} and solves the initial queue submission problem.
 
       \todo[inline]{Prev paragraph is just a suggestion. May be better to do differently. Depends on application.}
 
@@ -1058,7 +1058,7 @@
         If a command pool is going to be reused, and the memory is not released, this command pool can directly start producing command buffers without causing additional allocation overhead.
         This provides a clean way for managing command buffer lifetimes without the need to use anything but the Vulkan \gls{api} itself.
 
-        \todo{Describe what they did differently?}Similar approaches have been described by industry experts such as Marius Bjørge\cite{bjorge:multithreadingvulkan} in his blog post about multi-threading in Vulkan as well as Mathias Schott\cite{mschott:vulkan_multi_threading} in his talk entitled ``Vulkan multi-threading''.
+        \todo{Describe what they did differently?}Similar approaches have been described by industry experts such as Marius Bjørge~\cite{bjorge:multithreadingvulkan} in his blog post about multi-threading in Vulkan as well as Mathias Schott~\cite{mschott:vulkan_multi_threading} in his talk entitled ``Vulkan multi-threading''.
 
         Care must be taken, however, in cases where the amount of memory required by a command buffer is not steady during its lifetime.
         For example, when transitioning from a large \gls{3d} scene, with many objects to render, to a small scene with less draw calls to perform, the memory requirements of each command buffer may be lowered considerably for the new scene.
