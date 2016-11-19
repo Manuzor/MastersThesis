@@ -27,7 +27,8 @@
 
 \usepackage[english]{babel}
 
-\usepackage[iso,english]{isodate}
+\usepackage[datesep=.]{datetime2}
+\DTMsetstyle{ddmmyyyy}
 
 \usepackage[autostyle]{csquotes}
 
@@ -63,6 +64,7 @@
 % To disable todonotes: [disable]
 \usepackage{todonotes}
 \newcommand{\tbd}[0]{\todo[inline, nolist, color=yellow!30]{\centerline{To Be Done}}{}}
+\newcommand{\proofread}[0]{\todo[nolist, fancyline, color=green!60]{\centerline{Check}}{}}
 % Put todo notes on the left side
 \reversemarginpar
 \setlength{\marginparwidth}{3.2cm}
@@ -139,13 +141,14 @@
 
 \usepackage{hyperref}
 \hypersetup{
-  colorlinks,
   final,
-  bookmarksnumbered,
-  citecolor=black,
-  filecolor=black,
-  linkcolor=black,
-  urlcolor=black
+  bookmarksnumbered
+  % hidelinks
+  % colorlinks,
+  % citecolor=black,
+  % filecolor=black,
+  % linkcolor=black,
+  % urlcolor=black
 }
 
 \usepackage[all]{nowidow}
@@ -208,7 +211,7 @@
 
         an der \\ \textit{\Large Hochschule der Medien Stuttgart}
 
-        am \\ \textit{\Large 14.11.2016}
+        am \\ \textit{\Large \DTMtoday}
 
         zur Erlangung des akademischen Grades eines \\ \textit{\Large Master of Science (M.Sc.)}
 
@@ -228,7 +231,7 @@
     \subject{Master's Thesis \\ Computer Science and Media \\ Hochschule der Medien Stuttgart}
     \title{Prototypical Evaluation \par of Vulkan's Low-Level \par Graphics Pipeline}
     \author{Manuel Maier}
-    \date{\today}
+    \date{\DTMToday}
     \publishers
     {
       Supervisors \\
@@ -243,31 +246,31 @@
   % Blank page for physical notes, name entries, etc.
   %
   \newpage
-  \ifthenelse{\boolean{hdm}}
-  {
-      \begin{tabu}{ |l|X| }
-        \multicolumn{2}{c}{Masterarbeit} \\
-        \multicolumn{2}{c}{Computer Science and Media} \\
-        \multicolumn{2}{c}{Hochschule der Medien Stuttgart} \\
-        \hline
-        Titel               & Prototypical Evaluation of Vulkan's Low-Level Graphics Pipeline \\
-        \hline
-        Titel bei Anmeldung & Evaluating the Resource Management Possibilities of the Vulkan Graphics API \\
-        \hline
-        Autor               & Manuel Maier \\
-        \hline
-        Semester            & Wintersemester 2016 \\
-        \hline
-        Abgabedatum         & 14.11.2016 [dd.mm.yyyy] \\
-        \hline
-        Matrikelnummer      & 28535 \\
-        \hline
-        Kürzel              & mm198 \\
-        \hline
-        E-Mail              & mjmaier@gmx.de \\
-        \hline
-      \end{tabu}
-  }
+  % \ifthenelse{\boolean{hdm}}
+  % {
+  %     \begin{tabu}{ |l|X| }
+  %       \multicolumn{2}{c}{Masterarbeit} \\
+  %       \multicolumn{2}{c}{Computer Science and Media} \\
+  %       \multicolumn{2}{c}{Hochschule der Medien Stuttgart} \\
+  %       \hline
+  %       Titel               & Prototypical Evaluation of Vulkan's Low-Level Graphics Pipeline \\
+  %       \hline
+  %       Titel bei Anmeldung & Evaluating the Resource Management Possibilities of the Vulkan Graphics API \\
+  %       \hline
+  %       Autor               & Manuel Maier \\
+  %       \hline
+  %       Semester            & Wintersemester 2016 \\
+  %       \hline
+  %       Abgabedatum         & \DTMToday \\
+  %       \hline
+  %       Matrikelnummer      & 28535 \\
+  %       \hline
+  %       Kürzel              & mm198 \\
+  %       \hline
+  %       E-Mail              & mjmaier@gmx.de \\
+  %       \hline
+  %     \end{tabu}
+  % }
   {
     \null
   }
@@ -306,11 +309,11 @@
   % Chapters
   %
   \pagenumbering{arabic}
-  \input{Main/1_Introduction}
+  % \input{Main/1_Introduction}
   \input{Main/2_VulkanOverview}
-  \input{Main/3_EnvSetup}
-  \input{Main/4_RenderPipeline}
-  \input{Main/5_Conclusion}
+  % \input{Main/3_EnvSetup}
+  % \input{Main/4_RenderPipeline}
+  % \input{Main/5_Conclusion}
 
   \newpage
   \pagenumbering{Roman}
@@ -320,7 +323,6 @@
   % Bibliography
   %
   \newpage
-  % Print all bibliography entries.
   % \nocite{*}
   \printbibliography[heading=bibintoc,title=Bibliography]
 

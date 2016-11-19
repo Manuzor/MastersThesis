@@ -11,7 +11,7 @@
   Traditional \glspl{api} had to adjust to these changes while maintaining compatibility to previously supported hardware at the same time.
   The result of this is an increase in driver implementation complexity that negatively affects performance at least on the \gls{cpu}.
   New graphics \glspl{api} were designed to match recent hardware more closely.
-  One such \gls{api} is the Vulkan graphics API by the \gls{khronos}, which is presented here\todo{``In this work/document/thesis''?}.
+  One such \gls{api} is the Vulkan graphics API by the \gls{khronos}~\cite{vkspec}, which is presented in this work.
 
 
   \section{Document Structure}
@@ -19,12 +19,14 @@
     In chapter~\ref{cha:VulkanOverview}, an overview of the Vulkan graphics \gls{api} is given in terms of its components and features.
     Chapter~\ref{cha:EnvSetup} is a guide for setting up Vulkan for application development with a bias towards \gls{windows} platforms.
     Chapter~\ref{cha:RenderPipeline} sets up a simple rendering scenario and explains it by showing relevant steps in the form of code samples.
-    And finally, chapter~\ref{cha:Conclusion} concludes this document and provides insight to thoughts of the author about the topics discussed.
+    % And finally, chapter~\ref{cha:Conclusion} concludes this document and provides insight to thoughts of the author about the topics discussed.
+    In (chapter~\ref{cha:Conclusion} | the last chapter), remarkable aspects of Vulkan are highlighted and prospects for potential uses of it are presented from the point of view of the author.
+
   \section{Interaction With Graphics Hardware}
   \label{sec:HardwareInteraction}
     Because \glspl{gpu} are a distinct hardware component in a computer system, \glspl{api} are used to communicate with the \gls{gpu}.
     The level of abstraction an \gls{api} provides varies and depends on the platform and hardware vendor.
-    On gaming consoles, for instance, it is common to use graphics \glspl{api} that do not put any abstraction layer between the application and the \gls{gpu}, allowing application to take full control of the hardware.
+    On gaming consoles, for instance, it is common to use graphics \glspl{api} with only minimal abstraction layer, if any, between the application and the \gls{gpu}, allowing applications to take full control of the hardware.
     This is most suitable to systems with a fixed configuration of hardware components.
     On desktop systems, on the other hand, the situation is very different.
     Hardware configurations are rarely the same and change with each release of new graphics hardware, which typically happens more frequently than new gaming consoles are released.
@@ -62,8 +64,9 @@
     It shows all programmable shader stages as well as some fixed-function stages and the flow between them.
     As for the fixed-function stages, only the input assembly and the rasterizer are depicted.
     The input assembly is responsible for assembling vertex data and translating them into primitives such as triangles.
-    The rasterizer transforms incoming primitive data in order to produces fragments that will will be processed by the fragment shader to produce pixel values.
+    The rasterizer transforms incoming primitive data in order to produce fragments that will will be processed by the fragment shader to produce pixel values.
     It must be noted that these are just two out of many fixed-function stages.
+    A complete list of all pipeline stages can be found in the Vulkan specification chapter~9, specficially figure~9.1~\cite{vkspec}.
 
     The available shader stages are the vertex, tessellation, geometry, and fragment shader stages.
     Basic functionality and purpose of the shader stages are explained below.
@@ -115,12 +118,13 @@
     A game ported from a console to a platform like the \gls{pc} would often run less optimal in comparison in terms of the most optimal use of available resources.
 
     Providing more control to the application also means that drivers have to do less guess-work to figure out what the application wants to do.
-    This makes driver implementations simpler and easier to maintain, reducing the possibility for \glspl{bug}, but it also makes application code more complicated at the same time.
+    This makes driver implementations simpler and easier to maintain, reducing the possibility of \glspl{bug}, but it also makes application code more complicated at the same time.
+    \todo[fancyline,color=blue!60]{patrigg: the may also optimize api usage for their specific problem --> no additional checks by the driver where this is not needed}
     However, this allows application developers to optimize for different hardware independently of the actual driver implementation.
 
     Multi-threading is also a concern for modern graphics applications.
     With traditional graphics \glspl{api} it was usually much harder, if not impossible, to utilize multiple threads in terms of rendering.
-    At the time these \glspl{api} were designed, applications were usually running only in a single thread.
+    At the time these \glspl{api} were designed, applications were usually running only on a single thread.
     Modern graphics \glspl{api}, on the other hand, have been designed with multi-core processing in mind.
 
     % \todo[inline]{Mention CPU overhead of GPU instructions, especially on mobile.}
@@ -153,7 +157,7 @@
     This way the driver only does as much work as it needs to function properly and less power will be consumed.
     Hardware vendors will also have an easier time providing robust drivers with less bugs due to reduced complexity.
 
-    Another advantage of Vulkan being a new API built without worrying about backwards compatibility, is the chance of designing a new and consistent API so developers will have an easier time creating applications.
+    Another advantage of Vulkan\todo[fancyline,color=blue!60]{Comma?}{} being a new API built without worrying about backwards compatibility, is the chance of designing a new and consistent API so developers will have an easier time creating applications.
     For more information about the API structure and common patterns in Vulkan, see chapter~\ref{cha:VulkanOverview}.
 
     Version 1.0 of Vulkan was not entirely built in-house at \gls{khronos} but is in part based on components of AMD's Mantle API, which was donated to the \gls{khronos}~\cite{vksessiongdc15}.
@@ -161,7 +165,7 @@
 
     \subsection{Related APIs}
       There are several other graphics \glspl{api} available for using graphics and compute hardware.
-      \gls{opengl} is Vulkans predecessor and provides a higher level of abstraction from the hardware.
+      \gls{opengl} is the predecessor of Vulkan and provides a higher level of abstraction from the hardware.
       It is a very successful API running on several different platforms with varying hardware configurations.
       Due to its level of abstraction, \gls{opengl} drivers are very complex and do a significant amount of work on the \gls{cpu} in order to match abstract commands to the hardware.
 
@@ -171,7 +175,7 @@
       The most recent versions of \gls{d3d} are \gls{d3d11} and \gls{d3d12}.
       \gls{d3d11} provides a higher level of abstraction from the hardware than \gls{d3d12}, similar to the relationship between \gls{opengl} and Vulkan.
       It has been around since the release of Windows 7 in 2009.
-      \gls{d3d12}, the latest revision of the \gls{d3d} specification released in 2015, is comparable to Vulkan in terms of of hardware abstraction.
+      \gls{d3d12}, the latest revision of the \gls{d3d} specification released in 2015, is comparable to Vulkan in terms of hardware abstraction.
       It provides much more control to the developer over the hardware.
 
       Apple developed its own graphics \gls{api} called Metal, which is exclusively available on iOS and Mac OSX platforms.

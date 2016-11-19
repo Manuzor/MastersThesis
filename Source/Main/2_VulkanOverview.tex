@@ -1,17 +1,17 @@
 %!TEX root = ../Main.tex
 
-\chapter{Vulkan API Overview/Workflow}
+\chapter{Vulkan API Overview}
 \label{cha:VulkanOverview}
   This chapter provides an overview of the Vulkan \gls{api} and explains some concepts in greater detail.
   It does not cover the entire feature set of Vulkan.
-  Most of the information provided in this chapter are based on the Vulkan 1.0 specification~\cite{vkspec}.
+  Most of the information provided in this chapter is based on the Vulkan 1.0 specification~\cite{vkspec}.
 
   The Vulkan \gls{api}, at its core, is agnostic of the operating system it runs on.
   However, an interface for extending Vulkan is provided that can be leveraged to provide additional functionality to perform platform specific tasks. This is explained in more detail later in this chapter as well as in chapter~\ref{cha:EnvSetup}.
 
   There are certain terms used throughout this document that refer to specific things in the context of Vulkan development.
   The application that interacts with Vulkan, for instance, is commonly referred to as the \textit{host} or the \textit{host-application}.
-  The term \textit{device} referes to the \gls{gpu} and is represented in Vulkan by an object of the same name, which is explained later in this chapter.
+  The term \textit{device} refers to the \gls{gpu} and is represented in Vulkan by an object of the same name, which is explained later in this chapter.
   The term \textit{\gls{driver}} refers to the implementation of the Vulkan \gls{api} the application interacts with and is responsible for executing Vulkan \gls{api} commands.
   This is not necessarily the hardware driver itself but is often provided by \glspl{ihv}.
 
@@ -20,21 +20,22 @@
 
   \section{Workflow and Patterns}
   \label{sec:WorkflowAndPatterns}
-    The Vulkan API was designed to be consistent and explicit. Many patterns can be found in the Vulkan code style that make it easier for the \gls{application} to use the API effectively. This section is a walkthrough of the basic steps needed to set up a Vulkan graphics pipeline to present an image to a display.
+    The Vulkan API was designed to be consistent and explicit.
+    Many patterns can be found in the Vulkan code style that make it easier for the \gls{application} to use the API effectively.
+    This section is a walkthrough of the basic steps needed to set up a Vulkan graphics pipeline to present an image on a display.
 
     The first object that has to be created is a Vulkan instance.
     Vulkan makes use of \textit{handle} types allowing the \gls{application} to track objects created with the API.
     The Vulkan instance is represented by such a handle and can be used to query available physical \glspl{device} that provide Vulkan support.
     These physical \glspl{device} can be queried for certain capabilities, such as supported image formats and hardware features, to aid in deciding which physical device to use for the \gls{application}.
     A physical device can subsequently be used to create a logical device, or just device.
-    The number of \glspl{device} created from a physical device is not limited by Vulkan but typical application create just a single instance.
+    The number of \glspl{device} created from a physical device is not limited by Vulkan but typical applications create just a single instance.
     Devices represent the primary interface to Vulkan and are used for a number of tasks such as allocating \gls{gpu} resources.
 
     A device also consists of multiple queues which are used to submit work to the \gls{gpu}.
     Queues are logical instances of what is called a queue family.
     Each queue family has certain properties that have to be considered by the application.
     For example, if the queue is supposed to accept submissions of rendering commands, the application needs to ensure the queue actually has graphics capabilities.
-    Some queues might only accept copy commands.
 
     % Queues are created when the associated device is created and are available for as long as the device is available.
     % A device may be associated with multiple queues at once.
@@ -44,11 +45,15 @@
     % Contrast with OpenGL}.
     % However, \glspl{driver} and Vulkan layers or extensions are free to modify their own state across Vulkan object boundaries.\todo{Redundant sentence? This should be a given.}
 
-    Once a device handle has been acquired, the \gls{application} can create a swapchain to establish a connection between a specific queue on the device and a platform specific presentation engine. A swapchain contains a number of \textit{presentation images}. Usually, these images are used to store the results of the graphics pipelines. At the time these images are presented, they have to be in a specific layout reserved for presentation purposes.
+    Once a device handle has been acquired, the \gls{application} can create a swapchain to establish a connection between a specific queue on the device and a platform specific presentation engine.
+    A swapchain contains a number of \textit{presentation images}.
+    Usually, these images are used to store the results of the graphics pipelines.
+    At the time these images are presented, they have to be in a specific layout reserved for presentation purposes.
+    In order for the images to be accepted by the presentation engine, they have to be in a specific layout reserved for presentation purposes.
 
     In order to render images, a graphics pipeline needs to be created.
     An overview of how graphics pipelines work in general was presented in section~\ref{sec:GraphicsWorkflow}.
-    Rendered image produced with a graphics pipeline are then consumed by the presentation engine via a swapchain.
+    Rendered images produced with a graphics pipeline are then consumed by the presentation engine via a swapchain.
     In Vulkan, a graphics pipeline consists of multiple configurations for fixed-function stages and shader stages.
 
     Vulkan also provides the concept of a render pass.
@@ -56,7 +61,7 @@
     A render pass also stores dependencies between subpasses, that are executed in a specific order, which can be used for post-processing, for example.
 
     Render passes can be instantiated which is necessary to perform rendering commands.
-    Inside a render pass instance, command buffers are be used to record rendering commands such as issuing drawing commands or transforming images from one layout to another.
+    Inside a render pass instance, command buffers are used to record rendering commands such as issuing drawing commands or transforming images from one layout to another.
     Command buffers have certain state they can be in which is further explained in section~\ref{sec:CommandBuffers} and chapter~\ref{cha:RenderPipeline}.
 
     Vulkan objects can be created using \lstinline{vkCreate*} commands with the help of \lstinline{Vk*CreateInfo} structures.
@@ -70,26 +75,27 @@
     \todo{Explain memory pools briefly.}When Vulkan objects are allocated from memory pools, or directly from \gls{device} memory, calls to \lstinline{vkAllocate*} commands have to be made.
     These commands are accompanied by \lstinline{vkFree*} commands that return resources to their origin where they originally were acquired from.
     The general rule is that all objects allocated from pools are released as soon as the pool itself is released.
-    Using Vulkan objects that are released results in undefined behavior, similar to using freed memory in \gls{ccpp}.
+    Using released Vulkan objects results in undefined behavior, similar to using freed memory in \gls{ccpp}.
 
     Unlike other APIs, Vulkan does not do any object tracking or reference counting to manage object life times.
     It is the responsibility of the \gls{application} to destroy or free Vulkan objects at the appropriate times, i.e.
     when they are no longer in use and will not be used in the future by either the \gls{host} or the device.
 
-    Vulkan objects are not designed to be thread-safe.
-    This means that accessing or modifying a Vulkan object from more than one thread at once can lead to race conditions or other undesirable behavior.
-    It is the responsibility of the \gls{application} to employ proper synchronization mechanisms on the \gls{host} to ensure Vulkan objects are never \todo{Clarify that it's read and write access.
-    Maybe also explain why?}accessed concurrently.
+    Vulkan objects are generally not designed to be thread-safe.
+    The Vulkan specification states whether \gls{host} synchronization is required for each individual command of the \gls{api}.
+    This means that accessing or modifying most Vulkan objects from more than one thread at once can lead to race conditions or other undesirable behavior.
+    In these cases, it is the responsibility of the \gls{application} to employ proper synchronization mechanisms on the \gls{host} to ensure Vulkan objects are never read from or written to concurrently.
 
   \section{Layers and Extensions}
   \label{sec:LayersAndExtensions}
-    Vulkan is designed to be extensible by thirdparty \glspl{application}. The two mechanisms provided are called layers and extensions.
+    Vulkan is extensible by third-party \glspl{application}.
+    The two mechanisms provided are called \textit{layers} and \textit{extensions}.
 
     A layer in Vulkan can be thought of as an observer to the API calls done by the \gls{application}.
     It does not add new types or commands the \gls{application} can use directly.
     Layers are not required for Vulkan to function properly, they add to and observe existing functionality instead.
 
-    The LunarG SDK~\cite{lunargvulkansdk}, for example, comes with a set of layers to validate usage of the Vulkan API. This is extremely useful during development as it allows the \gls{application} to focus on their code rather than the perfect use of the Vulkan API. It should also be noted that bare Vulkan, without any validation layers enabled, does not do any error checking. When the \gls{application} passes an invalid combination of flags to some Vulkan function, it is undefined behavior and has to be corrected by the \gls{application}.
+    The LunarG SDK~\cite{lunargvulkansdk}, for example, comes with a set of layers to validate usage of the Vulkan API. This is extremely useful during development as it allows application developers to focus on their code rather than the perfect use of the Vulkan API. It should also be noted that bare Vulkan, without any validation layers enabled, does not do any error checking. When the \gls{application} passes an invalid combination of flags to some Vulkan function, it results in undefined behavior and has to be corrected by the \gls{application}.
 
     As opposed to layers, extensions are able to provide new or add to existing functionality. The motivation for extensions is to keep the Vulkan core functionality small and provide specific functionality via such extensions. In fact, the Khronos Group provides built-in extensions for both common and platform specific functionality.
 
@@ -126,8 +132,8 @@
   \label{sec:MemoryManagement}
     Memory in Vulkan is categorized in either \gls{host} memory or \gls{device} memory.
 
-    Host memory is used by the \gls{driver} for data that is not visible to the device.
-    \glspl{application} have the option to supply memory allocators to \glspl{driver} in order to control how \gls{host} memory is allocated.
+    Host memory is used by the \gls{driver} for data structures that are represented by Vulkan objects defined as part of the Vulkan \gls{api}.
+    Applications have the option to supply memory allocators to \glspl{driver} in order to control how \gls{host} memory is allocated.
     Host memory allocations are not conducted in performance critical code paths.
     In general, supplying custom memory allocators may not significantly affect efficiency of the \gls{application}.
     Instead, it is an opportunity for \glspl{host} on embedded systems to control memory allocations or for informational purposes such as logging memory allocations done by the \gls{driver}.
@@ -146,11 +152,10 @@
         Multiple buffer views can be used to refer to the same buffer.
 
       \item[Images]
-        As opposed to buffer resources, an image contains more information about how the underlying memory is used. For example, an image has a particular format, such as having red-green-blue channels, each channel using 8 bits of memory. An image may also be in a particular layout, e.g. in \textit{shader read-only} layout which is required when the image is supposed to be used by a shader. Another important image property is the image tiling. An image may either exist in linear tiling or optimal tiling. Linear tiling means that the underlying data of the image is laid out in memory in a linear fashion. The data will be in the same memory layout as it was when it was uploaded. The memory layout of the image data in optimal tiling, however, is not specified by Vulkan. The \gls{driver} is free to lay out the data in memory as it sees fit. This is done in order to improve performance. Parts of the actual physical device may process an image faster in certain circumstances when the image data is not laid out linearly in memory.
+        As opposed to buffer resources, an image contains more information about how the underlying memory is used. For example, an image has a particular format, such as having red-green-blue channels, each channel using 8 bits of memory. An image may also be in a particular layout, e.g. in \textit{shader read-only} layout which is required when the image is supposed to be used by a shader. Another important image property is the image tiling. An image may either exist in linear tiling or optimal tiling. Linear tiling means that the underlying data of the image is laid out in memory in a linear fashion. The data will be in the same memory layout as it was when it was uploaded. The memory layout of the image data in optimal tiling, however, is not specified by Vulkan. The \gls{driver} is free to lay out the data in memory as it sees fit. This is done in order to improve performance. Parts of the actual physical device may process an image faster in certain circumstances when the image data is not laid out linearly in memory. In addition, special purpose hardware components, such as image samplers, only work in image and not on buffer objects.
 
         Similar to buffers, images can be referenced via \textit{image views}.
         They contain information about the underlying image, such as the region that is referred to or whether the image is to be interpreted as a 2D image or a cube map.
-        This allows the application to perform work only on specific parts of an image.
         This allows applications to use a single image, break it up into several parts covered by image views, and use these parts to perform operations.
         Framebuffers, for example, require image views to be supplied as render targets.
     \end{description}
@@ -208,27 +213,27 @@
 
   \section{Pipelines}
   \label{sec:Pipelines}
-    \todo[inline]
-    {
-      Describe descriptor-sets, descriptor-pools, etc?
+    % \todo[inline]
+    % {
+    %   Describe descriptor-sets, descriptor-pools, etc?
 
-      Explain "Binding Points" somewhere.
-    }
+    %   Explain "Binding Points" somewhere.
+    % }
 
-    % \begin{figure}
-    \begin{wrapfigure}{r}{0.45\textwidth}
+    \begin{figure}
+    % \begin{wrapfigure}{r}{0.45\textwidth}
       \label{fig:GraphicsPipeline}
       \centering
-      \includegraphics[width=0.43\textwidth]{Main/Images/GraphicsPipeline}
-      \caption{Overview of some of the components of a graphics pipeline.}
-    \end{wrapfigure}
-    % \end{figure}
+      \includegraphics[height=0.4\textheight]{Main/Images/GraphicsPipeline}
+      \caption{Incomplete list of graphics pipeline components and examples of their individual properties.}
+    % \end{wrapfigure}
+    \end{figure}
 
     Vulkan uses the concept of pipelines to describe how work is performed on the GPU.
     It supports compute and graphics pipelines.
     The compute pipeline consists only of a single programmable stage.
     The graphics pipeline, however, is considerably more complex.
-    It has multiple fixed function stages and five programmable stages, called shader stages.
+    It has multiple fixed-function stages and five programmable stages, called shader stages.
     Some of the fixed-function stages have configurable state that can be manipulated by the \gls{application}.
     For example, the rasterization stage can be configured to interpret incoming vertex data as either a list of points, lines, or filled polygons with more than two sides.
     Figure~\ref{fig:GraphicsPipeline} provides an overview of some of the components of the graphics pipeline.
@@ -245,7 +250,7 @@
     The vertex input layout describes how the data in vertex buffers is to be interpreted.
     The descriptor set layout describes the kind of data that is used by shaders, like uniform buffers or image samplers.
 
-    \todo[inline]{Describe why having only a vertex shader stage can be useful? (Cache skinning results)}
+    % \todo[inline]{Describe why having only a vertex shader stage can be useful? (Cache skinning results)}
 
     \begin{figure}
       \label{fig:RenderPassInstanceSample}
@@ -258,7 +263,7 @@
     In fact, when creating a pipeline, the index of the subpass the pipeline will be executed in has to be known already.
     Render pass objects, as explained earlier in section~\ref{sec:RenderPassesOverview}, contain information about the dependencies between pipelines as well as information about the framebuffer attachments.
     But pipelines are interchangeable and do not store information about other pipelines that are executed before or after them.
-    Creating a connection between pipelines in the render pass allows the \gls{driver} to perform optimizations.
+    % Creating a connection between pipelines in the render pass allows the \gls{driver} to perform optimizations.
     Figure~\ref{fig:RenderPassInstanceSample} shows how each pipeline is connected to a render pass to produce results stored in a connected framebuffer.
 
     \subsection{Pipeline Cache}
@@ -277,8 +282,6 @@
 
 
   \section{Synchronization}
-    \todo[inline]{Maybe reduce the use of `Vulkan was designed to' throughout the document?}
-
     Vulkan was designed to scale well in multi-threaded environments.
     However, most \gls{api} call synchronization has to be performed by the application.
     The application typically knows best when synchronization is needed, if any is needed at all, which is why this approach is employed in the Vulkan \gls{api}.
@@ -289,7 +292,7 @@
 
     \subsection{Fences}
     \label{sub:Fences}
-      A fence is a synchronization primitive used to determine the execution status of submitted operations executed on a queue.
+      A fence is a synchronization primitive used to determine the execution status of submitted operations executed in a queue.
       Such a fence can only be in one of two states: not signaled and signaled.
       The status of a fence is visible to the \gls{host}.
       The device itself does not use the status of a fence directly.
@@ -310,16 +313,18 @@
       This command buffer then needs to be submitted to a queue in order to be executed.
       When submitting to the queue, a semaphore can be provided that will be signaled once the queue has finished executing all submitted commands.
       The same semaphore can be used when issuing the swapchain presentation command.
-      When everything is set up like this, the presentation engine will effectively wait for the commands to produce the final image and then present it as fast as possible.
+      When everything is set up like this, the presentation engine will effectively wait for the commands to produce the final image and then present it immediately.
 
-      Note that a fence can be used to achieve the same results except that it would require the \gls{host} to actively wait for the queue to finish executing, stalling any other CPU operations that could have been executed in that time.
-      Using the semaphore in this case will result in better performance.
+      % Note that a fence can be used to achieve the same results except that it would require the \gls{host} to actively wait for the queue to finish executing, stalling any other CPU operations that could have been executed in that time.
+      Note that a fence can be used to achieve the same results.
+      However, a fence would require the \gls{host} to actively wait for the queue to finish executing, reducing processing time that could be spent on other computations.
+      Using a semaphore will result in better performance in this case.
 
     \subsection{Events}
     \label{sub:Events}
-      \todo[inline]{Investigate: Event host-callbacks? Or does the host need to poll?}
+      \todo[inline,color=blue!60]{Investigate: Event host-callbacks? Or does the host need to poll?}
 
-      Events are used to synchronize from \gls{host} to device or from device to device in a bidirectional manner.
+      Events are used to synchronize between \gls{host} and device or between device and device in a bidirectional manner.
       Like semaphores and fences, events are either in a signaled or in a not-signaled state.
       Events are inserted into command buffers in order to allow the device to signal them.
       This allows for more fine-grained synchronization between commands and to signal command completion to the \gls{host}.
@@ -329,33 +334,35 @@
       Given an arbitrary number of images in an \gls{application} that need to be transformed in some way that is expensive to compute, these transformations could be issued into a single command buffer, inserting a completion event between these commands.
       After submitting this command buffer to the queue, the \gls{application} can periodically query for completion of the individual transformation commands without the need to wait for the entire submission to finish by using fences or semaphores.
 
-      It must be noted that events are only allowed to be insterted into command buffers that are all submitted to the same queue.
-      This makes them unsuitable for cross-queue synchronization when such is requried.
+      It must be noted that events are only allowed to be inserted into command buffers that are all submitted to the same queue.
+      This makes them unsuitable for cross-queue synchronization when such is required.
 
     \subsection{Barriers}
     \label{sub:Barriers}
-      Barriers are used exclusively with commands recorded to command buffers.
+      \proofread
+      Barriers are used to synchronize \gls{gpu} commands.
       There are two kinds of barriers in Vulkan.
-      The first kind is called an execution barrier which are used to create explicit dependencies on the completion of specific commands.
-      The second kind is called a memory barrier which are used to depend on memory to be present in a specific form.
-      Both kinds of barriers are combined in Vulkan as a pipeline barrier.
+      The first kind is called an execution barrier which is used to create explicit dependencies on the completion of specific commands.
+      The second kind is called a memory barrier which is used to set up a dependency for specific resources or regions of memory.
 
       \begin{figure}
         \centering
         \includegraphics[width=\textwidth]{Main/Images/PipelineBarrier}
-        \caption{Illustration of a pipeline barrier insterted between commands in a command buffer.}
+        \caption{Illustration of a pipeline barrier inserted between commands in a command buffer.}
         \label{fig:PipelineBarrier}
       \end{figure}
 
-      By inserting a memory dependency, Vulkan guarantees that all memory operations on a specified resource or memory region have finished once the inserted barrier has been reached.
-      Otherwise all following commands are not able to begin executing.
+      \proofread
+      By inserting a memory dependency using a memory barrier, Vulkan guarantees that all memory operations on a specified resource or memory region have finished once the inserted barrier has been reached, preventing subsequent memory operations from executing until that point.
       Analogously, an execution dependency requires all previous commands to have finished execution before starting to execute other commands inserted after the barrier.
+      \proofread
+      Figure~\ref{fig:PipelineBarrier} illustrates such a case.
 
       There are three types of memory barriers in Vulkan: Global memory barriers, buffer memory barriers, and image memory barriers.
 
       \subsubsection{Global Memory Barriers}
         Global memory barriers introduce a dependency to all memory objects that exist at the time of execution of the barrier.
-        All prior memory access operations, whether they are read or write operations, must have finished before the barrier finishes execution.
+        All prior memory access operations, whether they are read or write operations, must have finished before the barrier is reached.
 
         Such heavyweight memory dependencies are not needed if the memory in use is entirely cache coherent.
         In other words, if the rest of the system ensures that all caches are flushed at appropriate times, memory accesses from other parts of the system will be consistent and up-to-date.
