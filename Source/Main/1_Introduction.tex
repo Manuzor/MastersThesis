@@ -36,10 +36,10 @@
     The relationship between an application and graphics hardware is depicted in figure~\ref{fig:AppApiDriverOverview}.
 
     \begin{figure}
-      \label{fig:AppApiDriverOverview}
       \centering
       \includegraphics[width=\textwidth]{Main/Images/Application_API_Driver_Overview}
       \caption{Interaction between the application and graphics hardware via an API.}
+      \label{fig:AppApiDriverOverview}
     \end{figure}
 
 
@@ -54,10 +54,10 @@
     In this section, the terms coined by the \gls{khronos} will be used as they are the same as the terms used in the Vulkan specification.
 
     \begin{figure}
-      \label{fig:Rendering_Pipeline_Overview}
       \includegraphics[width=\textwidth]{Main/Images/Rendering_Pipeline_Overview}
       \centering
       \caption{Simplified overview of a graphics pipeline. Fixed-function stages are depicted with solid, rounded outlines and shader stages with dashed outlines.}
+      \label{fig:Rendering_Pipeline_Overview}
     \end{figure}
 
     Overview of the rendering pipeline on modern graphics hardware is outlined in figure~\ref{fig:Rendering_Pipeline_Overview}.
@@ -91,7 +91,7 @@
         In other words, this is the stage where the actual pixel colors are produced, optionally by sampling textures and applying lighting computations.
     \end{description}
 
-    \todo[inline,color=blue!60]{Mention compute shader}
+    % \todo[inline,color=green!60]{Mention compute shader}
 
 
   \section{Motivation for a new Graphics API}
@@ -100,7 +100,6 @@
     The models employed by traditional graphics \glspl{api} no longer match modern hardware design as closely.
     In order to remain compatible, these \glspl{api} need to perform a mapping of their model to modern hardware design, which may come at a significant cost in terms of performance.
 
-    \proofread
     In practice, this often means that the hardware driver, implementing a traditional graphics \gls{api}, wastes a considerable amount of time that could be used by the host application to perform useful computations.
     It depends on the kind of application whether the additional \gls{cpu} overhead is acceptable or not.
     Reducing \gls{cpu} overhead is important on mobile devices because it implies a lower rate of power consumption.
@@ -122,9 +121,10 @@
     A game ported from a console to a platform like the \gls{pc} would often run less optimal in comparison in terms of the most optimal use of available resources.
 
     Providing more control to the application also means that drivers have to do less guess-work to figure out what the application wants to do.
-    This makes driver implementations simpler and easier to maintain, reducing the possibility of \glspl{bug}, but it also makes application code more complicated at the same time.
-    \todo[fancyline,color=blue!60]{patrigg: the may also optimize api usage for their specific problem --> no additional checks by the driver where this is not needed}
+    This makes driver implementations simpler and easier to maintain, reducing the possibility of bug, but it also makes application code more complicated at the same time.
+    \todo[fancyline,color=green!60]{patrigg: the may also optimize api usage for their specific problem --> no additional checks by the driver where this is not needed}
     However, this allows application developers to optimize for different hardware independently of the actual driver implementation.
+    With more control of the hardware and resources, application developers are also able to limit
 
     Multi-threading is also a concern for modern graphics applications.
     With traditional graphics \glspl{api} it was usually much harder, if not impossible, to utilize multiple threads in terms of rendering.
@@ -145,7 +145,7 @@
 
     \begin{description}
       \item[Cross-Platform] Vulkan is supposed to run on multiple platforms that are equipped with different kinds of hardware.
-      \item[Reduce Driver Complexity]\proofread By passing more responsibility on to the application, driver implementations can be simpler.
+      \item[Reduce Driver Complexity] By passing more responsibility on to the application, driver implementations can be simpler.
       \item[Reduce Driver Overhead] Less driver-side \gls{cpu} overhead.
       \item[Low-level Control] Allow developers a lot of control over the hardware.
       \item[Consistent API] Reduce the amount of new concepts an application developer has to learn when using the \gls{api}.
@@ -161,7 +161,7 @@
     This way the driver only does as much work as it needs to function properly and less power will be consumed.
     Hardware vendors will also have an easier time providing robust drivers with less bugs due to reduced complexity.
 
-    Another advantage of Vulkan\todo[fancyline,color=blue!60]{Comma?}{} being a new API built without worrying about backwards compatibility, is the chance of designing a new and consistent API so developers will have an easier time creating applications.
+    Another advantage of Vulkan, being a new API built without worrying about backwards compatibility, is the chance of designing a new and consistent API so developers will have an easier time creating applications.
     For more information about the API structure and common patterns in Vulkan, see chapter~\ref{cha:VulkanOverview}.
 
     Version 1.0 of Vulkan was not entirely built in-house at \gls{khronos} but is in part based on components of AMD's Mantle API, which was donated to the \gls{khronos}~\cite{vksessiongdc15}.

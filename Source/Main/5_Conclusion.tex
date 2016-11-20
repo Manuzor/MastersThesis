@@ -11,7 +11,10 @@
   I have started development of that prototype not long after Vulkan was released, thus I was exposed to Vulkan in a very early state of development.
 
   Vulkan is hard to learn and complicated to use.
-  Developing a simple application that only displays a static image of a triangle without a texture already requires hundreds of lines of code.
+  Developing a simple application that only displays a static image of a triangle without textures already requires hundreds of lines of code.
+  Among other things, beginners will also struggle with the fact that resources need to be allocated and configured correctly, which is a tedious process and requires specific knowledge of how graphics hardware operates.
+  Traditional \glspl{api}, such as \gls{opengl}, made it easier for beginners because drivers already had the aforementioned knowledge.
+
   As can be seen throughout chapter~\ref{cha:RenderPipeline}, Vulkan oftentimes requires the application developer to pass a struct that contains information about how to perform a certain action.
   While this makes the names of the specified settings more explicit to the developer, it also adds a lot of ``noise'' to the code.
   There are also several ways to fill these structs with invalid combinations of arguments.
@@ -29,7 +32,7 @@
   On the other hand, giving more control to the application, that was previously the domain of the driver, not only adds more opportunities for optimization on a per-application basis but it also shows the actual work that is performed more clearly.
   This might even improve debugging possibilities.
 
-  While Vulkan's \gls{api} is more verbose and explicit than OpenGL's, it seems more consistent and less error-prone.
+  While Vulkan is a more verbose and explicit \gls{api} than OpenGL, it seems more consistent and less error-prone.
   Vulkan makes use of the type system of \gls{ccpp} to reduce incorrect \gls{api} usage.
   For example, instead of defining enumeration values as preprocessor \lstinline{#define} directives, Vulkan makes use of enum types.
 
@@ -45,11 +48,17 @@
   Microsoft's \gls{d3d12} and Apple's Metal \glspl{api} solve similar problems than Vulkan, but both are constrained to their particular platforms.
   I expect Vulkan to become prevalent on Linux and Android platforms.
 
+  The Vulkan graphics \gls{api}, despite it being relatively new technology, already offers a vast range of functionality.
+  This work only presented the most essential parts of it required to render a single image.
+  Of course, Vulkan can also be used for more complex scenarios.
+  The video game Doom by id Software, for example, provides both an \gls{opengl} and a Vulkan rendering back-end.
+  Yielding equivalent visual results, the Vulkan back-end is, in fact, significantly more efficient on most systems than the \gls{opengl} back-end~\cite{eurogamer2016:doomvulkan}.
+
   Vulkan is often viewed as the successor of OpenGL.
   While this is certainly true in spirit, OpenGL will not disappear anytime soon just because of Vulkan.
   The main reason is the aforementioned complexity of Vulkan.
   Vulkan is simply much harder to use for simple and fast prototyping, especially for newcomers, and sometimes the extra control provided by Vulkan is just not necessary.
-  It remains a tool for professionals and I think it will serve its purpose mainly in graphics or game engine technology.
+  It remains a tool for professionals and I think it will serve its purpose mainly in middleware technologies such as graphics engines or game engines.
   There is one question that arises very often.
   It is about how to choose between OpenGL and Vulkan.
   The most common answer is that Vulkan is most suitable for a particular application if it is CPU-bound, mainly referring to driver overhead in OpenGL implementations.
@@ -58,14 +67,15 @@
   An exciting feature about Vulkan is the pipeline cache.
   Creating a graphics pipeline in Vulkan is quite expensive because it performs optimizations on the shaders in use and to the entire pipeline as a whole.
   The pipeline cache can be used to speed up this process.
-  In the Vulkan session part II at GDC 2016~\cite{vksessiongdc16} Dan Ginsburg, one of the speakers at this talk, described a scenario where the online game distribution platform \textit{steam} could be used to pull pipeline caches from a server for a particular game at the time it is installed.
+  In the Vulkan session part II at GDC 2016~\cite{vksessiongdc16} Dan Ginsburg, one of the speakers at this talk, described a scenario where the online game distribution platform \textit{Steam} could be used to pull pipeline caches from a server for a particular game at the time it is installed.
   This would improve performance of that game at the time it is run for the first time.
+
+  For further insight into Vulkan, the specification~\cite{vkspec} may be consulted.
+  But there are also other resources for learning Vulkan.
+  The LunarG \gls{sdk} contains samples written in \gls{ccpp} that show basic steps of how to use Vulkan, suitable for beginners.
+  Sascha Willems provides examples and demos in a GitHub repository showing typical rendering techniques such as texture mapping, text overlay, mesh instancing, and shadow mapping~\cite{saschawillemsgithubvulkan}.
 
   The Vulkan specification~1.0 is only the beginning.
   It is missing features like support for copying device memory from one GPU directly to another without involving the host as well as an API for high performance and high-quality 2D rendering, like Direct2D.
   It remains to be seen how Vulkan, and the industry around it, will evolve in the future.
   I will certainly follow this development with great interest.
-
-  \todo[inline,color=blue!60]{Future work. Based on thesis, what's the next step for learning Vulkan or use it in an application?}
-  \todo[inline,color=blue!60]{Mention why Vulkan is so complex: App has to do stuff the driver did before in OpenGL, mention resource configuration and pipeline setup, more required knowledge about what the GPU actually does, etc...}
-  \todo[inline,color=blue!60]{Mention Doom with both OpenGL and Vulkan backends and how Vulkan yields significantly better performance.}

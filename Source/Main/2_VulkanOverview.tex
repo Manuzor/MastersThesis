@@ -154,7 +154,7 @@
 
       \item[Images]
         As opposed to buffer resources, an image contains more information about how the underlying memory is used.
-        \proofread{}Each image has a particular format, e.g. consisting of three 8-bit channels named red, green, and blue, respectively.
+        Each image has a particular format, e.g. consisting of three 8-bit channels named red, green, and blue, respectively.
         An image may also be in a particular layout, e.g. in \textit{shader read-only} layout which is required when the image is supposed to be used by a shader.
         Another important image property is the image tiling.
         An image may either exist in linear tiling or optimal tiling.
@@ -164,7 +164,7 @@
         The \gls{driver} is free to lay out the data in memory as it sees fit.
         This is done in order to improve performance.
         Parts of the actual physical device may process an image faster in certain circumstances when the image data is not laid out linearly in memory.
-        In addition, special purpose hardware components, such as image samplers, only work in image and not on buffer objects.
+        In addition, special purpose hardware components, such as image samplers, only work with images and not buffer objects.
 
         Similar to buffers, images can be referenced via \textit{image views}.
         They contain information about the underlying image, such as the region that is referred to or whether the image is to be interpreted as a 2D image or a cube map.
@@ -206,7 +206,6 @@
   \label{sec:RenderPassesOverview}
     Vulkan defines the concept of \textit{render passes} that describe the kinds of data that are involved when rendering is performed on the \gls{gpu}.
     It consists of multiple subpasses, descriptions of dependencies between these subpasses, as well as a specification of all targets, called \textit{attachments}, that are involved in the rendering process.
-    \proofread
     Figure~\ref{fig:RenderPassOverview} provides an overview of subpasses referencing the attachments in a render pass.
     Each depicted subpass requires referenced attachments to be in a specific format.
 
@@ -237,10 +236,10 @@
 
     \begin{figure}
     % \begin{wrapfigure}{r}{0.45\textwidth}
-      \label{fig:GraphicsPipeline}
       \centering
       \includegraphics[height=0.4\textheight]{Main/Images/GraphicsPipeline}
       \caption{Incomplete list of graphics pipeline components and examples of their individual properties.}
+      \label{fig:GraphicsPipeline}
     % \end{wrapfigure}
     \end{figure}
 
@@ -268,10 +267,10 @@
     % \todo[inline]{Describe why having only a vertex shader stage can be useful? (Cache skinning results)}
 
     \begin{figure}
-      \label{fig:RenderPassInstanceSample}
       \centering
       \includegraphics[width=\textwidth]{Main/Images/RenderPassInstanceSample}
       \caption{Overview of a render pass instance with a framebuffer and bound pipelines.}
+      \label{fig:RenderPassInstanceSample}
     \end{figure}
 
     Pipelines are tightly connected to render passes.
@@ -337,24 +336,25 @@
 
     \subsection{Events}
     \label{sub:Events}
-      \todo[inline,color=blue!60]{Investigate: Event host-callbacks? Or does the host need to poll?}
-
-      Events are used to synchronize between \gls{host} and device or between device and device in a bidirectional manner.
+      \todo[inline,color=cyan!60]{Check for duplicates and proof-read the entire section.}
+      Events are used to synchronize between \gls{host} and device or within the same device.
       Like semaphores and fences, events are either in a signaled or in a not-signaled state.
-      Events are inserted into command buffers in order to allow the device to signal them.
+      Events are used within command buffers in order to allow the device to signal them.
       This allows for more fine-grained synchronization between commands and to signal command completion to the \gls{host}.
-      Unlike a fence, an event can be inserted at any point in the command buffer stream and thus can be used to query for synchronization without requiring that all commands in the submitted command buffer have completed execution.
+      Unlike a fence, an event can be signaled or waited on at any point in the command buffer stream and thus can be used to query for synchronization without requiring that all commands in the submitted command buffer have completed execution.
+      Commands can be inserted into a command buffer to wait on a specific event to be signaled, achieving synchronization between individual commands running on the device.
+      The host is also able to signal or wait on specific events using Vulkan \gls{api} commands.
+      However, contrary to what the name might suggest, no callback functionality is provided for the host application to be notified once an event has been signaled.
 
       Events work in a way that can be taken advantage of when faced with a scenario that requires the \gls{application} to transform a large number of resources in batches.
       Given an arbitrary number of images in an \gls{application} that need to be transformed in some way that is expensive to compute, these transformations could be issued into a single command buffer, inserting a completion event between these commands.
       After submitting this command buffer to the queue, the \gls{application} can periodically query for completion of the individual transformation commands without the need to wait for the entire submission to finish by using fences or semaphores.
 
-      It must be noted that events are only allowed to be inserted into command buffers that are all submitted to the same queue.
+      It must be noted that events can only be signaled or waited on from commands buffers that are submitted to the same queue.
       This makes them unsuitable for cross-queue synchronization when such is required.
 
     \subsection{Barriers}
     \label{sub:Barriers}
-      \proofread
       Barriers are used to synchronize \gls{gpu} commands.
       There are two kinds of barriers in Vulkan.
       The first kind is called an execution barrier which is used to create explicit dependencies on the completion of specific commands.
@@ -367,10 +367,8 @@
         \label{fig:PipelineBarrier}
       \end{figure}
 
-      \proofread
       By inserting a memory dependency using a memory barrier, Vulkan guarantees that all memory operations on a specified resource or memory region have finished once the inserted barrier has been reached, preventing subsequent memory operations from executing until that point.
       Analogously, an execution dependency requires all previous commands to have finished execution before starting to execute other commands inserted after the barrier.
-      \proofread
       Figure~\ref{fig:PipelineBarrier} illustrates such a case.
 
       There are three types of memory barriers in Vulkan: Global memory barriers, buffer memory barriers, and image memory barriers.
