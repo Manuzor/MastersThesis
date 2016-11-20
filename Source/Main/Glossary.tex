@@ -5,6 +5,10 @@
 % Acronyms
 %
 
+\let\firstchar\lowercase
+\let\oldprintnoidxglossaries\printnoidxglossaries
+\def\printnoidxglossaries{\let\firstchar\uppercase\oldprintnoidxglossaries}
+
 \newacronym{pc}{PC}{Personal Computer}
 \newacronym{os}{OS}{Operating System}
 \newacronym{api}{API}{Application Programming Interface}
@@ -29,7 +33,7 @@
 \newacronym{spir}{SPIR}{Standard Portable Intermediate Representation}
 \newacronym{spirv}{SPIR-V}{Standard Portable Intermediate Representation version `V'}
 \newacronym{icd}{ICD}{Installable Client Driver}
-\newacronym{ihv}{IHV}{Independent Hardware Vendor}
+\newacronym{ihv}{IHV}{\firstchar{I}ndependent hardware vendor}
 
 \newacronym{ps3}{PS3}{Sony PlayStation 3}
 \newacronym{ps4}{PS4}{Sony PlayStation 4}

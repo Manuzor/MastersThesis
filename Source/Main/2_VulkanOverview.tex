@@ -145,14 +145,26 @@
 
     \begin{description}
       \item[Buffers]
-        A buffer is treated as a one-dimensional, unformatted, contiguous block of memory that can be used by the \gls{application} to upload general purpose data to the device. This data may then be used during shader execution, for example, or may be copied and transformed on the GPU to another buffer or even an image.
+        A buffer is treated as a one-dimensional, unformatted, contiguous block of memory that can be used by the \gls{application} to upload general purpose data to the device.
+        This data may then be used during shader execution, for example, or may be copied and transformed on the GPU to another buffer or even an image.
 
         In some circumstances, Vulkan requires a \textit{buffer view} instead of the buffer itself.
         The buffer view contains information about the range and exact layout of formatted data contained in the buffer.
         Multiple buffer views can be used to refer to the same buffer.
 
       \item[Images]
-        As opposed to buffer resources, an image contains more information about how the underlying memory is used. For example, an image has a particular format, such as having red-green-blue channels, each channel using 8 bits of memory. An image may also be in a particular layout, e.g. in \textit{shader read-only} layout which is required when the image is supposed to be used by a shader. Another important image property is the image tiling. An image may either exist in linear tiling or optimal tiling. Linear tiling means that the underlying data of the image is laid out in memory in a linear fashion. The data will be in the same memory layout as it was when it was uploaded. The memory layout of the image data in optimal tiling, however, is not specified by Vulkan. The \gls{driver} is free to lay out the data in memory as it sees fit. This is done in order to improve performance. Parts of the actual physical device may process an image faster in certain circumstances when the image data is not laid out linearly in memory. In addition, special purpose hardware components, such as image samplers, only work in image and not on buffer objects.
+        As opposed to buffer resources, an image contains more information about how the underlying memory is used.
+        \proofread{}Each image has a particular format, e.g. consisting of three 8-bit channels named red, green, and blue, respectively.
+        An image may also be in a particular layout, e.g. in \textit{shader read-only} layout which is required when the image is supposed to be used by a shader.
+        Another important image property is the image tiling.
+        An image may either exist in linear tiling or optimal tiling.
+        Linear tiling means that the underlying data of the image is laid out in memory in a linear fashion.
+        The data will be in the same memory layout as it was when it was uploaded.
+        The memory layout of the image data in optimal tiling, however, is not specified by Vulkan.
+        The \gls{driver} is free to lay out the data in memory as it sees fit.
+        This is done in order to improve performance.
+        Parts of the actual physical device may process an image faster in certain circumstances when the image data is not laid out linearly in memory.
+        In addition, special purpose hardware components, such as image samplers, only work in image and not on buffer objects.
 
         Similar to buffers, images can be referenced via \textit{image views}.
         They contain information about the underlying image, such as the region that is referred to or whether the image is to be interpreted as a 2D image or a cube map.
@@ -193,7 +205,10 @@
   \section{Render Passes}
   \label{sec:RenderPassesOverview}
     Vulkan defines the concept of \textit{render passes} that describe the kinds of data that are involved when rendering is performed on the \gls{gpu}.
-    It consists of multiple subpasses, descriptions of dependencies between these subpasses, as well as a specification of all targets, called \textit{attachments}, that are involved in the rendering process. Figure~\ref{fig:RenderPassOverview} provides an overview how subpasses are referencing the attachments in the render pass, each requiring the referenced attachment to be in different kinds of formats.
+    It consists of multiple subpasses, descriptions of dependencies between these subpasses, as well as a specification of all targets, called \textit{attachments}, that are involved in the rendering process.
+    \proofread
+    Figure~\ref{fig:RenderPassOverview} provides an overview of subpasses referencing the attachments in a render pass.
+    Each depicted subpass requires referenced attachments to be in a specific format.
 
     \begin{figure}
       \centering
@@ -235,8 +250,8 @@
     The graphics pipeline, however, is considerably more complex.
     It has multiple fixed-function stages and five programmable stages, called shader stages.
     Some of the fixed-function stages have configurable state that can be manipulated by the \gls{application}.
-    For example, the rasterization stage can be configured to interpret incoming vertex data as either a list of points, lines, or filled polygons with more than two sides.
-    Figure~\ref{fig:GraphicsPipeline} provides an overview of some of the components of the graphics pipeline.
+    For example, the rasterization stage can be configured to interpret incoming vertex data as either a list of points, lines, or filled polygons.
+    Figure~\ref{fig:GraphicsPipeline} provides an overview of some components of a graphics pipeline.
 
     Programs that are designed for use in shader stages are called shaders.
     Shaders are supplied to Vulkan in \gls{spirv} format.

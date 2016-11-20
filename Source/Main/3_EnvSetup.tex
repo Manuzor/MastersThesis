@@ -159,7 +159,7 @@
       This alleviates the work required from the \gls{vkloader} as it does no longer have to look up the correct \gls{icd} for the context of the current call.
 
       Lines~8~and~9 are just examples of how a device-specific command is queried and executed.
-      Just like before, the \gls{vkloader} will make sure all relevant layers are notifed about this call, even though this time it is a device-specific call as opposed to an instance-specific call.
+      Just like before, the \gls{vkloader} will make sure all relevant layers are notified about this call, even though this time it is a device-specific call as opposed to an instance-specific call.
 
       In performance-critical applications care must be taken when activating layers in a production scenario.
       Because every layer is called in order, every layer introduces additional overhead per \gls{api} call.
@@ -198,10 +198,10 @@
   \section{Shaders}
   \label{sec:EnvShaders}
     As mentioned in section~\ref{sec:Pipelines}, Vulkan expects shaders to be in \gls{spirv} format.
-    \gls{spirv} is a binary format and is not meant to be human-reabable.
+    \gls{spirv} is a binary format and is not meant to be human-readable.
     Instead of writing shaders directly in \gls{spirv} format, they are usually written in \gls{glsl} and converted to \gls{spirv} in a subsequent step.
     The most commonly used tool for this purpose is called \textit{glslangValidator}~\cite{glslangrepo} and is a command-line based tool that is able to validate \gls{glsl} code and to convert it into other representations, specifically \gls{spirv}.
-    \todo{Describe what exactly is required. layout=N, binding=N, set=N, \#extensionm, ...}
+    \todo{Describe what exactly is required. layout=N, binding=N, set=N, \#extension, ...}
     It requires the \gls{glsl} source code to be written in a specific way in order to be converted to \gls{spirv}.
 
     % \todo[inline]{explain that shaders can be converted in different shader stages, e.g. vertex-, fragment-stage, hence the file endings and filenames}
@@ -246,7 +246,7 @@
     This means that any Vulkan-enabled application can be debugged using RenderDoc.
     This layer is used to capture \gls{api} calls and track state in that way.
     In order for RenderDoc to work, it has to be hooked up with the Vulkan application that is to be inspected.
-    Once hooked up, RenderDoc is rendering a small amount of statistics, such as current framerate, in the upper left corner of the applications window.
+    Once hooked up, RenderDoc is rendering a small amount of statistics, such as current frame rate, in the upper left corner of the applications window.
     It also shows which button to press to instruct RenderDoc to capture a frame.
     Once a frame was captured it can be inspected inside of the RenderDoc UI.
     This captured frame contains, among other things, the state of the frame buffers but also records \gls{api} calls, shows their \gls{cpu} execution time, shows bound textures for active shaders, and more.
@@ -279,4 +279,4 @@
     \todo{Omit this paragraph?}
     Vulkan is still relatively new technology.
     Existing tools for other graphics \glspl{api} will most likely be extended to also support Vulkan.
-    It is also possible that new tools dedicated to Vulkan may be developed by \acrlongpl{ihv}.
+    It is also possible that new tools dedicated to Vulkan may be developed by hardware vendors.

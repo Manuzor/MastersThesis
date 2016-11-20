@@ -21,7 +21,7 @@
 
   \section{Framework}
   \label{sec:Framework}
-    A simple forward renderer is assumed which means that rendering is performed in a way that produces the presenteable image in a single step.
+    A simple forward renderer is assumed which means that rendering is performed in a way that produces the presentable image in a single step.
     A camera is used to observe the scene.
     This camera is not fixed which means it may change position or rotation over time, changing how the scene is portrayed.
     The rendered scene will contain a fixed number of objects.
@@ -44,9 +44,9 @@
 
   \section{Setup}
   \label{sec:RenderingSetup}
-    Before it is possible to start rendering an image, proper Vulkan facilities need to be set up.
+    Before an image can be rendered, proper Vulkan facilities need to be set up.
     Most of these facilities have been presented in chapter~\ref{cha:VulkanOverview}.
-    In the following sections, these facilities are set up in the context of the framefork defined in section~\ref{sec:Framework}.
+    In the following sections, these facilities are set up in the context of the framework defined in section~\ref{sec:Framework}.
 
     \subsection{Device and Queue Setup}
       The Vulkan device to be used for rendering needs to support both the swapchain extension as well as queues with graphics and present capabilities.
@@ -143,9 +143,9 @@
     \subsection{Preparing the Graphics Pipeline}
     \label{subsec:GraphicsPipelineSetup}
       The graphics pipeline controls how data is processed on the \gls{gpu}.
-      It has many components that need to be intialized.
+      It has many components that need to be initialized.
       The process of preparing for the creation of a graphics pipeline is demonstrated in the following sections.
-      Furthermore, the creation of an actual graphics pipeline object is shown section~\ref{sub:ActualGraphicsPipelineCreation}.
+      Furthermore, the creation of an actual graphics pipeline object is shown in section~\ref{sub:ActualGraphicsPipelineCreation}.
 
       \subsubsection{Shader Stages}
       \label{sss:GraphicsPipelineShaderStages}
@@ -206,7 +206,7 @@
         The graphics pipeline requires information about the layout of the shaders shown in section~\ref{sss:GraphicsPipelineShaderStages}.
         The information about uniform buffers, push constants, and samplers are all part of what is called the \textit{pipeline layout}.
         The pipeline layout is defined in terms of \textit{descriptor set layouts}, which describe the layout of actual descriptor sets.
-        Descriptor sets are part of the actual rendered objects which and are covered later in section~\ref{sss:CreatingSceneObjects}, but the layout of these descriptors is important for the pipeline specification.
+        Descriptor sets are part of the actual rendered objects and are covered later in section~\ref{sss:CreatingSceneObjects}, but the layout of these descriptors is important for the pipeline specification.
 
         \lstinputlisting[
           label=lst:DescriptorSetLayoutBinding,
@@ -309,7 +309,7 @@
 
         \lstinputlisting[
           label=lst:InputAssemblyStateSetup,
-          caption={Input assembly state setup for chapter~\ref{cha:RenderPipeline}.},
+          caption={Input assembly state setup .},
           style=MyCppFloat,
           firstline=34,
           lastline=35,
@@ -613,7 +613,7 @@
       Using this information, objects may be placed in different locations in the scene.
       The shader used for rendering them reflects this and is shown in section~\ref{sss:GraphicsPipelineShaderStages}.
       The descriptor set layout of the vertex shader, explained in section~\ref{sss:GraphicsPipelineLayout}, consists of only a single uniform buffer that contains information specific to an individual scene object.
-      If a single instance of this information was shared among all scene object, they would appear in the same location at once.
+      If a single instance of this information was shared among all scene objects, they would appear in the same location at once.
       Thus, a descriptor set, which adheres to the aforementioned descriptor set \textit{layout}, has to be created for each rendered object in the scene.
 
       The listings presented in this section are specific to each scene object.
@@ -668,7 +668,7 @@
 
       Descriptor sets are allocated from descriptor pools which also manage the underlying memory used by descriptor sets.
       The relationship between a descriptor pool and descriptor sets is similar to command pools and command buffers.
-      Compared to command pools, however, descriptor pools are limited to a certain number of descriptor types that can be allocated from are.
+      Compared to command pools, however, descriptor pools are limited to a certain number of descriptor types that can be allocated from.
       These limits are defined by the application when a descriptor pool is created as shown in listing~\ref{lst:DescriptorPoolCreation}.
       On lines~2~and~3, the limit for uniform buffer descriptors is set to allow only a single allocation of that type.
       This limitation information is then used on line~8 to create the descriptor pool on line~9.
@@ -790,6 +790,8 @@
       As can be seen, it is set to the same value as the scissor that was set before.
       The render area is used to control which pixels of the framebuffer are affected in the active render pass.
       This is used to minimize necessary work for the \gls{gpu}.
+      \proofread
+      \todo[fancyline,color=green!60]{Describe why performance may be affected negatively? Or remove it.}
       As per the Vulkan specification, a render area that is smaller than the entire framebuffer may affect performance negatively.
       A render area that is larger than the framebuffer is invalid.
 
@@ -880,7 +882,7 @@
     ]
     {Main/Listings/RenderLoop.cpp}
 
-    As defined by the framework in section~\ref{sec:Framework}, camera data is not fixed an may change over time.
+    As defined by the framework in section~\ref{sec:Framework}, camera data is not fixed and may change over time.
     Thus, camera data has to be updated at some point during the rendering loop.
     After the camera data is updated, the uniform buffers of each object in the scene have to be updated as well.
     Listing~\ref{lst:RenderLoop_ShaderDataUpload} shows the loop in which this is done.
@@ -1035,7 +1037,7 @@
         % Command buffers need to be kept alive while pending execution.
         Vulkan prohibits modifying submitted command buffers that are pending execution on the device.
         This includes freeing these command buffers which implies that the application is responsible for keeping them alive as long as they are pending execution.
-        In practice, this effectively means command buffers submitted in batches may only be modified or reused once the entire submission has finished execution because it is hard to predict when individual commands are processed if more than one command buffer is submitted.
+        In practice, this effectively means command buffers submitted in batches may only be modified or reused once the entire submission has finished execution \todo[fancyline,color=green!60]{Why not use event at end of command buffer?}because it is hard to predict when individual commands are processed if more than one command buffer is submitted.
         Out-of-order execution is one reason for this unpredictability.
         The simplest way to solve this problem is to just use new command buffers for every new batch submission.
         This poses some management overhead since individual command buffers need to be associated to these batches in some way in order to be freed or reused.

@@ -12,6 +12,6 @@ vkCreateDescriptorSetLayout(Device, &DescLayoutInfo, NULL, &DescriptorSetLayout)
 
 VkPipelineLayoutCreateInfo PipelineLayoutInfo{};
 PipelineLayoutInfo.setLayoutCount = 1;
-PipelineLayoutInfo.pSetLayouts = DescriptorSetLayout;
+PipelineLayoutInfo.pSetLayouts = &DescriptorSetLayout;
 VkPipelineLayout PipelineLayout;
 vkCreatePipelineLayout(Device, &PipelineLayoutInfo, NULL, &PipelineLayout);

@@ -64,7 +64,7 @@
 % To disable todonotes: [disable]
 \usepackage{todonotes}
 \newcommand{\tbd}[0]{\todo[inline, nolist, color=yellow!30]{\centerline{To Be Done}}{}}
-\newcommand{\proofread}[0]{\todo[nolist, fancyline, color=green!60]{\centerline{Check}}{}}
+\newcommand{\proofread}[0]{\todo[nolist, fancyline, color=green!60]{\centerline{Proof-read}}{}}
 % Put todo notes on the left side
 \reversemarginpar
 \setlength{\marginparwidth}{3.2cm}
@@ -309,11 +309,11 @@
   % Chapters
   %
   \pagenumbering{arabic}
-  % \input{Main/1_Introduction}
+  \input{Main/1_Introduction}
   \input{Main/2_VulkanOverview}
-  % \input{Main/3_EnvSetup}
-  % \input{Main/4_RenderPipeline}
-  % \input{Main/5_Conclusion}
+  \input{Main/3_EnvSetup}
+  \input{Main/4_RenderPipeline}
+  \input{Main/5_Conclusion}
 
   \newpage
   \pagenumbering{Roman}

@@ -9,7 +9,7 @@
   At the same time, \glspl{api} for this kind of hardware were developed.
   Many modern graphics devices have become more general since then, making them more suitable and accessible to other kinds of computational tasks not directly related to computer graphics.
   Traditional \glspl{api} had to adjust to these changes while maintaining compatibility to previously supported hardware at the same time.
-  The result of this is an increase in driver implementation complexity that negatively affects performance at least on the \gls{cpu}.
+  The result of this is an increase in driver implementation complexity that negatively affects performance mainly on the \gls{cpu}.
   New graphics \glspl{api} were designed to match recent hardware more closely.
   One such \gls{api} is the Vulkan graphics API by the \gls{khronos}~\cite{vkspec}, which is presented in this work.
 
@@ -91,6 +91,8 @@
         In other words, this is the stage where the actual pixel colors are produced, optionally by sampling textures and applying lighting computations.
     \end{description}
 
+    \todo[inline,color=blue!60]{Mention compute shader}
+
 
   \section{Motivation for a new Graphics API}
     When traditional graphics \glspl{api} were created, they were designed to match hardware architectures that existed at the time.
@@ -98,9 +100,11 @@
     The models employed by traditional graphics \glspl{api} no longer match modern hardware design as closely.
     In order to remain compatible, these \glspl{api} need to perform a mapping of their model to modern hardware design, which may come at a significant cost in terms of performance.
 
+    \proofread
     In practice, this often means that the hardware driver, implementing a traditional graphics \gls{api}, wastes a considerable amount of time that could be used by the host application to perform useful computations.
-    For some applications, the additional \gls{cpu} overhead may be acceptable.
-    Applications such as these may not gain much by the new \glspl{api} other than lower power consumption due to reduced \gls{cpu} usage, which might be important on mobile platforms.
+    It depends on the kind of application whether the additional \gls{cpu} overhead is acceptable or not.
+    Reducing \gls{cpu} overhead is important on mobile devices because it implies a lower rate of power consumption.
+    For desktop applications, typically running on a constant power supply and more capable hardware, the additional overhead might be acceptable.
 
     Modern hardware design tends to be more suitable for general purpose computing compared to traditional hardware design.
     Graphics hardware consisted of many special purpose components in the past that have largely been replaced by general purpose memory and programmable processing cores that perform work in a massively parallel manner.
@@ -141,7 +145,7 @@
 
     \begin{description}
       \item[Cross-Platform] Vulkan is supposed to run on multiple platforms that are equipped with different kinds of hardware.
-      \item[Reduce Driver Complexity] By relaying more responsibility to the application, driver implementations can be simpler.
+      \item[Reduce Driver Complexity]\proofread By passing more responsibility on to the application, driver implementations can be simpler.
       \item[Reduce Driver Overhead] Less driver-side \gls{cpu} overhead.
       \item[Low-level Control] Allow developers a lot of control over the hardware.
       \item[Consistent API] Reduce the amount of new concepts an application developer has to learn when using the \gls{api}.
