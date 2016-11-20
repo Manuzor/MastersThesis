@@ -9,7 +9,7 @@ for (uint32_t Index = 0; Index < NumberOfQueueFamilies; ++Index) {
 
 VkDeviceQueueCreateInfo QueueInfo{};
 QueueInfo.queueFamilyIndex = GraphicsAndPresentQueueIndex;
-float QueuePriority = 0.0f;
+float QueuePriority = 1.0f;
 QueueInfo.queueCount = 1;
 QueueInfo.pQueuePriorities = &QueuePriority;
 

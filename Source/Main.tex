@@ -9,6 +9,8 @@
 \KOMAoptions
 {
   draft,
+  twoside,
+  open=right,
   fontsize=12pt,
   listof=numbered,
   headlines=4,
@@ -18,12 +20,12 @@
 }
 
 \usepackage[automark,headsepline]{scrlayer-scrpage}
-\ihead{}
-\chead{}
-\ohead{\headmark}
-\ifoot{}
-\cfoot[\pagemark]{\pagemark}
-\ofoot{}
+\lehead[\null]    {\headmark}
+\chead [\null]    {\null}
+\rohead[\null]    {\headmark}
+\lefoot[\null]    {\null}
+\cfoot [\pagemark]{\pagemark}
+\rofoot[\null]    {\null}
 
 \usepackage[english]{babel}
 
@@ -54,7 +56,7 @@
 \usepackage{ifdraft}
 \usepackage{amsmath}
 
-\PassOptionsToPackage{draft}{graphicx}
+\PassOptionsToPackage{final}{graphicx}
 \usepackage{graphicx}
 
 \usepackage{wrapfig}
@@ -62,7 +64,7 @@
 \usepackage[toc,page]{appendix}
 
 % To disable todonotes: [disable]
-\usepackage{todonotes}
+\usepackage[disable]{todonotes}
 \newcommand{\tbd}[0]{\todo[inline, nolist, color=yellow!30]{\centerline{To Be Done}}{}}
 \newcommand{\proofread}[0]{\todo[nolist, fancyline, color=cyan!60]{\centerline{Proof-read}}{}}
 % Put todo notes on the left side
@@ -142,8 +144,8 @@
 \usepackage{hyperref}
 \hypersetup{
   final,
-  bookmarksnumbered
-  % hidelinks
+  bookmarksnumbered,
+  hidelinks
   % colorlinks,
   % citecolor=black,
   % filecolor=black,
@@ -184,7 +186,13 @@
 % Set the depth of the numebering scheme for chapters, section, subsection, etc.
 \setcounter{secnumdepth}{3}
 
+\addto\captionsenglish{
+  \renewcommand{\figurename}{Fig.}
+}
+
 \begin{document}
+  \pagestyle{plain.scrheadings}
+
   %
   % Title Page
   %
@@ -215,21 +223,21 @@
 
         zur Erlangung des akademischen Grades eines \\ \textit{\Large Master of Science (M.Sc.)}
 
-      \end{centering}
 
       \vspace{\fill}
 
-      \begin{tabu}{ll}
+      \begin{tabu}{rl}
         Erstprüfer:  & \textit{Prof. Dr. Stefan Radicke} \\
         Zweitprüfer: & \textit{Patrick Bader, M.Sc.}
       \end{tabu}
 
+      \end{centering}
     \end{titlepage}
   }
   {
     \titlehead{\todo[inline, nolist, color=red!64]{\centerline{DRAFT}}{}}
     \subject{Master's Thesis \\ Computer Science and Media \\ Hochschule der Medien Stuttgart}
-    \title{Prototypical Evaluation \par of Vulkan's Low-Level \par Graphics Pipeline}
+    \title{Prototypical Evaluation \\ of Vulkan's Low-Level \\ Graphics Pipeline}
     \author{Manuel Maier}
     \date{\DTMToday}
     \publishers
@@ -241,41 +249,13 @@
     \maketitle
   }
 
+  \pagenumbering{gobble}
 
   %
   % Blank page for physical notes, name entries, etc.
   %
-  \newpage
-  % \ifthenelse{\boolean{hdm}}
-  % {
-  %     \begin{tabu}{ |l|X| }
-  %       \multicolumn{2}{c}{Masterarbeit} \\
-  %       \multicolumn{2}{c}{Computer Science and Media} \\
-  %       \multicolumn{2}{c}{Hochschule der Medien Stuttgart} \\
-  %       \hline
-  %       Titel               & Prototypical Evaluation of Vulkan's Low-Level Graphics Pipeline \\
-  %       \hline
-  %       Titel bei Anmeldung & Evaluating the Resource Management Possibilities of the Vulkan Graphics API \\
-  %       \hline
-  %       Autor               & Manuel Maier \\
-  %       \hline
-  %       Semester            & Wintersemester 2016 \\
-  %       \hline
-  %       Abgabedatum         & \DTMToday \\
-  %       \hline
-  %       Matrikelnummer      & 28535 \\
-  %       \hline
-  %       Kürzel              & mm198 \\
-  %       \hline
-  %       E-Mail              & mjmaier@gmx.de \\
-  %       \hline
-  %     \end{tabu}
-  % }
-  {
-    \null
-  }
-  \thispagestyle{empty}
-  \pagenumbering{gobble}
+  \cleardoubleemptypage
+  \null
 
   %
   % Eidesstattliche Versicherung
@@ -293,10 +273,10 @@
   %
   % Table of Contents
   %
-  \newpage
+  \cleardoubleemptypage
   \pagenumbering{roman}
   \tableofcontents
-  \newpage
+  \cleardoubleplainpage
 
 
   %
@@ -304,6 +284,7 @@
   %
   % \listoftodos
 
+  \pagestyle{scrheadings}
 
   %
   % Chapters

@@ -24,6 +24,13 @@
 
   \section{Interaction With Graphics Hardware}
   \label{sec:HardwareInteraction}
+    \begin{figure}
+      \centering
+      \includegraphics[width=\textwidth]{Main/Images/Application_API_Driver_Overview}
+      \caption{Interaction between the application and graphics hardware via an API.}
+      \label{fig:AppApiDriverOverview}
+    \end{figure}
+
     Because \glspl{gpu} are a distinct hardware component in a computer system, \glspl{api} are used to communicate with the \gls{gpu}.
     The level of abstraction an \gls{api} provides varies and depends on the platform and hardware vendor.
     On gaming consoles, for instance, it is common to use graphics \glspl{api} with only minimal abstraction layer, if any, between the application and the \gls{gpu}, allowing applications to take full control of the hardware.
@@ -35,16 +42,16 @@
     These abstract models are then translated, or mapped, to the actual hardware by the \textit{driver}.
     The relationship between an application and graphics hardware is depicted in figure~\ref{fig:AppApiDriverOverview}.
 
-    \begin{figure}
-      \centering
-      \includegraphics[width=\textwidth]{Main/Images/Application_API_Driver_Overview}
-      \caption{Interaction between the application and graphics hardware via an API.}
-      \label{fig:AppApiDriverOverview}
-    \end{figure}
-
 
   \section{High Level Graphics Workflow}
-    \label{sec:GraphicsWorkflow}
+  \label{sec:GraphicsWorkflow}
+    \begin{figure}
+      \includegraphics[width=\textwidth]{Main/Images/Rendering_Pipeline_Overview}
+      \centering
+      \caption{Simplified overview of a graphics pipeline. Fixed-function stages are depicted with solid, rounded outlines and shader stages with dashed outlines.}
+      \label{fig:Rendering_Pipeline_Overview}
+    \end{figure}
+
     Generally speaking, graphics hardware is built like a pipeline that is made up of several components called pipeline stages.
     Each of these stages is processing data that is provided by the host application, before being passed on to the next stage in the pipeline.
     The pipeline stages can generally be categorized into fixed-function stages and shader stages.
@@ -52,13 +59,6 @@
     Shader stages accept application-defined programs, called \textit{shaders}, that are run in order to process incoming data.
     The terminology used to describe these stages varies between platforms and \glspl{api}.
     In this section, the terms coined by the \gls{khronos} will be used as they are the same as the terms used in the Vulkan specification.
-
-    \begin{figure}
-      \includegraphics[width=\textwidth]{Main/Images/Rendering_Pipeline_Overview}
-      \centering
-      \caption{Simplified overview of a graphics pipeline. Fixed-function stages are depicted with solid, rounded outlines and shader stages with dashed outlines.}
-      \label{fig:Rendering_Pipeline_Overview}
-    \end{figure}
 
     Overview of the rendering pipeline on modern graphics hardware is outlined in figure~\ref{fig:Rendering_Pipeline_Overview}.
     It shows all programmable shader stages as well as some fixed-function stages and the flow between them.

@@ -49,7 +49,7 @@
     A swapchain contains a number of \textit{presentation images}.
     Usually, these images are used to store the results of the graphics pipelines.
     At the time these images are presented, they have to be in a specific layout reserved for presentation purposes.
-    In order for the images to be accepted by the presentation engine, they have to be in a specific layout reserved for presentation purposes.
+    In~order for the images to be accepted by the presentation engine, they have to be in a specific layout reserved for presentation purposes.
 
     In order to render images, a graphics pipeline needs to be created.
     An overview of how graphics pipelines work in general was presented in section~\ref{sec:GraphicsWorkflow}.
@@ -130,7 +130,8 @@
 
   \section{Resources and Memory Allocation}
   \label{sec:MemoryManagement}
-    Memory in Vulkan is categorized in either \gls{host} memory or \gls{device} memory.
+    Memory in Vulkan is referred to as either \gls{host} memory or \gls{device} memory.
+    The former is memory used by the host application on the \gls{cpu} and the latter is memory used by the \gls{gpu}.
 
     Host memory is used by the \gls{driver} for data structures that are represented by Vulkan objects defined as part of the Vulkan \gls{api}.
     Applications have the option to supply memory allocators to \glspl{driver} in order to control how \gls{host} memory is allocated.
@@ -234,14 +235,14 @@
     %   Explain "Binding Points" somewhere.
     % }
 
-    \begin{figure}
-    % \begin{wrapfigure}{r}{0.45\textwidth}
+    % \begin{figure}
+    \begin{wrapfigure}{r}{0.50\textwidth}
       \centering
-      \includegraphics[height=0.4\textheight]{Main/Images/GraphicsPipeline}
+      \includegraphics[width=0.41\textwidth]{Main/Images/GraphicsPipeline}
       \caption{Incomplete list of graphics pipeline components and examples of their individual properties.}
       \label{fig:GraphicsPipeline}
-    % \end{wrapfigure}
-    \end{figure}
+    \end{wrapfigure}
+    % \end{figure}
 
     Vulkan uses the concept of pipelines to describe how work is performed on the GPU.
     It supports compute and graphics pipelines.

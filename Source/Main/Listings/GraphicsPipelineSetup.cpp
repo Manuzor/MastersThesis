@@ -131,7 +131,6 @@ GraphicsPipelineInfo.stageCount = 2;
 GraphicsPipelineInfo.pStages = &ShaderStages[0];
 GraphicsPipelineInfo.pVertexInputState = &VertexInputState;
 GraphicsPipelineInfo.pInputAssemblyState = &InputAssemblyState;
-GraphicsPipelineInfo.pTessellationState = &pTessellationState;
 GraphicsPipelineInfo.pViewportState = &ViewportState;
 GraphicsPipelineInfo.pRasterizationState = &RasterizationState;
 GraphicsPipelineInfo.pMultisampleState = &MultisampleState;

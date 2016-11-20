@@ -74,11 +74,11 @@
       The second capability specifies whether \lstinline{vkQueuePresentKHR} is supported on that queue.
       Without both of these capabilities, rendering and presenting an image is not possible.
       A queue might support both of these capabilities but it is also possible that two separate queues are used for graphics and presenting, respectively.
-      In this chapter, a single queue with both capabilities is assumed.
+      In this chapter, a single queue with both capabilities is assumed which is shown in listing~\ref{lst:FindQueueFamilyIndex}.
 
       \lstinputlisting[
         label=lst:DefineQueueCreateInfo,
-        caption={Definition of a queue create info.},
+        caption={Definition of a queue create info for a single queue with the highest priority value.},
         style=MyCppFloat,
         firstline=10,
         lastline=14,
@@ -155,7 +155,7 @@
 
         \lstinputlisting[
           label=lst:ShaderStageSetup,
-          caption={Setup of the shader stages for chapter~\ref{cha:RenderPipeline}.},
+          caption={Setup of vertex and fragment shader stages. Shader code is loaded from two different files.},
           style=MyCppFloat,
           firstline=4,
           lastline=10,
@@ -172,7 +172,7 @@
 
         \lstinputlisting[
           label=lst:VertexShader,
-          caption={Simplified vertex shader used in chapter~\ref{cha:RenderPipeline}.},
+          caption={Simple vertex shader that transforms a three-dimensional position value using a model-view-projection matrix.},
           style=MyCppFloat,
           firstline=4,
           lastline=8,
@@ -189,7 +189,7 @@
 
         \lstinputlisting[
           label=lst:FragmentShader,
-          caption={Simplified fragment shader used in chapter~\ref{cha:RenderPipeline}.},
+          caption={Fragment shader that yields a constant color value.},
           style=MyCppFloat,
           firstline=13,
           lastline=16,
@@ -242,7 +242,7 @@
 
         \lstinputlisting[
           label=lst:VertexBindingSetup,
-          caption={Defining a vertex binding with the size of a vertex specified as $(3+2)*sizeof(float)=20$ bytes.},
+          caption={Defining a vertex binding with the size of a vertex specified as $3\cdot sizeof(float)=12$ bytes.},
           style=MyCppFloat,
           firstline=15,
           lastline=17,
@@ -259,7 +259,7 @@
 
         \lstinputlisting[
           label=lst:VertexAttributeSetup,
-          caption={Defining a vertex attribute.},
+          caption={Defining a vertex attribute consisting of three floating point values.},
           style=MyCppFloat,
           firstline=19,
           lastline=23,
@@ -280,56 +280,38 @@
         It must be noted that the format may not be chosen arbitrarily.
         Allowed formats need to be queried using the Vulkan \gls{api} call \lstinline{vkGetPhysicalDeviceFormatProperties}.
 
+        Finally in listing~\ref{lst:VertexInputStateSetup}, both the vertex binding and the vertex attribute definitions are combined in the vertex input state that will eventually be passed to the graphics pipeline.
+
         \lstinputlisting[
           label=lst:VertexInputStateSetup,
           caption={Defining the vertex input state, combining both vertex binding and attribute information.},
           style=MyCppFloat,
+          aboveskip=\bigskipamount,
           firstline=25,
-          lastline=29,
-          float
+          lastline=29
         ]
         {Main/Listings/GraphicsPipelineSetup.cpp}
 
-        Finally in listing~\ref{lst:VertexInputStateSetup}, both the vertex binding and the vertex attribute definitions are combined in the vertex input state that will eventually be passed to the graphics pipeline.
-
         \todo[inline]{Any concluding words here?}{}
 
-        % \begin{figure}
-        %   \includegraphics[width=\textwidth]{Main/Images/VertexInputLayoutVariants}
-        %   \centering
-        %   \caption{Layout of vertex input data when stored separately in multiple buffers (top) and interleaved in a single buffer (bottom).}
-        %   \label{fig:VertexInputLayoutVariants}
-        % \end{figure}
-
       \subsubsection{Input Assembly State}
-        The input-assembly state describes how the input data to the vertex shader is interpreted.
+        The input assembly state describes how the input data to the vertex shader is interpreted.
         The most important parameter to set is the primitive topology.
         This is where the \gls{gpu} is told what kind of primitives the input data represents.
         For the purposes of this chapter, the chosen primitive topology is \lstinline{TRIANGLE_LIST}\footnote{Full name: \lstinline{VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}} as shown in listing~\ref{lst:InputAssemblyStateSetup}.
 
         \lstinputlisting[
           label=lst:InputAssemblyStateSetup,
-          caption={Input assembly state setup .},
+          caption={Input assembly state setup causing the graphics pipeline to treat input data as a list of triangles.},
           style=MyCppFloat,
+          aboveskip=\bigskipamount,
           firstline=34,
-          lastline=35,
-          float
+          lastline=35
         ]
         {Main/Listings/GraphicsPipelineSetup.cpp}
 
-      \subsubsection{Tessellation State}
-        \todo[inline]{Just omit this state and subsubsection? It's ignored when creating the graphics pipeline.}
-        This state is only useful for the tessellation shader stage.
-        In this chapter, only the vertex and fragment shader stages are in use so this state is ignored.
-
       \subsubsection{Viewport State}
       \label{sss:ViewportState}
-        The viewport state specifies how many viewports and scissors are active in a pipeline.
-        Both the viewport and scissor define a non-rotated rectangular region within the framebuffer that will be written to by shaders.
-        Rendering results that would usually write to the entire extent of the framebuffer will be scaled down and displaced to fit into the viewport and cropped to be inside the scissor.
-        See figure~\ref{fig:ViewportScissorSample} for an illustration of this.
-        In this chapter, only one of each is used that include the entire framebuffer, respectively.
-
         \begin{figure}
           \includegraphics[width=0.666\textwidth]{Main/Images/ViewportScissorSample}
           \centering
@@ -337,37 +319,45 @@
           \label{fig:ViewportScissorSample}
         \end{figure}
 
+        The viewport state specifies how many viewports and scissors are active in a pipeline.
+        Both the viewport and scissor define a non-rotated rectangular region within the framebuffer that will be written to by shaders.
+        Rendering results that would usually write to the entire extent of the framebuffer will be scaled down and displaced to fit into the viewport and cropped to be inside the scissor.
+        See figure~\ref{fig:ViewportScissorSample} for an illustration of this.
+        In this chapter, only one of each is used that include the entire framebuffer, respectively.
+
         There are two ways to specify the actual viewport and scissor data.
         The simplest way is to specify it at this point directly, i.e. when creating the graphics pipeline.
         However, this also means that the viewport and scissor data may never change during the lifetime of the pipeline.
         Changing the viewport and scissor data is necessary when the dimension of the render targets change.
         For example, when the application window is resized, the swapchain along with all swapchain images typically need to be re-created with dimensions matching the new window size, thus the viewport and scissor need to be updated as well.
 
-        \lstinputlisting[
-          label=lst:DynamicStateSetup,
-          caption={Dynamic state setup for viewport and scissor state in chapter~\ref{cha:RenderPipeline}.},
-          style=MyCppFloat,
-          firstline=40,
-          lastline=46,
-          float
-        ]
-        {Main/Listings/GraphicsPipelineSetup.cpp}
-
-        \lstinputlisting[
-          label=lst:ViewportStateSetup,
-          caption={Viewport state setup for chapter~\ref{cha:RenderPipeline}.},
-          style=MyCppFloat,
-          firstline=48,
-          lastline=50,
-          float
-        ]
-        {Main/Listings/GraphicsPipelineSetup.cpp}
-
         In order to prevent re-creating the entire graphics pipeline every time, which is a costly operation, the pipeline can be configured to accept \textit{dynamic state} as shown in listing~\ref{lst:DynamicStateSetup}.
         Dynamic state has to be set everytime when a render pass is being processed.
         Dynamic state data is recorded in command buffers and submitted along with the relevant render pass commands.
 
+        \lstinputlisting[
+          label=lst:DynamicStateSetup,
+          caption={Dynamic state setup for viewport and scissor data.},
+          style=MyCppFloat,
+          aboveskip=\bigskipamount,
+          % float,
+          firstline=40,
+          lastline=46
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
+
         Because dynamic state for the viewport and scissor data is used in this chapter, specifying the number of viewports and scissors as shown in listing~\ref{lst:ViewportStateSetup} is sufficient for the purpose of setting up a graphics pipeline.
+
+        \lstinputlisting[
+          label=lst:ViewportStateSetup,
+          caption={Viewport setup for a single viewport and scissor, respectively.},
+          style=MyCppFloat,
+          aboveskip=\bigskipamount,
+          % float,
+          firstline=48,
+          lastline=50
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
 
       \subsubsection{Rasterization State}
         The rasterization state is used to configure the behavior of the rasterizer.
@@ -383,19 +373,20 @@
         This facing direction is also configurable in the rasterizer state.
         It is defined by the winding order of the vertices, which is considered to be either \textit{clockwise} or \textit{counter-clockwise}.
 
-        \lstinputlisting[
-          label=lst:RasterizationStateSetup,
-          caption={Rasterization state setup for chapter~\ref{cha:RenderPipeline}.},
-          style=MyCppFloat,
-          firstline=55,
-          lastline=57,
-          float
-        ]
-        {Main/Listings/GraphicsPipelineSetup.cpp}
-
         % \todo[inline]{I don't show a listing for any of the other pipeline states. This is an experiment to see how it would be if I backed the text with corresponding listings.}
 
         In listing~\ref{lst:RasterizationStateSetup}, the rasterizer is configured to produce densely filled polygons and does not perform any culling operations on the fragments.
+
+        \lstinputlisting[
+          label=lst:RasterizationStateSetup,
+          caption={Rasterization state setup producing filled polygons without culling.},
+          style=MyCppFloat,
+          aboveskip=\bigskipamount,
+          % float,
+          firstline=55,
+          lastline=57
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
 
       \subsubsection{Multisample State}
       \label{sss:MultisampleState}
@@ -403,17 +394,18 @@
         Disabling multisampling is not simply a matter of specifying the default value for all options.
         This state controls how many times the fragment shader is invoked and if a value of zero is passed as the number of samples, the fragment shader will never be invoked.
 
+        Multisampling is not being used in this chapter so the number of samples is set to one as shown in listing~\ref{lst:MultisampleStateSetup}.
+
         \lstinputlisting[
           label=lst:MultisampleStateSetup,
-          caption={Multisample state setup for chapter~\ref{cha:RenderPipeline}.},
+          caption={Multisample state setup with only a single sample.},
           style=MyCppFloat,
+          aboveskip=\bigskipamount,
+          % float,
           firstline=62,
-          lastline=63,
-          float
+          lastline=63
         ]
         {Main/Listings/GraphicsPipelineSetup.cpp}
-
-        Multisampling is not being used in this chapter so the number of samples is set to one as shown in listing~\ref{lst:MultisampleStateSetup}.
 
       \subsubsection{Depth Stencil State}
         Depth and stencil tests are controlled in this state.
@@ -421,18 +413,19 @@
         Depth bounds and comparison operations as well as stencil operations can be configured in this state.
         The comparison operation during depth tests can also be controlled.
 
-        \lstinputlisting[
-          label=lst:DepthStencilStateSetup,
-          caption={Depth and stencil state setup for chapter~\ref{cha:RenderPipeline}.},
-          style=MyCppFloat,
-          firstline=68,
-          lastline=72,
-          float
-        ]
-        {Main/Listings/GraphicsPipelineSetup.cpp}
-
         In this chapter, stencil tests are disabled.
         Depth testing, on the other hand, is enabled with the typical less-or-equal comparison operation as shown in listing~\ref{lst:DepthStencilStateSetup}.
+
+        \lstinputlisting[
+          label=lst:DepthStencilStateSetup,
+          caption={Typical depth-stencil state setup enabling depth testing, discarding fragments that are occluded by other fragments with a higher depth value.},
+          style=MyCppFloat,
+          % aboveskip=\bigskipamount,
+          float,
+          firstline=68,
+          lastline=72
+        ]
+        {Main/Listings/GraphicsPipelineSetup.cpp}
 
       \subsubsection{Color Blend State}
         The color blend state controls how color values produced by the fragment shader are combined, or blended, with the color that is already in the framebuffer.
@@ -445,17 +438,18 @@
         Likewise, a color mask with all bits set to 1 will copy all color components to the framebuffer.
         It is crucial to set this value correctly, otherwise undesired behavior may be observed.
 
+        In this chapter, blending is turned off and a color mask is chosen causing all color components to be copied to the framebuffer as shown in listing~\ref{lst:ColorBlendStateSetup}.
+
         \lstinputlisting[
           label=lst:ColorBlendStateSetup,
-          caption={Color blend state setup for chapter~\ref{cha:RenderPipeline}.},
+          caption={Color blend state setup that enables blending completely applying to all color channels.},
           style=MyCppFloat,
+          aboveskip=\bigskipamount,
+          % float,
           firstline=77,
-          lastline=83,
-          float
+          lastline=83
         ]
         {Main/Listings/GraphicsPipelineSetup.cpp}
-
-        In this chapter, blending is turned off and a color mask is chosen so all color components are copied to the framebuffer as shown in listing~\ref{lst:ColorBlendStateSetup}.
 
         \todo[inline]{Give an example (transparent vs. non-transparent) if there is enough time.}
 
@@ -474,7 +468,7 @@
 
         \lstinputlisting[
           label=lst:RenderPassAttachmentsSetup,
-          caption={Setup of the attachments for the render pass used in chapter~\ref{cha:RenderPipeline}.},
+          caption={Setup of render pass attachments. The color attachment is sampled once, cleared when loaded, and properly stored after the render pass, remaining in presentable image layout afterwards. The depth attachment is also sampled once, cleared when loaded, and discarded after the render pass, always remaining in the same image layout.},
           style=MyCppFloat,
           firstline=88,
           lastline=101,
@@ -505,9 +499,13 @@
         The \lstinline{storeOp} is set to \lstinline{DONT_CARE}\footnote{Full name: \lstinline{VK_ATTACHMENT_STORE_OP_DONT_CARE}} because the depth buffer is not used outside the render pass.
         This is also the reason why both the initial and the final layout are simply set to \lstinline{DEPTH_STENCIL_ATTACHMENT}\footnote{Full name: \lstinline{VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}}.
 
+        As mentioned before, a render pass consists of multiple subpasses.
+        Every render pass needs at least one subpass.
+        For the purposes of this chapter, a single subpass is sufficient.
+
         \lstinputlisting[
           label=lst:RenderPassSubpassSetup,
-          caption={Setup of the single subpass for use in chapter~\ref{cha:RenderPipeline}.},
+          caption={Setup of the single subpass with a color and depth attachment reference corresponding to those presented in listing~\ref{lst:RenderPassAttachmentsSetup}.},
           style=MyCppFloat,
           firstline=103,
           lastline=115,
@@ -515,15 +513,11 @@
         ]
         {Main/Listings/GraphicsPipelineSetup.cpp}
 
-        As mentioned before, a render pass consists of multiple subpasses.
-        Every render pass needs at least one subpass.
-        For the purposes of this chapter, a single subpass is sufficient.
-        This subpass is configured as shown in listing~\ref{lst:RenderPassSubpassSetup}.
-
         A subpass accepts configurations for the layout of individual attachments.
         Subpasses have references to the attachments of the render pass itself.
         These attachment references contain additional information, the most important one being the layout in that subpass.
-        On line~2 of listing~\ref{lst:RenderPassSubpassSetup}, the index of the referenced attachment in the render pass is set.
+        This subpass is configured as shown in listing~\ref{lst:RenderPassSubpassSetup}.
+        On line~2, the index of the referenced attachment in the render pass is set.
         On line~3, the attachment reference is configured to ensure the correct image layout for the referenced attachment during the execution of that subpass.
         Every subpass within a render pass may define their own requirements for the layout of every individual attachment.
         Image layout transitions are performed by the \gls{driver} between subpasses as needed to ensure each subpass uses the attachment in the required layout.
@@ -549,7 +543,7 @@
     \subsection{Creating the Graphics Pipeline}
     \label{sub:ActualGraphicsPipelineCreation}
       In the previous section, the graphics pipeline was prepared to be created.
-      Listing~\ref{lst:FinallyCreatingTheGraphicsPipeline} shows how all prepared data is combined in a single struct to finally produce a graphics pipeline object on line~16.
+      Listing~\ref{lst:FinallyCreatingTheGraphicsPipeline} shows how all prepared data is combined in a single struct to finally produce a graphics pipeline object on line~15.
 
       \lstinputlisting[
         label=lst:FinallyCreatingTheGraphicsPipeline,
@@ -563,7 +557,8 @@
       {Main/Listings/GraphicsPipelineSetup.cpp}
 
       The second parameter passed to \lstinline{vkCreateGraphicsPipelines} is the pipeline cache that was mentioned in section~\ref{subsec:PipelineCache}.
-      In this case a \lstinline{VK_NULL_HANDLE} value is passed, thus no pipeline cache is used.
+      % In this case a \lstinline{VK_NULL_HANDLE} value is passed, thus no pipeline cache is used.
+      A \lstinline{VK_NULL_HANDLE} value is passed in this case, thus no pipeline cache is used.
       If a valid pipeline cache object is passed, Vulkan would first check this cache for existing pipelines that match the input configuration.
       This is very likely to be faster than creating an entirely new pipeline.
       The exact algorithms and data structures used for managing pipeline caches are not defined by the Vulkan specification which means that \glspl{driver} are free to employ their own processing schemes.
@@ -644,36 +639,39 @@
       Only a single layout is used in this case which has been defined in section~\ref{sss:GraphicsPipelineLayout}.
       Descriptor sets can be bound to a command buffer to be used for a specific graphics pipeline, which is shown later when rendering commands are recorded in section~\ref{sec:BuildCommandBuffers}.
 
-      \lstinputlisting[
-        label=lst:DescriptorPoolCreation,
-        caption={Creation of a descriptor pool which only supports allocating a single uniform buffer descriptor.},
-        style=MyCppFloat,
-        firstline=11,
-        lastline=19,
-        float,
-        emph={DescriptorPool}
-      ]
-      {Main/Listings/CreateSceneObjects.cpp}
-
-      \lstinputlisting[
-        label=lst:DescriptorSetAllocation,
-        caption={Allocation of a descriptor set.},
-        style=MyCppFloat,
-        firstline=21,
-        lastline=26,
-        float,
-        emph={DescriptorSet}
-      ]
-      {Main/Listings/CreateSceneObjects.cpp}
-
       Descriptor sets are allocated from descriptor pools which also manage the underlying memory used by descriptor sets.
       The relationship between a descriptor pool and descriptor sets is similar to command pools and command buffers.
       Compared to command pools, however, descriptor pools are limited to a certain number of descriptor types that can be allocated from.
       These limits are defined by the application when a descriptor pool is created as shown in listing~\ref{lst:DescriptorPoolCreation}.
       On lines~2~and~3, the limit for uniform buffer descriptors is set to allow only a single allocation of that type.
+
+      \lstinputlisting[
+        label=lst:DescriptorPoolCreation,
+        caption={Creation of a descriptor pool which only supports allocating a single uniform buffer descriptor.},
+        style=MyCppFloat,
+        aboveskip=\bigskipamount,
+        % float,
+        firstline=11,
+        lastline=19,
+        emph={DescriptorPool}
+      ]
+      {Main/Listings/CreateSceneObjects.cpp}
+
       This limitation information is then used on line~8 to create the descriptor pool on line~9.
       The allocation of the descriptor set is shown in listing~\ref{lst:DescriptorSetAllocation}.
       Tying the descriptor set to a descriptor set layout is shown on line~4.
+
+      \lstinputlisting[
+        label=lst:DescriptorSetAllocation,
+        caption={Allocation of a descriptor set.},
+        style=MyCppFloat,
+        aboveskip=\bigskipamount,
+        % float,
+        firstline=21,
+        lastline=26,
+        emph={DescriptorSet}
+      ]
+      {Main/Listings/CreateSceneObjects.cpp}
 
       \todo[inline]{Concluding sentence?}
 
@@ -733,16 +731,6 @@
     % \subsection{Rendering a Scene Object}
       % In this section, the necessary steps to record rendering commands for all scene objects are shown and explained.
 
-      \lstinputlisting[
-        label=lst:BeginCommandBuffer,
-        caption={Start of the recording of a command buffer.},
-        style=MyCppFloat,
-        firstline=1,
-        lastline=2,
-        float
-      ]
-      {Main/Listings/CommandBufferRecording.cpp}
-
       % The first action that has to be performed is to start command buffer recording.
       Before issuing rendering commands, the command buffer has to be put into \textit{recording} state, which can be seen on line~2 of listing~\ref{lst:BeginCommandBuffer}.
       When beginning a command buffer, additional information can be passed in the \lstinline{VkCommandBufferBeginInfo} structure which can be seen on line~1.
@@ -750,12 +738,13 @@
       For the purposes of this example, the default values are sufficient.
 
       \lstinputlisting[
-        label=lst:DynamicStateUpdate,
-        caption={Updating dynamic render pass state using Vulkan commands.},
+        label=lst:BeginCommandBuffer,
+        caption={Start of the recording of a command buffer.},
         style=MyCppFloat,
-        firstline=4,
-        lastline=13,
-        float
+        aboveskip=\bigskipamount,
+        % float,
+        firstline=1,
+        lastline=2
       ]
       {Main/Listings/CommandBufferRecording.cpp}
 
@@ -765,23 +754,23 @@
       The viewport is set to include the entire framebuffer on lines~2--3 as well as the entire depth buffer extent on lines~4--5.
       The scissor is set to contain the entire viewport on line~9, effectively disabling cropping of the resulting image.
 
+      \lstinputlisting[
+        label=lst:DynamicStateUpdate,
+        caption={Updating dynamic render pass state using Vulkan commands.},
+        style=MyCppFloat,
+        aboveskip=\bigskipamount,
+        % float,
+        firstline=4,
+        lastline=13
+      ]
+      {Main/Listings/CommandBufferRecording.cpp}
+
       Dynamic state values are part of the command buffer.
       These values are read by graphics pipelines when executing draw commands without clearing them.
       This means that dynamic state only has to be set once for every command buffer if the values never change which is why dynamic state updates are the first commands recorded in the example of this chapter.
       These commands may be recorded at a later point if need be, but no later than before the first draw command is recorded.
       Additionally, setting these values is only necessary if the graphics pipeline has been set up to accept viewport and scissor data as dynamic state.
       Graphics pipelines that are not instructed to look for dynamic state will simply ignore the data in the command buffer and instead use the data supplied at pipeline creation.
-
-      \lstinputlisting[
-        label=lst:BeginRenderPass,
-        caption={Creation of a render pass instance within a command buffer.},
-        style=MyCppFloat,
-        firstline=15,
-        lastline=25,
-        float,
-        emph={vkCmdBeginRenderPass}
-      ]
-      {Main/Listings/CommandBufferRecording.cpp}
 
       In the next step, a render pass is started which results in the creation of a \textit{render pass instance} shown in listing~\ref{lst:BeginRenderPass}.
       This render pass instance is associated with a specific framebuffer on line~7 and clear values on line~10~and~11 that are used to clear attachment contents if their \lstinline{loadOp} is set to \lstinline{CLEAR}\footnote{Full name: \lstinline{VK_ATTACHMENT_LOAD_OP_CLEAR}}.
@@ -791,6 +780,18 @@
       The render area is used to control which pixels of the framebuffer are affected in the active render pass.
       This is used to minimize necessary work for the \gls{gpu}.
       A render area that is larger than the framebuffer is invalid.
+
+      \lstinputlisting[
+        label=lst:BeginRenderPass,
+        caption={Creation of a render pass instance within a command buffer.},
+        style=MyCppFloat,
+        % aboveskip=\bigskipamount,
+        float,
+        firstline=15,
+        lastline=25,
+        emph={vkCmdBeginRenderPass}
+      ]
+      {Main/Listings/CommandBufferRecording.cpp}
 
       When beginning a render pass, Vulkan also needs to be told about whether secondary command buffers will be used or not.
       For the purposes of this chapter, only a single primary command buffer is used in a single subpass, which is why the render pass is instructed to inline render commands directly in the primary command buffer, disallowing execution of secondary command buffer.
