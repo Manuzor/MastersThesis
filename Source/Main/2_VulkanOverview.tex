@@ -21,15 +21,15 @@
   \section{Workflow and Patterns}
   \label{sec:WorkflowAndPatterns}
     The Vulkan API was designed to be consistent and explicit.
-    Many patterns can be found in the Vulkan code style that make it easier for the \gls{application} to use the API effectively.
+    Many patterns can be found in the Vulkan code style that make it easier for the application to use the API effectively.
     This section is a walkthrough of the basic steps needed to set up a Vulkan graphics pipeline to present an image on a display.
 
     The first object that has to be created is a Vulkan instance.
-    Vulkan makes use of \textit{handle} types allowing the \gls{application} to track objects created with the API.
-    The Vulkan instance is represented by such a handle and can be used to query available physical \glspl{device} that provide Vulkan support.
-    These physical \glspl{device} can be queried for certain capabilities, such as supported image formats and hardware features, to aid in deciding which physical device to use for the \gls{application}.
+    Vulkan makes use of \textit{handle} types allowing the application to track objects created with the API.
+    The Vulkan instance is represented by such a handle and can be used to query available physical devices that provide Vulkan support.
+    These physical devices can be queried for certain capabilities, such as supported image formats and hardware features, to aid in deciding which physical device to use for the application.
     A physical device can subsequently be used to create a logical device, or just device.
-    The number of \glspl{device} created from a physical device is not limited by Vulkan but typical applications create just a single instance.
+    The number of devices created from a physical device is not limited by Vulkan but typical applications create just a single instance.
     Devices represent the primary interface to Vulkan and are used for a number of tasks such as allocating \gls{gpu} resources.
 
     A device also consists of multiple queues which are used to submit work to the \gls{gpu}.
@@ -40,12 +40,12 @@
     % Queues are created when the associated device is created and are available for as long as the device is available.
     % A device may be associated with multiple queues at once.
     % % This is why there is no \lstinline{vkCreateQueue} but rather \lstinline{vkGetQueue} command.
-    % Among other things, \glspl{device} are used to allocate Vulkan objects or GPU memory.
+    % Among other things, devices are used to allocate Vulkan objects or GPU memory.
     % Changes made on Vulkan objects do not have global side-effect observable with the regular Vulkan API\todo{Elaborate.
     % Contrast with OpenGL}.
     % However, \glspl{driver} and Vulkan layers or extensions are free to modify their own state across Vulkan object boundaries.\todo{Redundant sentence? This should be a given.}
 
-    Once a device handle has been acquired, the \gls{application} can create a swapchain to establish a connection between a specific queue on the device and a platform specific presentation engine.
+    Once a device handle has been acquired, the application can create a swapchain to establish a connection between a specific queue on the device and a platform specific presentation engine.
     A swapchain contains a number of \textit{presentation images}.
     Usually, these images are used to store the results of the graphics pipelines.
     At the time these images are presented, they have to be in a specific layout reserved for presentation purposes.
@@ -66,36 +66,39 @@
 
     Vulkan objects can be created using \lstinline{vkCreate*} commands with the help of \lstinline{Vk*CreateInfo} structures.
     These info structures contain parameters to create the requested type of object.
-    The contents of such info structures are specific to each creation command and require the \gls{application} developer to consult the Vulkan specification in order to provide correct input data.
+    The contents of such info structures are specific to each creation command and require the application developer to consult the Vulkan specification in order to provide correct input data.
     All \lstinline{vkCreate*} commands return handles to the objects they create.
     When the object is no longer in use, these handles can be used to destroy the object with the help of \lstinline{vkDestroy*} commands.
     For every \lstinline{vkCreate*} command Vulkan provides a corresponding \lstinline{vkDestroy*} command.
     The commands \lstinline{vkCreateBuffer} and \lstinline{vkDestroyBuffer} are examples for this.
 
-    \todo{Explain memory pools briefly.}When Vulkan objects are allocated from memory pools, or directly from \gls{device} memory, calls to \lstinline{vkAllocate*} commands have to be made.
+    \todo{Explain memory pools briefly.}When Vulkan objects are allocated from memory pools, or directly from device memory, calls to \lstinline{vkAllocate*} commands have to be made.
     These commands are accompanied by \lstinline{vkFree*} commands that return resources to their origin where they originally were acquired from.
     The general rule is that all objects allocated from pools are released as soon as the pool itself is released.
     Using released Vulkan objects results in undefined behavior, similar to using freed memory in \gls{ccpp}.
 
     Unlike other APIs, Vulkan does not do any object tracking or reference counting to manage object life times.
-    It is the responsibility of the \gls{application} to destroy or free Vulkan objects at the appropriate times, i.e.
-    when they are no longer in use and will not be used in the future by either the \gls{host} or the device.
+    It is the responsibility of the application to destroy or free Vulkan objects at the appropriate times, i.e.
+    when they are no longer in use and will not be used in the future by either the host or the device.
 
     Vulkan objects are generally not designed to be thread-safe.
-    The Vulkan specification states whether \gls{host} synchronization is required for each individual command of the \gls{api}.
+    The Vulkan specification states whether host synchronization is required for each individual command of the \gls{api}.
     This means that accessing or modifying most Vulkan objects from more than one thread at once can lead to race conditions or other undesirable behavior.
-    In these cases, it is the responsibility of the \gls{application} to employ proper synchronization mechanisms on the \gls{host} to ensure Vulkan objects are never read from or written to concurrently.
+    In these cases, it is the responsibility of the application to employ proper synchronization mechanisms on the host to ensure Vulkan objects are never read from or written to concurrently.
 
   \section{Layers and Extensions}
   \label{sec:LayersAndExtensions}
-    Vulkan is extensible by third-party \glspl{application}.
+    Vulkan is extensible by third-party applications.
     The two mechanisms provided are called \textit{layers} and \textit{extensions}.
 
-    A layer in Vulkan can be thought of as an observer to the API calls done by the \gls{application}.
-    It does not add new types or commands the \gls{application} can use directly.
+    A layer in Vulkan can be thought of as an observer to the API calls done by the application.
+    It does not add new types or commands the application can use directly.
     Layers are not required for Vulkan to function properly, they add to and observe existing functionality instead.
 
-    The LunarG SDK~\cite{lunargvulkansdk}, for example, comes with a set of layers to validate usage of the Vulkan API. This is extremely useful during development as it allows application developers to focus on their code rather than the perfect use of the Vulkan API. It should also be noted that bare Vulkan, without any validation layers enabled, does not do any error checking. When the \gls{application} passes an invalid combination of flags to some Vulkan function, it results in undefined behavior and has to be corrected by the \gls{application}.
+    The LunarG SDK~\cite{lunargvulkansdk}, for example, comes with a set of layers to validate usage of the Vulkan API.
+    This is extremely useful during development as it allows application developers to focus on their code rather than the perfect use of the Vulkan API.
+    It should also be noted that bare Vulkan, without any validation layers enabled, does not do any error checking.
+    When the application passes an invalid combination of flags to some Vulkan function, it results in undefined behavior and has to be corrected by the application.
 
     As opposed to layers, extensions are able to provide new or add to existing functionality. The motivation for extensions is to keep the Vulkan core functionality small and provide specific functionality via such extensions. In fact, the Khronos Group provides built-in extensions for both common and platform specific functionality.
 
@@ -107,46 +110,46 @@
     \end{figure}
 
     The most important extensions are arguably the swapchain and platform specific surface extensions.
-    These extensions enable the \gls{application} to create a Vulkan swapchain and a compatible surface object that is used by the presentation engine to present an image.
+    These extensions enable the application to create a Vulkan swapchain and a compatible surface object that is used by the presentation engine to present an image.
     This process is outlined in figure~\ref{fig:PresentationEngine}.
-    Vulkan requires the \gls{application} to create a platform specific window which is then used when creating a Vulkan surface.
+    Vulkan requires the application to create a platform specific window which is then used when creating a Vulkan surface.
     This surface is subsequently used to create the swapchain that acts as the connection between a device and the surface.
     With this constellation, the presentation engine is able to properly present an image on a platform specific window.
     The extension to create a swapchain is called
     \lstinline{VK_KHR_swapchain}\footnote{\lstinline{KHR} is short for Khronos and is commonly used to denote extensions developed by the \gls{khronos}.}.
     It adds several types and commands to create and interact with a swapchain.
     The concept of a swapchain is independent of the platform but it requires the help of platform specific functionality in order to work.
-    On Windows platforms, for example, the \gls{application} needs to enable the \lstinline{VK_KHR_win32_surface} extension in order to link a swapchain to a Win32 window.
-    From the perspective of the \gls{application}, there is no need to care about distinguishing between platforms when creating a swapchain but they do have to when creating and connecting the swapchain to a platform specific surface.
+    On Windows platforms, for example, the application needs to enable the \lstinline{VK_KHR_win32_surface} extension in order to link a swapchain to a Win32 window.
+    From the perspective of the application, there is no need to care about distinguishing between platforms when creating a swapchain but they do have to when creating and connecting the swapchain to a platform specific surface.
 
     Extensions can be loaded and enabled on both instance-level and device-level.
     Instance-level extensions are generally independent of the hardware while device-level extensions are usually specific to the individual device.
     The extension \lstinline{VK_EXT_debug_report}, for example, is an instance-level extension.
-    It enables the \gls{application} to provide a callback function that is used by Vulkan layers or extensions to communicate with the \gls{application}.
-    If validation layers are enabled, this is how they report validation violations to the \gls{application}.
+    It enables the application to provide a callback function that is used by Vulkan layers or extensions to communicate with the application.
+    If validation layers are enabled, this is how they report validation violations to the application.
     An example for a device-level extension is the aforementioned \lstinline{VK_KHR_swapchain} extension.
-    Not all physical \glspl{device} have to be capable of rendering graphics images.
+    Not all physical devices have to be capable of rendering graphics images.
     In the end it is up to the extension author on which level they provide their extension.
 
   \section{Resources and Memory Allocation}
   \label{sec:MemoryManagement}
-    Memory in Vulkan is referred to as either \gls{host} memory or \gls{device} memory.
+    Memory in Vulkan is referred to as either host memory or device memory.
     The former is memory used by the host application on the \gls{cpu} and the latter is memory used by the \gls{gpu}.
 
     Host memory is used by the \gls{driver} for data structures that are represented by Vulkan objects defined as part of the Vulkan \gls{api}.
-    Applications have the option to supply memory allocators to \glspl{driver} in order to control how \gls{host} memory is allocated.
+    Applications have the option to supply memory allocators to \glspl{driver} in order to control how host memory is allocated.
     Host memory allocations are not conducted in performance critical code paths.
-    In general, supplying custom memory allocators may not significantly affect efficiency of the \gls{application}.
-    Instead, it is an opportunity for \glspl{host} on embedded systems to control memory allocations or for informational purposes such as logging memory allocations done by the \gls{driver}.
+    In general, supplying custom memory allocators may not significantly affect efficiency of the application.
+    Instead, it is an opportunity for hosts on embedded systems to control memory allocations or for informational purposes such as logging memory allocations done by the \gls{driver}.
     Especially on gaming consoles, where memory typically is a scarce resource, this kind of control will be beneficial to applications.
 
-    The physical storage of a device is called device memory. Device memory is separated into different types of heaps. Each of these heaps has a defined size and a combination of flags. The flags indicate whether memory from that heap is visible to the \gls{host} or whether the memory is completely local to the device. In order for the allocated memory to be useful, the \gls{application} has to bind it to a resource.
+    The physical storage of a device is called device memory. Device memory is separated into different types of heaps. Each of these heaps has a defined size and a combination of flags. The flags indicate whether memory from that heap is visible to the host or whether the memory is completely local to the device. In order for the allocated memory to be useful, the application has to bind it to a resource.
 
     There are two fundamental types of resources in Vulkan, the buffer resource and the image resource.
 
     \begin{description}
       \item[Buffers]
-        A buffer is treated as a one-dimensional, unformatted, contiguous block of memory that can be used by the \gls{application} to upload general purpose data to the device.
+        A buffer is treated as a one-dimensional, unformatted, contiguous block of memory that can be used by the application to upload general purpose data to the device.
         This data may then be used during shader execution, for example, or may be copied and transformed on the GPU to another buffer or even an image.
 
         In some circumstances, Vulkan requires a \textit{buffer view} instead of the buffer itself.
@@ -249,7 +252,7 @@
     The compute pipeline consists only of a single programmable stage.
     The graphics pipeline, however, is considerably more complex.
     It has multiple fixed-function stages and five programmable stages, called shader stages.
-    Some of the fixed-function stages have configurable state that can be manipulated by the \gls{application}.
+    Some of the fixed-function stages have configurable state that can be manipulated by the application.
     For example, the rasterization stage can be configured to interpret incoming vertex data as either a list of points, lines, or filled polygons.
     Figure~\ref{fig:GraphicsPipeline} provides an overview of some components of a graphics pipeline.
 
@@ -259,7 +262,7 @@
     The specification of \gls{spirv} is entirely maintained by the the Khronos Group~\cite{spirvspecprov}.
     More information about \gls{spirv} is provided in chapter~\ref{cha:EnvSetup}.
 
-    When defining a graphics pipeline, Vulkan requires the \gls{application} to at least specify a vertex shader.
+    When defining a graphics pipeline, Vulkan requires the application to at least specify a vertex shader.
     All other shader stages are optional.
     A graphics pipeline also has a specific layout that is specified in terms of the vertex input layout and the descriptor set layout.
     The vertex input layout describes how the data in vertex buffers is to be interpreted.
@@ -285,11 +288,11 @@
     \label{subsec:PipelineCache}
       Creating pipeline objects is a fairly heavyweight operation.
       To speed up pipeline creation, Vulkan provides what is called a pipeline cache.
-      When creating a pipeline, such a pipeline cache object can be supplied by the \gls{application}.
+      When creating a pipeline, such a pipeline cache object can be supplied by the application.
       Vulkan will try to find a matching pipeline in the cache.
       If it finds a matching pipeline, it is loaded from the cache instead of creating a new one.
       If no such pipeline is found in the pipeline cache, a new pipeline is created and written to the pipeline cache.
-      Vulkan provides a command to retrieve the serialized pipeline cache, which can be saved by the \gls{application} in whatever location is most convenient to it.
+      Vulkan provides a command to retrieve the serialized pipeline cache, which can be saved by the application in whatever location is most convenient to it.
       This serialized pipeline cache can then be fed back to Vulkan at a later time.
 
       Pipeline cache objects are managed by the \gls{driver} and are internally synchronized.
@@ -309,12 +312,12 @@
     \label{sub:Fences}
       A fence is a synchronization primitive used to determine the execution status of submitted operations executed in a queue.
       Such a fence can only be in one of two states: not signaled and signaled.
-      The status of a fence is visible to the \gls{host}.
+      The status of a fence is visible to the host.
       The device itself does not use the status of a fence directly.
 
       The most common way a fence is used is when submitting work to a queue via the \lstinline{vkQueueSubmit} command.
       The supplied fence is signaled once all work in that submission has been completed.
-      The \gls{application} can query the submitted fence for its status using \lstinline{vkFenceGetStatus} to determine whether the fence was signaled yet or not.
+      The application can query the submitted fence for its status using \lstinline{vkFenceGetStatus} to determine whether the fence was signaled yet or not.
       Waiting for a fence to be signaled essentially means waiting for all of the submitted work on the queue to be finished.
       Using the \lstinline{vkWaitForFences} \gls{api}, the application can wait for one or more fences to be reached, halting execution of the application on the \gls{cpu} for that time.
 
@@ -323,33 +326,33 @@
       A semaphore is similar to a fence, as discussed above in~\ref{sub:Fences}, except that its status is only visible to the device.
       It can be used to synchronize operations within the same and between different device queues.
 
-      The most common use case for Vulkan semaphores in a graphics \gls{application} is when presenting swapchain images to the presentation engine.
+      The most common use case for Vulkan semaphores in a graphics application is when presenting swapchain images to the presentation engine.
       First, the commands to create the final image have to be recorded to a command buffer.
       This command buffer then needs to be submitted to a queue in order to be executed.
       When submitting to the queue, a semaphore can be provided that will be signaled once the queue has finished executing all submitted commands.
       The same semaphore can be used when issuing the swapchain presentation command.
       When everything is set up like this, the presentation engine will effectively wait for the commands to produce the final image and then present it immediately.
 
-      % Note that a fence can be used to achieve the same results except that it would require the \gls{host} to actively wait for the queue to finish executing, stalling any other CPU operations that could have been executed in that time.
+      % Note that a fence can be used to achieve the same results except that it would require the host to actively wait for the queue to finish executing, stalling any other CPU operations that could have been executed in that time.
       Note that a fence can be used to achieve the same results.
-      However, a fence would require the \gls{host} to actively wait for the queue to finish executing, reducing processing time that could be spent on other computations.
+      However, a fence would require the host to actively wait for the queue to finish executing, reducing processing time that could be spent on other computations.
       Using a semaphore will result in better performance in this case.
 
     \subsection{Events}
     \label{sub:Events}
       \todo[inline,color=cyan!60]{Check for duplicates and proof-read the entire section.}
-      Events are used to synchronize between \gls{host} and device or within the same device.
+      Events are used to synchronize between host and device or within the same device.
       Like semaphores and fences, events are either in a signaled or in a not-signaled state.
       Events are used within command buffers in order to allow the device to signal them.
-      This allows for more fine-grained synchronization between commands and to signal command completion to the \gls{host}.
+      This allows for more fine-grained synchronization between commands and to signal command completion to the host.
       Unlike a fence, an event can be signaled or waited on at any point in the command buffer stream and thus can be used to query for synchronization without requiring that all commands in the submitted command buffer have completed execution.
       Commands can be inserted into a command buffer to wait on a specific event to be signaled, achieving synchronization between individual commands running on the device.
       The host is also able to signal or wait on specific events using Vulkan \gls{api} commands.
       However, contrary to what the name might suggest, no callback functionality is provided for the host application to be notified once an event has been signaled.
 
-      Events work in a way that can be taken advantage of when faced with a scenario that requires the \gls{application} to transform a large number of resources in batches.
-      Given an arbitrary number of images in an \gls{application} that need to be transformed in some way that is expensive to compute, these transformations could be issued into a single command buffer, inserting a completion event between these commands.
-      After submitting this command buffer to the queue, the \gls{application} can periodically query for completion of the individual transformation commands without the need to wait for the entire submission to finish by using fences or semaphores.
+      Events work in a way that can be taken advantage of when faced with a scenario that requires the application to transform a large number of resources in batches.
+      Given an arbitrary number of images in an application that need to be transformed in some way that is expensive to compute, these transformations could be issued into a single command buffer, inserting a completion event between these commands.
+      After submitting this command buffer to the queue, the application can periodically query for completion of the individual transformation commands without the need to wait for the entire submission to finish by using fences or semaphores.
 
       It must be noted that events can only be signaled or waited on from commands buffers that are submitted to the same queue.
       This makes them unsuitable for cross-queue synchronization when such is required.
@@ -389,12 +392,12 @@
         This kind of barrier can be used to transfer ownership of a buffer region to another queue family or to change access flags of that region.
         Transferring ownership of that buffer region to another queue family is only possible if this kind of operation has been enabled for that buffer at the time it was created.
         Access flags are used to control how the buffer region is accessed.
-        They could be used to make the memory region read-only, for example, or enable \gls{host} access for it.
+        They could be used to make the memory region read-only, for example, or enable host access for it.
 
       \subsubsection{Image Memory Barriers}
         Image memory barriers are similar to buffer memory barriers.
         They can be used to transfer ownership of image regions to another queue family, modify access flags, and change the image layout.
-        An image region is specified differently from a buffer region because of the fact that images need not be stored linearly in \gls{device} memory.
+        An image region is specified differently from a buffer region because of the fact that images need not be stored linearly in device memory.
         More information about images is provided in section~\ref{sec:MemoryManagement}.
 
         Transferring ownership of an image region is only possible if the image was set up accordingly at creation time.
@@ -402,5 +405,5 @@
 
         Changing the layout of the image is an important operation on Vulkan images.
         For example, it is required for swapchain images in order to be presentable.
-        The presentation engine requires swapchain images to be in a specific layout when presenting them so the \gls{application} must ensure that the image has that specific layout before attempting to issue the presentation command.
-        Since the presentation layout is only meant for use by the presentation engine, the \gls{application} has to use another image memory barrier to change the layout into something that can be used by the \gls{host} \gls{application}.
+        The presentation engine requires swapchain images to be in a specific layout when presenting them so the application must ensure that the image has that specific layout before attempting to issue the presentation command.
+        Since the presentation layout is only meant for use by the presentation engine, the application has to use another image memory barrier to change the layout into something that can be used by the host application.
