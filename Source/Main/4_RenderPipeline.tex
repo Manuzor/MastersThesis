@@ -292,14 +292,6 @@
         ]
         {Main/Listings/GraphicsPipelineSetup.cpp}
 
-        \todo[inline]{Any concluding words here?}{}
-
-      \subsubsection{Input Assembly State}
-        The input assembly state describes how the input data to the vertex shader is interpreted.
-        The most important parameter to set is the primitive topology.
-        This is where the \gls{gpu} is told what kind of primitives the input data represents.
-        For the purposes of this chapter, the chosen primitive topology is \lstinline{TRIANGLE_LIST}\footnote{Full name: \lstinline{VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}} as shown in listing~\ref{lst:InputAssemblyStateSetup}.
-
         \lstinputlisting[
           label=lst:InputAssemblyStateSetup,
           caption={Input assembly state setup causing the graphics pipeline to treat input data as a list of triangles.},
@@ -309,6 +301,14 @@
           lastline=35
         ]
         {Main/Listings/GraphicsPipelineSetup.cpp}
+
+        \todo[inline]{Any concluding words here?}{}
+
+      \subsubsection{Input Assembly State}
+        The input assembly state describes how the input data to the vertex shader is interpreted.
+        The most important parameter to set is the primitive topology.
+        This is where the \gls{gpu} is told what kind of primitives the input data represents.
+        For the purposes of this chapter, the chosen primitive topology is \lstinline{TRIANGLE_LIST}\footnote{Full name: \lstinline{VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}} as shown in listing~\ref{lst:InputAssemblyStateSetup}.
 
       \subsubsection{Viewport State}
       \label{sss:ViewportState}

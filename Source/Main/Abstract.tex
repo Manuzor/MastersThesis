@@ -4,11 +4,34 @@
 {
 \chapter*{Kurzfassung}
 \label{Abstract_de}
-  Dies ist die Kurzfassung.
-  \todo[inline]{Will be composed once the English version is complete.}
+  % In recent years, consumer graphics hardware has changed considerably.
+  In den letzten Jahren hat sich für Endnutzer bestimmte Grafik-Hardware beträchtlich verändert.
+  % In the past, the hardware consisted only of fixed-function components that performed the necessary computations in a massively parallel manner to transform three-dimensional data to an image displayed on a screen.
+  Hardware älterer Generationen bestand aus spezialisierten Einheiten zur massiv parallelen Berechnung dreidimensionaler Daten um ein Bild auf einem Display darzustellen.
+  % At the same time, APIs to graphics hardware were developed.
+  Zur gleichen Zeit wurden APIs für eben jene Grafik-Hardware entwickelt.
+  % As hardware design changed over the years, mainly to improve on performance, it has also become more generalized and accessible to other kinds of computational tasks.
+  Während sich die Leistung der Grafik-Hardware mit der Zeit stetig verbesserte, wurden auch viele der der zuvor genannten spezialisierten Einheiten durch generalisierte Einheiten ersetzt.
+  Dadurch kann Grafik-Hardware heute auch in anderen Bereichen als der Grafikprogrammierung eingesetzt werden.
+  % Traditional APIs had to adjust to these design changes while maintaining compatibility to previously supported designs at the same time.
+  Als Resultat dieser Entwicklung mussten traditionelle APIs angepasst werden um sowohl ältere als auch neuere Hardware-Designs gleichzeitig unterstützen zu können.
+  % This led to an increase in driver complexity, ultimately impacting performance in a negative way.
+  Dies führte zu stetig zunehmender Komplexität von Hardware-Treibern, die sich mitunter auch negativ auf deren Leistung auswirkt.
+  % New graphics APIs were designed to match recent hardware more closely, one of which is the Vulkan graphics API.
+  Um den Design-Änderungen zu entsprechen wurden neue APIs für Grafik-Hardware entwickelt, unter anderem auch die Vulkan API.
+
+  % In this work, the Vulkan graphics API is presented in three stages.
+  In dieser Arbeit wird die Vulkan API in drei Teilen vorgestellt.
+  % At first, an overview of the API itself is provided.
+  Der erste Teil stellt eine Übersicht der API selbst dar.
+  % Afterwards, general instructions on how to set up an environment for developing Vulkan applications are given.
+  Im folgenden Teil werden benötigte Arbeitsschritte beschrieben, um eine Umgebung aufzusetzen, in der Vulkan-Applikationen entwickelt werden können.
+  % And finally, the fundamentals of rendering images using Vulkan are presented with the aid of simplified, prototypical examples.
+  Im letzten Teil wird anhand eines Prototypen exemplarisch gezeigt, wie man die Vulkan API grundsätzlich verwendet um ein Bild zu rendern.
 
 
-\newpage
+
+\cleardoubleemptypage
 }
 {}
 
@@ -22,7 +45,7 @@
   This led to an increase in driver complexity, ultimately impacting performance in a negative way.
   New graphics APIs were designed to match recent hardware more closely, one of which is the Vulkan graphics API.
 
-  In this work\todo{Use ``thesis'' or ``document'' instead of ``work''?}, the Vulkan graphics API is presented in three stages.
+  In this work, the Vulkan graphics API is presented in three stages.
   At first, an overview of the API itself is provided.
   Afterwards, general instructions on how to set up an environment for developing Vulkan applications are given.
   And finally, the fundamentals of rendering images using Vulkan are presented with the aid of simplified, prototypical examples.
