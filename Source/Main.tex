@@ -296,14 +296,17 @@
   \input{Main/4_RenderPipeline}
   \input{Main/5_Conclusion}
 
-  \newpage
+  %
+  % Empty chapter to push the bibliography back a bit.
+  %
+  \chapter*{} % Phantom chapter
+  \thispagestyle{empty}
+  \cleardoubleemptypage
   \pagenumbering{Roman}
-
 
   %
   % Bibliography
   %
-  \newpage
   % \nocite{*}
   \printbibliography[heading=bibintoc,title=Bibliography]
 
