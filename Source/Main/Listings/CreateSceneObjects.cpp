@@ -3,8 +3,8 @@ BufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 BufferCreateInfo.size = sizeof(mat4x4);
 vkCreateBuffer(Device, &BufferCreateInfo, nullptr, &Obj->UniformBuffer);
 
-VkDeviceMemory Obj->UniformBufferMemory = /* Determine memory requirements
-                                             and allocate device memory. */;
+Obj->UniformBufferMemory = /* Determine memory requirements
+                              and allocate device memory. */;
 
 vkBindBufferMemory(Device, Obj->UniformBuffer, Obj->UniformBufferMemory, 0);
 

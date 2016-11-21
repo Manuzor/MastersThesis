@@ -505,7 +505,7 @@
 
         \lstinputlisting[
           label=lst:RenderPassSubpassSetup,
-          caption={Setup of the single subpass with a color and depth attachment reference corresponding to those presented in listing~\ref{lst:RenderPassAttachmentsSetup}.},
+          caption={Setup of a single subpass with a color and depth attachment reference corresponding to those presented in listing~\ref{lst:RenderPassAttachmentsSetup}.},
           style=MyCppFloat,
           firstline=103,
           lastline=115,
@@ -687,7 +687,7 @@
 
     \lstinputlisting[
       label=lst:CreateCommandBuffer,
-      caption={Creation of a command pool and allocation of a command buffer.},
+      caption={Creation of a command pool and allocation of a primary command buffer.},
       style=MyCppFloat,
       firstline=1,
       lastline=9,
@@ -872,7 +872,7 @@
 
     \lstinputlisting[
       label=lst:RenderLoop_ShaderDataUpload,
-      caption={Creation of two semaphores used in the render loop.},
+      caption={Updating shader data of all rendered scene objects using mapped memory regions.},
       style=MyCppFloat,
       firstline=7,
       lastline=19,
@@ -891,7 +891,7 @@
 
     \lstinputlisting[
       label=lst:RenderLoop_AcquireNextImage,
-      caption={Creation of two semaphores used in the render loop.},
+      caption={Acquiring the next available image from a swapchain with a large timeout value.},
       style=MyCppFloat,
       firstline=21,
       lastline=29,
@@ -938,7 +938,7 @@
 
     \lstinputlisting[
       label=lst:RenderLoop_QueuePresent,
-      caption={Creation of two semaphores used in the render loop.},
+      caption={Presenting a swapchain image on a specific queue using two semaphores for synchronization.},
       style=MyCppFloat,
       firstline=47,
       lastline=57,
